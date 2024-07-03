@@ -17,6 +17,10 @@ gamebooks/txt/*
 !gamebooks/txt/txt.md
 matches/*
 !matches/history.txt
+!matches/5617.txt
+!matches/6552.txt
+!matches/7619.txt
+!matches/11179.txt
 !matches/matches.md
 video/*
 !video/video.md
