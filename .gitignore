@@ -9,6 +9,7 @@
 *.user
 *.userosscache
 *.sln.docstates
+trash/*
 data/*
 !data/data.md
 gamebooks/pdf/*

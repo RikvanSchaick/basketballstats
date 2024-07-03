@@ -2,7 +2,7 @@ from event import event
 from match import match
 from stats import stats
 from gamereport import gamereport
-from rawstats import rawstats
+# from rawstats import rawstats
 from data import data
 from copy import deepcopy
 import os
@@ -225,12 +225,12 @@ def main():
                 gamebook.make_txt(quarters)
                 gamebook.make_pdf(quarters)
 
-        if eventstring == "rawstats":
-            rawstat = rawstats(m)
-            rawstat.gameinfo()
-            rawstat.create_boxscores()
-            rawstat.save_teamstats()
-            rawstat.save_playerstats()
+        # if eventstring == "rawstats":
+        #     rawstat = rawstats(m)
+        #     rawstat.gameinfo()
+        #     rawstat.create_boxscores()
+        #     rawstat.save_teamstats()
+        #     rawstat.save_playerstats()
                          
         if eventstring == "exit":
             exit()
