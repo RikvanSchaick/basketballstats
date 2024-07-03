@@ -1,0 +1,73 @@
+-- {STAT LINKS} --
+
+https://www.fiba.basketball/documents/2015/FIBA_Stats_Manual20120920.pdf
+https://www.nba.com/stats
+https://gc.com/post/advanced-stats-for-basketball#:~:text=The%20Plus%2FMinus%20stat%20is,to%20switch%20up%20some%20rotations.
+
+-- {PLAYER INFO} --
+
+NAME:       <name>
+NUMBER:     <##>                [1, .., 99]
+POS:        <primary position>  [PG, SG, SF, PF, C]
+LENGTH:     <###>
+WEIGHT:     <##>
+
+-- {MATCH INFO} --
+
+HOME:       <teamname>
+AWAY:       <teamname>
+DATE:       <date>
+ROSTER:     NAME:<name>, NUMBER:<##>, GS:[y, n]
+
+-- {EVENT LOG} --
+
+QUARTER:    <#>
+
+TIME:       <####>
+
+HOME:       H
+AWAY:       A
+NUMBER:     <##>
+
+OREB:       o
+DREB:       d
+REB:        r 
+AST:        a
+STL:        s
+BLK:        b
+FG2:        2m
+F2A:        2
+FG3:        3m
+F3A:        3
+FT:         1m
+FTA:        1
+PF:         f [f0, f1, f2, f3, ft, fu, fd]
+TO:         t
+SUB:        out<_##>in<_##>
+JUMP BALL:  j
+TIME OUT:   to
+
+-- {EXAMPLES} --
+
+108332H11
+1   0833    2   H11
+1Q  08:33   F2A Home #11
+"In kwart 1, met nog 8 minuten en 33 seconden te gaan, 2-punter mis door nummer 11 van thuis spelend team."
+
+10833rH7
+1   0833    r   H7
+1Q  08:31   REB Home #7 
+"In kwart 1, met nog 8 minuten en 31 seconden te gaan, aanvallende rebound van nummer 7 thuis spelend team."
+
+10823outH7inH8
+1   0823    out H7          in  H8
+1Q  08:23   out Home #7     in  Home #8
+"In kwart 1, met nog 8 minuten en 23 seconden te gaan, nummer 7 van thuis spelende team eruit en nummer 8 van thuis spelende team erin."
+
+-- {POSSIBLE ADDITIONS} --
+
+LOCATION:   <###,###>
+PASS:       p
+
+-- {RAW STATS} --
+

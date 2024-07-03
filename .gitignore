@@ -9,6 +9,17 @@
 *.user
 *.userosscache
 *.sln.docstates
+data/*
+!data/data.md
+gamebooks/pdf/*
+!gamebooks/pdf/pdf.md
+gamebooks/txt/*
+!gamebooks/txt/txt.md
+matches/*
+!matches/history.txt
+!matches/matches.md
+video/*
+!video/video.md
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
