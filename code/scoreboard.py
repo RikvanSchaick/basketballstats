@@ -80,7 +80,6 @@ class scoreboard():
         else:
             return " "
         
-        
     def timeouts(self, frame: np.array) -> int:
         frame = self.resize(frame, 1, 5)
         frame = np.where(frame <= 128, 0, 1)
@@ -97,6 +96,12 @@ class scoreboard():
             return 1
         else:
             return " "
+        
+    def selectROI(self, frame: np.array) -> {tuple, tuple}:
+        r0,r1,r2,r3 = cv2.selectROI(frame, showCrosshair=False)
+        upleft = (int(r0), int(r1))
+        bottomright = (int(r0+r2), int(r1+r3))
+        return upleft, bottomright
         
 c = scoreboard()
 b, cap = c.open_video("test2")
@@ -124,39 +129,43 @@ while(cap.isOpened()):
         d3 = c.digit(frame3)
 
         # Extract score
-        frame4,_,_ = c.crop(black, (22, 79), (45, 119))
-        frame5,_,_ = c.crop(black, (50, 79), (73, 119))
-        frame6,_,_ = c.crop(black, (246, 79), (269, 119))
-        frame7,_,_ = c.crop(black, (273, 79), (296, 119))
+        frame4,_,_ = c.crop(black, (5, 79), (17, 119))
+        frame5,_,_ = c.crop(black, (22, 79), (45, 119))
+        frame6,_,_ = c.crop(black, (50, 79), (73, 119))
+        frame7,_,_ = c.crop(black, (229, 79), (241, 119))
+        frame8,_,_ = c.crop(black, (246, 79), (269, 119))
+        frame9,_,_ = c.crop(black, (273, 79), (296, 119))
         d4 = c.digit(frame4)
         d5 = c.digit(frame5)
         d6 = c.digit(frame6)
         d7 = c.digit(frame7)        
+        d8 = c.digit(frame8)
+        d9 = c.digit(frame9)        
 
         # Extract team fouls
-        frame8,_,_ = c.crop(black, (17, 9), (40, 49))
-        frame9,_,_ = c.crop(black, (45, 9), (68, 49))
-        frame10,_,_ = c.crop(black, (238, 9), (261, 49))
-        frame11,_,_ = c.crop(black, (266, 9), (289, 49))
-        d8 = c.digit(frame8)
-        d9 = c.digit(frame9)
+        frame10,_,_ = c.crop(black, (17, 9), (40, 49))
+        frame11,_,_ = c.crop(black, (45, 9), (68, 49))
+        frame12,_,_ = c.crop(black, (238, 9), (261, 49))
+        frame13,_,_ = c.crop(black, (266, 9), (289, 49))
         d10 = c.digit(frame10)
         d11 = c.digit(frame11)
+        d12 = c.digit(frame12)
+        d13 = c.digit(frame13)
 
         # Extract period
-        frame12,_,_ = c.crop(black, (146, 6), (160, 26))
-        d12 = c.digit(frame12)
+        frame14,_,_ = c.crop(black, (146, 6), (160, 26))
+        d14 = c.digit(frame14)
         
         # Extract timeouts
             #test1,2,3
-        frame13,_,_ = c.crop(black, (100, 7), (110, 44))
-        frame14,_,_ = c.crop(black, (195, 7), (205, 44))
+        frame15,_,_ = c.crop(black, (100, 7), (110, 44))
+        frame16,_,_ = c.crop(black, (195, 7), (205, 44))
         
             # test4
-        # frame13,_,_ = c.crop(black, (97, 8), (105, 42))
-        # frame14,_,_ = c.crop(black, (188, 8), (197, 42))
-        t1 = c.timeouts(frame13)
-        t2 = c.timeouts(frame14)
+        # frame15,_,_ = c.crop(black, (97, 8), (105, 42))
+        # frame16,_,_ = c.crop(black, (188, 8), (197, 42))
+        t1 = c.timeouts(frame15)
+        t2 = c.timeouts(frame16)
         
         # Show original image
         c.show_frame(frame, 'Frame') 
@@ -170,15 +179,21 @@ while(cap.isOpened()):
             # print(f"Fouls: \t{d8}{d9}-{d10}{d11}")
             # print(f"Timeouts: \t{t1}-{t2}")
 
-            print(f"{d8}{d9} {t1} {d12} {t2} {d10}{d11}")
-            print(f"{d4}{d5} {d0}{d1}:{d2}{d3} {d6}{d7}")
+            print( "+---------------------------")
+            print( "|  __   __         __   __  |")
+            print(f"| |{d10}{d11}| | {t1}|   _   | {t2}| |{d12}{d13}| |")
+            print(f"| |TF| |TO|  |{d14}|  |TO| |TF| |")
+            print( "|   _____           _____   |")
+            print(f"|  | {d4}{d5}{d6} |  _____  | {d7}{d8}{d9} |  |")
+            print(f"|  | HOME| |{d0}{d1}:{d2}{d3}| | AWAY|  |")
+            print( "+---------------------------+")
             print()
         
         if cv2.waitKey(25) & 0xFF == ord('q'): 
             break        
         
-        if i == 500: 
-            break
+        # if i == 500: 
+        #     break
     else:
         break
 c.close_video()
