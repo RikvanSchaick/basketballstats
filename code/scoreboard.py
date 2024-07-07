@@ -80,9 +80,27 @@ class scoreboard():
         else:
             return " "
         
+        
+    def timeouts(self, frame: np.array) -> int:
+        frame = self.resize(frame, 1, 5)
+        frame = np.where(frame <= 128, 0, 1)
+                    
+        t1 = True if frame[4,0] == 0 else False
+        t2 = True if frame[2,0] == 0 else False
+        t3 = True if frame[0,0] == 0 else False
+                
+        if t1 and t2 and t3:
+            return 3
+        elif t1 and t2:
+            return 2
+        elif t1:
+            return 1
+        else:
+            return " "
+        
 c = scoreboard()
-# b, cap = c.open_video("test3")
-b, cap = c.open_video("IMG_0879")
+b, cap = c.open_video("test2")
+# b, cap = c.open_video("IMG_0879")
 _, _, fps, _ = c.get_dimension()
 
 i = 0
@@ -95,7 +113,7 @@ while(cap.isOpened()):
         gray = c.grayscaling(frame)
         black = c.adaptivethreshold(gray)
         
-        # Extract time of scoreboard
+        # Extract time
         frame0,_,_ = c.crop(black, (91, 95), (114, 135))
         frame1,_,_ = c.crop(black, (119, 95), (142, 135))
         frame2,_,_ = c.crop(black, (161, 95), (184, 135))
@@ -105,7 +123,7 @@ while(cap.isOpened()):
         d2 = c.digit(frame2)
         d3 = c.digit(frame3)
 
-        # Extract score of scoreboard
+        # Extract score
         frame4,_,_ = c.crop(black, (22, 79), (45, 119))
         frame5,_,_ = c.crop(black, (50, 79), (73, 119))
         frame6,_,_ = c.crop(black, (246, 79), (269, 119))
@@ -115,7 +133,7 @@ while(cap.isOpened()):
         d6 = c.digit(frame6)
         d7 = c.digit(frame7)        
 
-        # Extract team fouls of scoreboard
+        # Extract team fouls
         frame8,_,_ = c.crop(black, (17, 9), (40, 49))
         frame9,_,_ = c.crop(black, (45, 9), (68, 49))
         frame10,_,_ = c.crop(black, (238, 9), (261, 49))
@@ -125,27 +143,41 @@ while(cap.isOpened()):
         d10 = c.digit(frame10)
         d11 = c.digit(frame11)
 
-        # Extract period of scoreboard
+        # Extract period
         frame12,_,_ = c.crop(black, (146, 6), (160, 26))
         d12 = c.digit(frame12)
         
+        # Extract timeouts
+            #test1,2,3
+        frame13,_,_ = c.crop(black, (100, 7), (110, 44))
+        frame14,_,_ = c.crop(black, (195, 7), (205, 44))
+        
+            # test4
+        # frame13,_,_ = c.crop(black, (97, 8), (105, 42))
+        # frame14,_,_ = c.crop(black, (188, 8), (197, 42))
+        t1 = c.timeouts(frame13)
+        t2 = c.timeouts(frame14)
+        
         # Show original image
         c.show_frame(frame, 'Frame') 
+        # c.show_frame(frame13, 'Frame13') 
+        # c.show_frame(frame14, 'Frame14') 
 
         if i % int(fps/15) == 0 and i > 0:
             # print(f"Period:\t {d12}")            
             # print(f"Time: \t{d0}{d1}:{d2}{d3}")
             # print(f"Score: \t{d4}{d5}-{d6}{d7}")
             # print(f"Fouls: \t{d8}{d9}-{d10}{d11}")
+            # print(f"Timeouts: \t{t1}-{t2}")
 
-            print(f"{d8}{d9}   {d12}   {d10}{d11}")
+            print(f"{d8}{d9} {t1} {d12} {t2} {d10}{d11}")
             print(f"{d4}{d5} {d0}{d1}:{d2}{d3} {d6}{d7}")
             print()
         
         if cv2.waitKey(25) & 0xFF == ord('q'): 
             break        
         
-        if i == 200: 
+        if i == 500: 
             break
     else:
         break
