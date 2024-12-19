@@ -179,7 +179,7 @@ while(cap.isOpened()):
             # print(f"Fouls: \t{d8}{d9}-{d10}{d11}")
             # print(f"Timeouts: \t{t1}-{t2}")
 
-            print( "+---------------------------")
+            print( "+---------------------------+")
             print( "|  __   __         __   __  |")
             print(f"| |{d10}{d11}| | {t1}|   _   | {t2}| |{d12}{d13}| |")
             print(f"| |TF| |TO|  |{d14}|  |TO| |TF| |")

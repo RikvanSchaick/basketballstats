@@ -69,6 +69,7 @@ class gamereport():
         if fullgame:
             llH, llA = self.match.largest_lead(quarters)
             scp_H, scp_A = self.match.second_chance_points(quarters)
+            tmto_H, tmto_A = self.match.team_turnovers(quarters)      
             pot_H, pot_A = self.match.points_off_turnovers(quarters)      
 
             efgp_H, efgp_A = EFGpct(boxh.fg, boxh.tp, boxh.fga), EFGpct(boxa.fg, boxa.tp, boxa.fga)
@@ -76,21 +77,22 @@ class gamereport():
             att_H, att_A = ASTtoTO(boxh.ast, boxh.to), ASTtoTO(boxa.ast, boxa.to)
             
             self.file = open(self.DIR, "a")
-            self.file.writelines("LINESCORES\t".expandtabs(et1) + "Big Ld\t".expandtabs(et2) + "2nd PTS\t".expandtabs(et2) + "TO PTS\t".expandtabs(et2) + "AST/TO\t".expandtabs(et2) + "Eff FG%\t".expandtabs(et2) + "TS%\t".expandtabs(et2) + '\n')
-            self.file.writelines("Home\t".expandtabs(et1) + f"{llH}\t".expandtabs(et2) + f"{scp_H}\t".expandtabs(et2) + f"{pot_H}\t".expandtabs(et2) + f"{(att_H):.2f}\t".expandtabs(et2) + f"{(efgp_H):.1f}\t".expandtabs(et2) + f"{(tsp_H):.1f}\t".expandtabs(et2) + '\n')
-            self.file.writelines("Away\t".expandtabs(et1) + f"{llA}\t".expandtabs(et2) + f"{scp_A}\t".expandtabs(et2) + f"{pot_A}\t".expandtabs(et2) + f"{(att_A):.2f}\t".expandtabs(et2) + f"{(efgp_A):.1f}\t".expandtabs(et2) + f"{(tsp_A):.1f}\t".expandtabs(et2) + '\n')
+            self.file.writelines("LINESCORES\t".expandtabs(et1) + "Big Ld\t".expandtabs(et2) + "2nd PTS\t".expandtabs(et2) + "TEAM TO\t".expandtabs(et2) + "TO PTS\t".expandtabs(et2) + "AST/TO\t".expandtabs(et2) + "Eff FG%\t".expandtabs(et2) + "TS%\t".expandtabs(et2) + '\n')
+            self.file.writelines("Home\t".expandtabs(et1) + f"{llH}\t".expandtabs(et2) + f"{scp_H}\t".expandtabs(et2) + f"{tmto_H}\t".expandtabs(et2) + f"{pot_H}\t".expandtabs(et2) + f"{(att_H):.2f}\t".expandtabs(et2) + f"{(efgp_H):.1f}\t".expandtabs(et2) + f"{(tsp_H):.1f}\t".expandtabs(et2) + '\n')
+            self.file.writelines("Away\t".expandtabs(et1) + f"{llA}\t".expandtabs(et2) + f"{scp_A}\t".expandtabs(et2) + f"{tmto_A}\t".expandtabs(et2) + f"{pot_A}\t".expandtabs(et2) + f"{(att_A):.2f}\t".expandtabs(et2) + f"{(efgp_A):.1f}\t".expandtabs(et2) + f"{(tsp_A):.1f}\t".expandtabs(et2) + '\n')
             self.file.writelines("\n")
             self.file.close()
         
         else:
             llH, llA = self.match.largest_lead(quarters)
             scp_H, scp_A = self.match.second_chance_points(quarters)
+            tmto_H, tmto_A = self.match.team_turnovers(quarters)      
             pot_H, pot_A = self.match.points_off_turnovers(quarters)      
 
             self.file = open(self.DIR, "a")
-            self.file.writelines("LINESCORES\t".expandtabs(et1) + "Big Ld\t".expandtabs(et2) + "2nd PTS\t".expandtabs(et2) + "TO PTS\t".expandtabs(et2) + '\n')
-            self.file.writelines("Home\t".expandtabs(et1) + f"{llH}\t".expandtabs(et2) + f"{scp_H}\t".expandtabs(et2) + f"{pot_H}\t".expandtabs(et2) + '\n')
-            self.file.writelines("Away\t".expandtabs(et1) + f"{llA}\t".expandtabs(et2) + f"{scp_A}\t".expandtabs(et2) + f"{pot_A}\t".expandtabs(et2) + '\n')
+            self.file.writelines("LINESCORES\t".expandtabs(et1) + "Big Ld\t".expandtabs(et2) + "2nd PTS\t".expandtabs(et2) + "TEAM TO\t".expandtabs(et2) + "TO PTS\t".expandtabs(et2) + '\n')
+            self.file.writelines("Home\t".expandtabs(et1) + f"{llH}\t".expandtabs(et2) + f"{scp_H}\t".expandtabs(et2) + f"{tmto_H}\t".expandtabs(et2) + f"{pot_H}\t".expandtabs(et2) + '\n')
+            self.file.writelines("Away\t".expandtabs(et1) + f"{llA}\t".expandtabs(et2) + f"{scp_A}\t".expandtabs(et2) + f"{tmto_A}\t".expandtabs(et2) + f"{pot_A}\t".expandtabs(et2) + '\n')
             self.file.writelines("\n")
             self.file.close()
 
@@ -321,6 +323,7 @@ class gamereport():
         if fullgame:
             llH, llA = self.match.largest_lead(quarters)
             scp_H, scp_A = self.match.second_chance_points(quarters)
+            tmto_H, tmto_A = self.match.team_turnovers(quarters)      
             pot_H, pot_A = self.match.points_off_turnovers(quarters)      
 
             efgp_H, efgp_A = EFGpct(boxh.fg, boxh.tp, boxh.fga), EFGpct(boxa.fg, boxa.tp, boxa.fga)
@@ -329,6 +332,7 @@ class gamereport():
             
             self.pdf.cell(w = 0, h = 4, txt = f"Largest Lead: HOME {llH}, AWAY {llA}", ln = 1, align = 'L')
             self.pdf.cell(w = 0, h = 4, txt = f"Second Chance Points: HOME {scp_H}, AWAY {scp_A}", ln = 1, align = 'L')
+            self.pdf.cell(w = 0, h = 4, txt = f"Team Turnovers: HOME {tmto_H}, AWAY {tmto_A}", ln = 1, align = 'L')
             self.pdf.cell(w = 0, h = 4, txt = f"Points off Turnovers: HOME {pot_H}, AWAY {pot_A}", ln = 1, align = 'L')
             self.pdf.cell(w = 0, h = 4, txt = f"Effective Field Goal %: HOME {(efgp_H):.1f}, AWAY {(efgp_A):.1f}", ln = 1, align = 'L')
             self.pdf.cell(w = 0, h = 4, txt = f"True Shooting %: HOME {(tsp_H):.1f}, AWAY {(tsp_A):.1f}", ln = 1, align = 'L')
@@ -338,10 +342,12 @@ class gamereport():
         else:
             llH, llA = self.match.largest_lead(quarters)
             scp_H, scp_A = self.match.second_chance_points(quarters)
+            tmto_H, tmto_A = self.match.team_turnovers(quarters)      
             pot_H, pot_A = self.match.points_off_turnovers(quarters)   
             
             self.pdf.cell(w = 0, h = 4, txt = f"Largest Lead: HOME {llH}, AWAY {llA}", ln = 1, align = 'L')
-            self.pdf.cell(w = 0, h = 4, txt = f"2nd Chance Points: HOME {scp_H}, AWAY {scp_A}", ln = 1, align = 'L')
+            self.pdf.cell(w = 0, h = 4, txt = f"Second Chance Points: HOME {scp_H}, AWAY {scp_A}", ln = 1, align = 'L')
+            self.pdf.cell(w = 0, h = 4, txt = f"Team Turnovers: HOME {tmto_H}, AWAY {tmto_A}", ln = 1, align = 'L')
             self.pdf.cell(w = 0, h = 4, txt = f"Points off Turnovers: HOME {pot_H}, AWAY {pot_A}", ln = 1, align = 'L')
             self.pdf.write(text='\n')
    

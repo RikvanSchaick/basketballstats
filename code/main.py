@@ -3,7 +3,7 @@ from match import match
 from stats import stats
 from gamereport import gamereport
 # from rawstats import rawstats
-from data import data
+from data_export import data
 from copy import deepcopy
 import os
 import shutil
@@ -25,7 +25,7 @@ def prints(type:str):
         print("- box:\t\tview boxscore of match")
         print("- save:\t\tsave match as txt")
         print("- export:\texport stats of match as txt/pdf")
-        print("- rawstats:\tsave rawstats of match in txt (sep=';')")
+        # print("- rawstats:\tsave rawstats of match in txt (sep=';')")
         print("- exit:\t\texit program")     
     
 def main():
@@ -41,7 +41,8 @@ def main():
                            input("away team: "), 
                            input("date: "), 
                            input("time: "), 
-                           input("location: "))
+                           input("location: "),
+                           True)
             b = False
             while not b:
                 homeplayers = input("players (home)\n")
@@ -85,7 +86,8 @@ def main():
                                    lines[2],
                                    lines[3],
                                    lines[4],
-                                   lines[5])
+                                   lines[5],
+                                   True)
                     homeplayers = lines[6]
                     awayplayers = lines[7]
                     m.add_lineups(homeplayers.split(";"), awayplayers.split(";"))
@@ -122,18 +124,25 @@ def main():
 
         elif eventstring == "data":
             d = data()
-            d.read()
+            d.read(prnt=False)
             d.add_data()
             d.export()
             
         elif eventstring == "stats":
             s = stats()
             s.load()
-            s.select_team()
-            s.team_stats()
-            s.per_game()
-            s.totals()   
-            s.advanced()         
+            x = s.select_team_or_player()
+            if x==0:
+                s.select_team()
+                s.team_stats()
+                s.per_game()
+                s.totals()
+                s.advanced()
+            if x==1:
+                s.select_player()
+                s.per_game()
+                s.totals()
+                s.advanced()
             exit()
 
         elif eventstring == "exit":
@@ -150,14 +159,27 @@ def main():
             
             quarter = eventstring[4]
             if not quarter in {"1","2","3","4","5","6","7","8"}: print("invalid quarter")
-                
+               
+            # check of laatste line het einde was van hetzelfde kwart 
+            f = open(f"matches/history.txt", "r")
+            lines = f.readlines()
+            lastline = lines[-1]
+            if lastline[:-1] == (f"{quarter}end"):
+                f.close()
+                # laatste line verwijderen
+                f = open("matches/history.txt", 'w')
+                for line in lines[:-1]:
+                    f.writelines(line)
+                f.close()
+            else:
+                f.close()
+                f = open(f"matches/history.txt", "a")
+                f.writelines(eventstring + '\n')
+                f.close()
+            
             e = event()
             b = e.extract_eventstring(eventstring)
             m.add_event(e)
-                                
-            f = open(f"matches/history.txt", "a")
-            f.writelines(eventstring + '\n')
-            f.close()
                 
             if m.count_events(quarter) < 2:
                 b = False
@@ -186,6 +208,49 @@ def main():
                 else:
                     del e
                     print("invalid event")
+            
+            # Read file opnieuw om met de hand gefixte dingen in history.txt mee te nemen in de check
+            f = open("matches/history.txt", "r")
+            lines = f.read().splitlines()
+
+            m = match()
+            m.create_match(lines[0],
+                            lines[1],
+                            lines[2],
+                            lines[3],
+                            lines[4],
+                            lines[5],
+                            False)
+            homeplayers = lines[6]
+            awayplayers = lines[7]
+            m.add_lineups(homeplayers.split(";"), awayplayers.split(";"))
+            
+            m.start_match()
+            added_events = 0
+            n_events = len(lines)-8
+            for n in range(8, 8+n_events):
+                eventstring = deepcopy(lines[n])
+                e = event()
+                b = e.extract_eventstring(eventstring)
+                if eventstring[:4] == "edit":
+                    m.add_event(e)
+                    added_events += 1
+                    quarter = eventstring[4]
+                elif eventstring[0] == "H":
+                    homestarters = eventstring[1:].split(",")
+                    del e
+                elif eventstring[0] == "A":
+                    awaystarters = eventstring[1:].split(",")
+                    m.add_starters(quarter, homestarters, awaystarters)              
+                    del e
+                elif b:
+                    m.add_event(e)
+                    added_events += 1
+                else:
+                    del e
+            
+            quarters = m.all_quarters()
+            if m.check_boxscore(quarters)==True: print("exited succesfully")
         
         if eventstring == "summary":
             if m.events == None or len(m.events) == 0:
@@ -208,7 +273,7 @@ def main():
                 print("no events")
             else:
                 quarters = input("which quarter(s)? ").split(",")
-                m.print_boxscore(quarters)
+                if m.check_boxscore(quarters)==True: m.print_boxscore(quarters)
             
         if eventstring == "save":
             if os.path.isfile(f"matches/{m.matchID}.txt"):

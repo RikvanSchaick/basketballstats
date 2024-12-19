@@ -17,7 +17,7 @@ class match():
         # self.ties = None
         # self.lead_chances = None
         
-    def create_match(self, ID:str, home:str, away:str, date:str, time:str, location:str) -> None:
+    def create_match(self, ID:str, home:str, away:str, date:str, time:str, location:str, prnt:bool) -> None:
         self.matchID = ID
         self.home = team(home, "H")
         self.away = team(away, "A")
@@ -25,7 +25,7 @@ class match():
         self.time = time
         self.location = location
         
-        print(f"created match {self.matchID}\n{self.away.name} at {self.home.name}\n{self.date}, {self.time}, {self.location}")
+        if prnt: print(f"created match {self.matchID}\n{self.away.name} at {self.home.name}\n{self.date}, {self.time}, {self.location}")
     
     def add_lineups(self, homeplayers:list, awayplayers:list) -> None:
         if len(homeplayers) < 6 or len(awayplayers) < 6: return False
@@ -179,7 +179,16 @@ class match():
                 if event.actionID in {"2m","3m","1m"}:
                     if event.lead == 0: ties += 1
         return ties
-
+    
+    def team_turnovers(self, quarters:list) -> int:
+        team_turnovers = [0, 0]
+        for event in self.events:
+            if event.quarter in quarters:
+                if event.actionID == "t" and event.playerID == None:
+                    if event.team == "H": team_turnovers[0] += 1
+                    if event.team == "A": team_turnovers[1] += 1
+        return team_turnovers
+        
     def print_summary(self, quarters:list) -> None:
         quartersprint, totalpointshome, totalpointsaway = self.score_by_period(quarters)
         quartersprint.insert(0, "\t".expandtabs(4))
@@ -206,10 +215,14 @@ class match():
         print(f"2ND CHANCE POINTS HOME:\t {scp_H}".expandtabs(26))
         print(f"2ND CHANCE POINTS AWAY:\t {scp_A}".expandtabs(26))
 
+        tmto_H, tmto_A = self.team_turnovers(quarters)
+        print(f"TEAM TURNOVERS HOME:\t {tmto_H}".expandtabs(26))
+        print(f"TEAM TURNOVERS AWAY:\t {tmto_A}".expandtabs(26))
+
         pot_H, pot_A = self.points_off_turnovers(quarters)
         print(f"POINTS OF TURNOVERS HOME:\t {pot_H}".expandtabs(26))
         print(f"POINTS OF TURNOVERS AWAY:\t {pot_A}".expandtabs(26))
-
+        
     def print_events(self, quarters:list) -> None:
         for event in self.events:
             if event.quarter in quarters:
@@ -241,3 +254,13 @@ class match():
         boxscore_away = boxscore()
         boxscore_away.create_boxscore(self.away)
         boxscore_away.print_boxscore(self.events, quarters)
+        
+    def check_boxscore(self, quarters:list) -> None:
+        boxscore_home = boxscore()
+        boxscore_away = boxscore()
+        home_check = boxscore_home.check_boxscore(self.home, self.events, quarters)
+        if home_check==True: 
+            away_check = boxscore_away.check_boxscore(self.away, self.events, quarters)
+            return True if away_check==True else print(f"ERROR: {away_check}")
+        else:
+            print(home_check)

@@ -9,6 +9,7 @@ class stats:
         self.playerDataFrame = None
         self.playbyplayDataFrame = None
         self.team = None
+        self.player = None
         self.teamMatchData = None
         self.oppMatchData = None
         self.teamPlayerData = None
@@ -20,6 +21,9 @@ class stats:
         self.playerDataFrame = pd.read_csv('data/player_data_dump.csv')
         self.playbyplayDataFrame = pd.read_csv('data/playbyplay_data_dump.csv')
 
+    def select_team_or_player(self) -> bool:
+        return int(input("want to select team (0) or player (1)? "))
+
     def select_team(self) -> None:
         if not isinstance(self.matchDataFrame, pd.DataFrame): return
 
@@ -28,20 +32,28 @@ class stats:
         DF2 = self.matchDataFrame['awayTeam']
         DF2.columns = ['Team']
         self.teamCounts = pd.concat([DF1, DF2]).value_counts().rename_axis('Team').reset_index(name='Number of matches')
-        print(self.teamCounts)
-        self.team = self.teamCounts['Team'].iloc[int(input("SELECT TEAM BY INDEX: "))]
+        print(self.teamCounts.head(10))
+        self.team = self.teamCounts['Team'].iloc[int(input("select team by index: "))]
         print()
-
+        
+    def select_player(self) -> None:
+        if not isinstance(self.playerDataFrame, pd.DataFrame): return
+        
+        self.playerCounts = self.playerDataFrame['name'].value_counts().rename_axis('Player').reset_index(name='Number of matches')
+        print(self.playerCounts.head(10))
+        self.player = self.playerCounts['Player'].iloc[int(input("select player by index: "))]
+        print()
+        
     def teamData(self) -> None:
         if not isinstance(self.team, str): return
         if not isinstance(self.matchDataFrame, pd.DataFrame): return
         
-        DF1 = self.matchDataFrame.loc[self.matchDataFrame['homeTeam'] == self.team, ['gameId', 'pointsDiff', 'homeScore', 'quarter1home', 'quarter2home', 'quarter3home', 'quarter4home', 'quarter5home', 'homeFieldGoalsMade', 'homeFieldGoalsAttempted', 'homeThreePointersMade', 'homeThreePointersAttempted', 'homeFreeThrowsMade', 'homeFreeThrowsAttempted', 'homeOffRebounds', 'homeDefRebounds', 'homeTeamRebounds', 'homeRebounds', 'homeAssists', 'homePersonalFouls', 'homeSteals', 'homeBlocks', 'homeTurnovers', 'homeLargestLead', 'homeSecondChancePoints', 'homePointsOfTurnovers']]
-        DF1.columns = ['gameId', 'pointsDiff', 'Score', 'Quarter1', 'Quarter2', 'Quarter3', 'Quarter4', 'Quarter5', 'FieldGoalsMade', 'FieldGoalsAttempted', 'ThreePointersMade', 'ThreePointersAttempted', 'FreeThrowsMade', 'FreeThrowsAttempted', 'OffRebounds', 'DefRebounds', 'TeamRebounds', 'Rebounds', 'Assists', 'PersonalFouls', 'Steals', 'Blocks', 'Turnovers', 'LargestLead', 'SecondChancePoints', 'PointsOfTurnovers']
+        DF1 = self.matchDataFrame.loc[self.matchDataFrame['homeTeam'] == self.team, ['gameId', 'pointsDiff', 'homeScore', 'quarter1home', 'quarter2home', 'quarter3home', 'quarter4home', 'quarter5home', 'homeFieldGoalsMade', 'homeFieldGoalsAttempted', 'homeThreePointersMade', 'homeThreePointersAttempted', 'homeFreeThrowsMade', 'homeFreeThrowsAttempted', 'homeOffRebounds', 'homeDefRebounds', 'homeTeamRebounds', 'homeRebounds', 'homeAssists', 'homePersonalFouls', 'homeSteals', 'homeBlocks', 'homeTurnovers', 'homeLargestLead', 'homeSecondChancePoints', 'homeTeamTurnovers', 'homePointsOfTurnovers']]
+        DF1.columns = ['gameId', 'pointsDiff', 'Score', 'Quarter1', 'Quarter2', 'Quarter3', 'Quarter4', 'Quarter5', 'FieldGoalsMade', 'FieldGoalsAttempted', 'ThreePointersMade', 'ThreePointersAttempted', 'FreeThrowsMade', 'FreeThrowsAttempted', 'OffRebounds', 'DefRebounds', 'TeamRebounds', 'Rebounds', 'Assists', 'PersonalFouls', 'Steals', 'Blocks', 'Turnovers', 'LargestLead', 'SecondChancePoints', 'TeamTurnovers', 'PointsOfTurnovers']
         DF1.insert(1, 'home_away', "home")
-        DF2 = self.matchDataFrame.loc[self.matchDataFrame['awayTeam'] == self.team, ['gameId', 'pointsDiff', 'awayScore', 'quarter1away', 'quarter2away', 'quarter3away', 'quarter4away', 'quarter5away', 'awayFieldGoalsMade', 'awayFieldGoalsAttempted', 'awayThreePointersMade', 'awayThreePointersAttempted', 'awayFreeThrowsMade', 'awayFreeThrowsAttempted', 'awayOffRebounds', 'awayDefRebounds', 'awayTeamRebounds', 'awayRebounds', 'awayAssists', 'awayPersonalFouls', 'awaySteals', 'awayBlocks', 'awayTurnovers', 'awayLargestLead', 'awaySecondChancePoints', 'awayPointsOfTurnovers']]
+        DF2 = self.matchDataFrame.loc[self.matchDataFrame['awayTeam'] == self.team, ['gameId', 'pointsDiff', 'awayScore', 'quarter1away', 'quarter2away', 'quarter3away', 'quarter4away', 'quarter5away', 'awayFieldGoalsMade', 'awayFieldGoalsAttempted', 'awayThreePointersMade', 'awayThreePointersAttempted', 'awayFreeThrowsMade', 'awayFreeThrowsAttempted', 'awayOffRebounds', 'awayDefRebounds', 'awayTeamRebounds', 'awayRebounds', 'awayAssists', 'awayPersonalFouls', 'awaySteals', 'awayBlocks', 'awayTurnovers', 'awayLargestLead', 'awaySecondChancePoints', 'awayTeamTurnovers', 'awayPointsOfTurnovers']]
         DF2['pointsDiff'] = DF2['pointsDiff'].apply(lambda x: x*-1)
-        DF2.columns = ['gameId', 'pointsDiff', 'Score', 'Quarter1', 'Quarter2', 'Quarter3', 'Quarter4', 'Quarter5', 'FieldGoalsMade', 'FieldGoalsAttempted', 'ThreePointersMade', 'ThreePointersAttempted', 'FreeThrowsMade', 'FreeThrowsAttempted', 'OffRebounds', 'DefRebounds', 'TeamRebounds', 'Rebounds', 'Assists', 'PersonalFouls', 'Steals', 'Blocks', 'Turnovers', 'LargestLead', 'SecondChancePoints', 'PointsOfTurnovers']
+        DF2.columns = ['gameId', 'pointsDiff', 'Score', 'Quarter1', 'Quarter2', 'Quarter3', 'Quarter4', 'Quarter5', 'FieldGoalsMade', 'FieldGoalsAttempted', 'ThreePointersMade', 'ThreePointersAttempted', 'FreeThrowsMade', 'FreeThrowsAttempted', 'OffRebounds', 'DefRebounds', 'TeamRebounds', 'Rebounds', 'Assists', 'PersonalFouls', 'Steals', 'Blocks', 'Turnovers', 'LargestLead', 'SecondChancePoints', 'TeamTurnovers', 'PointsOfTurnovers']
         DF2.insert(1, 'home_away', "away")
         self.teamMatchData = pd.concat([DF1, DF2])   
 
@@ -49,12 +61,12 @@ class stats:
         if not isinstance(self.team, str): return
         if not isinstance(self.matchDataFrame, pd.DataFrame): return
         
-        DF1 = self.matchDataFrame.loc[self.matchDataFrame['homeTeam'] == self.team, ['gameId', 'pointsDiff', 'awayScore', 'quarter1away', 'quarter2away', 'quarter3away', 'quarter4away', 'quarter5away', 'awayFieldGoalsMade', 'awayFieldGoalsAttempted', 'awayThreePointersMade', 'awayThreePointersAttempted', 'awayFreeThrowsMade', 'awayFreeThrowsAttempted', 'awayOffRebounds', 'awayDefRebounds', 'awayTeamRebounds', 'awayRebounds', 'awayAssists', 'awayPersonalFouls', 'awaySteals', 'awayBlocks', 'awayTurnovers', 'awayLargestLead', 'awaySecondChancePoints', 'awayPointsOfTurnovers']]
+        DF1 = self.matchDataFrame.loc[self.matchDataFrame['homeTeam'] == self.team, ['gameId', 'pointsDiff', 'awayScore', 'quarter1away', 'quarter2away', 'quarter3away', 'quarter4away', 'quarter5away', 'awayFieldGoalsMade', 'awayFieldGoalsAttempted', 'awayThreePointersMade', 'awayThreePointersAttempted', 'awayFreeThrowsMade', 'awayFreeThrowsAttempted', 'awayOffRebounds', 'awayDefRebounds', 'awayTeamRebounds', 'awayRebounds', 'awayAssists', 'awayPersonalFouls', 'awaySteals', 'awayBlocks', 'awayTurnovers', 'awayLargestLead', 'awaySecondChancePoints', 'awayTeamTurnovers', 'awayPointsOfTurnovers']]
         DF1['pointsDiff'] = DF1['pointsDiff'].apply(lambda x: x*-1)
-        DF1.columns = ['gameId', 'pointsDiff', 'Score', 'Quarter1', 'Quarter2', 'Quarter3', 'Quarter4', 'Quarter5', 'FieldGoalsMade', 'FieldGoalsAttempted', 'ThreePointersMade', 'ThreePointersAttempted', 'FreeThrowsMade', 'FreeThrowsAttempted', 'OffRebounds', 'DefRebounds', 'TeamRebounds', 'Rebounds', 'Assists', 'PersonalFouls', 'Steals', 'Blocks', 'Turnovers', 'LargestLead', 'SecondChancePoints', 'PointsOfTurnovers']
+        DF1.columns = ['gameId', 'pointsDiff', 'Score', 'Quarter1', 'Quarter2', 'Quarter3', 'Quarter4', 'Quarter5', 'FieldGoalsMade', 'FieldGoalsAttempted', 'ThreePointersMade', 'ThreePointersAttempted', 'FreeThrowsMade', 'FreeThrowsAttempted', 'OffRebounds', 'DefRebounds', 'TeamRebounds', 'Rebounds', 'Assists', 'PersonalFouls', 'Steals', 'Blocks', 'Turnovers', 'LargestLead', 'SecondChancePoints', 'TeamTurnovers', 'PointsOfTurnovers']
         DF1.insert(1, 'home_away', "away")
-        DF2 = self.matchDataFrame.loc[self.matchDataFrame['awayTeam'] == self.team, ['gameId', 'pointsDiff', 'homeScore', 'quarter1home', 'quarter2home', 'quarter3home', 'quarter4home', 'quarter5home', 'homeFieldGoalsMade', 'homeFieldGoalsAttempted', 'homeThreePointersMade', 'homeThreePointersAttempted', 'homeFreeThrowsMade', 'homeFreeThrowsAttempted', 'homeOffRebounds', 'homeDefRebounds', 'homeTeamRebounds', 'homeRebounds', 'homeAssists', 'homePersonalFouls', 'homeSteals', 'homeBlocks', 'homeTurnovers', 'homeLargestLead', 'homeSecondChancePoints', 'homePointsOfTurnovers']]
-        DF2.columns = ['gameId', 'pointsDiff', 'Score', 'Quarter1', 'Quarter2', 'Quarter3', 'Quarter4', 'Quarter5', 'FieldGoalsMade', 'FieldGoalsAttempted', 'ThreePointersMade', 'ThreePointersAttempted', 'FreeThrowsMade', 'FreeThrowsAttempted', 'OffRebounds', 'DefRebounds', 'TeamRebounds', 'Rebounds', 'Assists', 'PersonalFouls', 'Steals', 'Blocks', 'Turnovers', 'LargestLead', 'SecondChancePoints', 'PointsOfTurnovers']
+        DF2 = self.matchDataFrame.loc[self.matchDataFrame['awayTeam'] == self.team, ['gameId', 'pointsDiff', 'homeScore', 'quarter1home', 'quarter2home', 'quarter3home', 'quarter4home', 'quarter5home', 'homeFieldGoalsMade', 'homeFieldGoalsAttempted', 'homeThreePointersMade', 'homeThreePointersAttempted', 'homeFreeThrowsMade', 'homeFreeThrowsAttempted', 'homeOffRebounds', 'homeDefRebounds', 'homeTeamRebounds', 'homeRebounds', 'homeAssists', 'homePersonalFouls', 'homeSteals', 'homeBlocks', 'homeTurnovers', 'homeLargestLead', 'homeSecondChancePoints', 'homeTeamTurnovers', 'homePointsOfTurnovers']]
+        DF2.columns = ['gameId', 'pointsDiff', 'Score', 'Quarter1', 'Quarter2', 'Quarter3', 'Quarter4', 'Quarter5', 'FieldGoalsMade', 'FieldGoalsAttempted', 'ThreePointersMade', 'ThreePointersAttempted', 'FreeThrowsMade', 'FreeThrowsAttempted', 'OffRebounds', 'DefRebounds', 'TeamRebounds', 'Rebounds', 'Assists', 'PersonalFouls', 'Steals', 'Blocks', 'Turnovers', 'LargestLead', 'SecondChancePoints', 'TeamTurnovers', 'PointsOfTurnovers']
         DF2.insert(1, 'home_away', "home")
         self.oppMatchData = pd.concat([DF1, DF2])
     
@@ -67,12 +79,8 @@ class stats:
         self.teamPlayerData = self.teamPlayerData[self.teamPlayerData['seconds'] != 0]
         self.teamPlayerData = self.teamPlayerData.drop(['Unnamed: 0'], axis=1)
         self.teamPlayerData['minutes'] = (self.teamPlayerData['seconds'] / 60).apply(lambda x: int(x))
-        self.teamPlayerData['FG%'] = (self.teamPlayerData['fieldGoalsMade']/self.teamPlayerData['fieldGoalsAttempted']).apply(lambda x: round(x, 2))
-        self.teamPlayerData['3P%'] = (self.teamPlayerData['threePointersMade']/self.teamPlayerData['threePointersAttempted']).apply(lambda x: round(x, 2))
         self.teamPlayerData['twoPointersMade'] = (self.teamPlayerData['fieldGoalsMade']-self.teamPlayerData['threePointersMade'])
         self.teamPlayerData['twoPointersAttempted'] = (self.teamPlayerData['fieldGoalsAttempted']-self.teamPlayerData['threePointersAttempted'])
-        self.teamPlayerData['2P%'] = (self.teamPlayerData['twoPointersMade']/self.teamPlayerData['twoPointersAttempted']).apply(lambda x: round(x, 2))
-        self.teamPlayerData['FT%'] = (self.teamPlayerData['freeThrowsMade']/self.teamPlayerData['freeThrowsAttempted']).apply(lambda x: round(x, 2))
         self.playerCounts = self.teamPlayerData['name'].value_counts().rename_axis('Player').reset_index(name='Number of matches')
 
     def team_stats(self) -> None:
@@ -100,16 +108,20 @@ class stats:
         
         DF1 = self.teamPlayerData.drop(['gameId', 'number', 'team'], axis=1)
         DF2 = DF1.groupby('name', as_index=False).mean().apply(lambda x: round(x, 2))        
+        DF2['FG%'] = (DF2['fieldGoalsMade']/DF2['fieldGoalsAttempted']).apply(lambda x: round(x, 2))
+        DF2['3P%'] = (DF2['threePointersMade']/DF2['threePointersAttempted']).apply(lambda x: round(x, 2))
+        DF2['2P%'] = (DF2['twoPointersMade']/DF2['twoPointersAttempted']).apply(lambda x: round(x, 2))
+        DF2['FT%'] = (DF2['freeThrowsMade']/DF2['freeThrowsAttempted']).apply(lambda x: round(x, 2))
         DF3 = DF1.groupby('name', as_index=False).size()
         DF4 = pd.merge(DF2, DF3, on='name')
         DF5 = DF1.groupby('name')['starter'].sum()
         DF6 = pd.merge(DF4, DF5, on='name')   
-        DF7 = DF6[['name', 'size', 'starter_y', 'minutes', 'points', 'FG%', '3P%', '2P%', 'FT%', 'offRebounds', 'defRebounds', 'rebounds', 'assists', 'steals', 'blocks', 'turnovers', 'personalFouls']]
-        DF7.columns = ['Player', 'G', 'GS', 'MP', 'PTS', 'FG%', '3P%', '2P%', 'FT%', 'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF']
+        DF7 = DF6[['name', 'size', 'starter_y', 'minutes', 'points', 'fieldGoalsMade', 'fieldGoalsAttempted', 'FG%', 'threePointersMade', 'threePointersAttempted', '3P%', 'twoPointersMade', 'twoPointersAttempted', '2P%', 'freeThrowsMade', 'freeThrowsAttempted', 'FT%', 'offRebounds', 'defRebounds', 'rebounds', 'assists', 'steals', 'blocks', 'turnovers', 'personalFouls']]
+        DF7.columns = ['Player', 'G', 'GS', 'MP', 'PTS', 'FG', 'FGA', 'FG%', '3P', '3PA', '3P%', '2P', '2PA', '2P%', 'FT', 'FTA', 'FT%', 'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF']
         DF8 = DF7.sort_values(by=['MP'], ascending=False).reset_index(drop=True)
         
         print("PER GAME")
-        print(DF8)
+        print(DF8.to_string())
         print()
     
     def totals(self) -> None:
@@ -122,12 +134,12 @@ class stats:
         DF4 = pd.merge(DF2, DF3, on='name')
         DF5 = DF1.groupby('name')['starter'].sum()
         DF6 = pd.merge(DF4, DF5, on='name')   
-        DF7 = DF6[['name', 'size', 'starter_y', 'minutes', 'points', 'offRebounds', 'defRebounds', 'rebounds', 'assists', 'steals', 'blocks', 'turnovers', 'personalFouls']]
-        DF7.columns = ['Player', 'G', 'GS', 'MP', 'PTS', 'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF']
+        DF7 = DF6[['name', 'size', 'starter_y', 'minutes', 'points', 'fieldGoalsMade', 'fieldGoalsAttempted', 'threePointersMade', 'threePointersAttempted', 'twoPointersMade', 'twoPointersAttempted', 'freeThrowsMade', 'freeThrowsAttempted', 'offRebounds', 'defRebounds', 'rebounds', 'assists', 'steals', 'blocks', 'turnovers', 'personalFouls']]
+        DF7.columns = ['Player', 'G', 'GS', 'MP', 'PTS', 'FG', 'FGA', '3P', '3PA', '2P', '2PA', 'FT', 'FTA', 'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF']
         DF8 = DF7.sort_values(by=['MP'], ascending=False).reset_index(drop=True)
         
         print("TOTALS")
-        print(DF8)
+        print(DF8.to_string())
         print()
 
     def advanced(self) -> None:
