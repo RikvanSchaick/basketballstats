@@ -13,11 +13,17 @@ class data():
     def __init__(self) -> None:
         self.df_match = pd.DataFrame(columns=['gameId', 'dateTime', 'homeTeam', 'awayTeam', 'pointsDiff', 'pointsSum', 'quarters', 'status', 'homeScore', 'quarter1home', 'quarter2home', 'quarter3home', 'quarter4home', 'quarter5home', 'homeFieldGoalsMade', 'homeFieldGoalsAttempted', 'homeThreePointersMade', 'homeThreePointersAttempted', 'homeFreeThrowsMade', 'homeFreeThrowsAttempted', 'homeOffRebounds', 'homeDefRebounds', 'homeTeamRebounds', 'homeRebounds', 'homeAssists', 'homePersonalFouls', 'homeSteals', 'homeBlocks', 'homeTurnovers', 'homeLargestLead', 'homeSecondChancePoints', 'homeTeamTurnovers', 'homePointsOfTurnovers', 'awayScore', 'quarter1away', 'quarter2away', 'quarter3away', 'quarter4away', 'quarter5away', 'awayFieldGoalsMade', 'awayFieldGoalsAttempted', 'awayThreePointersMade', 'awayThreePointersAttempted', 'awayFreeThrowsMade', 'awayFreeThrowsAttempted', 'awayOffRebounds', 'awayDefRebounds', 'awayTeamRebounds', 'awayRebounds', 'awayAssists', 'awayPersonalFouls', 'awaySteals', 'awayBlocks', 'awayTurnovers', 'awayLargestLead', 'awaySecondChancePoints', 'awayTeamTurnovers', 'awayPointsOfTurnovers'])
         self.df_player = pd.DataFrame(columns=['gameId', 'name', 'number', 'team', 'starter', 'seconds', 'points', 'fieldGoalsMade', 'fieldGoalsAttempted', 'threePointersMade', 'threePointersAttempted', 'freeThrowsMade', 'freeThrowsAttempted', 'offRebounds', 'defRebounds', 'rebounds', 'assists', 'personalFouls', 'steals', 'blocks', 'turnovers', 'plusMinus'])
-        self.df_playbyplay = pd.DataFrame(columns=['gameId', 'name', 'team', 'homeScore', 'awayScore', 'quarter', 'remainingMinutes', 'remainingSeconds', 'play', 'description'])
+        self.df_playbyplay = pd.DataFrame(columns=['gameId', 'name', 'number', 'team', 'homeScore', 'awayScore', 'quarter', 'remainingMinutes', 'remainingSeconds', 'play', 'description'])
         self.matches = []
     
     def read(self, prnt=True) -> None:
+        file_list = []
         for filename in os.listdir("matches"):
+            if filename.endswith(".txt") and not filename == "history.txt":
+                file_list.append(filename)
+        file_list.sort(key=lambda x: int(os.path.splitext(x)[0]))
+        
+        for filename in file_list:
             if filename.endswith(".txt") and not filename == "history.txt":
                 f = open("matches/"+filename, "r")
                 lines = f.read().splitlines()
@@ -242,6 +248,14 @@ class data():
         for event in match.events:
             play = []
             play.append(match.matchID)
+            if event.playerID is not None:
+                if event.team == "H": 
+                    name = self.df_player.loc[(self.df_player['gameId'] == match.matchID) & (self.df_player['team'] == match.home.name) & (self.df_player['number'] == event.playerID), 'name'].iloc[0]
+                else:
+                    name = self.df_player.loc[(self.df_player['gameId'] == match.matchID) & (self.df_player['team'] == match.away.name) & (self.df_player['number'] == event.playerID), 'name'].iloc[0]
+                play.append(name)          
+            else:
+                play.append(None)
             play.append(event.playerID)
             if event.team == "H": 
                 play.append(match.home.name)

@@ -1,5 +1,7 @@
 import pandas as pd
 from formulas import EFGpct, TSpct, ASTtoTO
+from datetime import datetime
+
 pd.options.mode.chained_assignment = None
 
 class stats:
@@ -8,6 +10,8 @@ class stats:
         self.matchDataFrame = None
         self.playerDataFrame = None
         self.playbyplayDataFrame = None
+        self.begin = None
+        self.end = None
         self.team = None
         self.player = None
         self.teamMatchData = None
@@ -19,8 +23,30 @@ class stats:
     def load(self) -> None:
         self.matchDataFrame = pd.read_csv('data/match_data_dump.csv')
         self.playerDataFrame = pd.read_csv('data/player_data_dump.csv')
-        self.playbyplayDataFrame = pd.read_csv('data/playbyplay_data_dump.csv')
+        self.playbyplayDataFrame = pd.read_csv('data/playbyplay_data_dump.csv')        
+        self.matchDataFrame['dateTime'] = pd.to_datetime(self.matchDataFrame['dateTime'], format='%Y-%m-%d %H:%M:%S')
 
+    def select_period(self) -> int:
+        print("Select time period")
+        self.begin = input("from: ")
+        self.end = input("until: ")
+        
+        if self.begin == "": 
+            start_date = datetime(2000, 1, 1)
+        elif len(self.begin) == 4:
+            start_date = datetime(int(self.begin), 1, 1)
+        elif len(self.begin) == 10:
+            start_date = datetime.strptime(self.begin, '%d-%m-%Y')
+        
+        if self.end == "": 
+            end_date = datetime(3000, 12, 31)
+        elif len(self.end) == 4:
+            end_date = datetime(int(self.end), 12, 31)
+        elif len(self.end) == 10:
+            end_date = datetime.strptime(self.end, '%d-%m-%Y')
+                
+        self.matchDataFrame = self.matchDataFrame[(self.matchDataFrame['dateTime'] > start_date) & (self.matchDataFrame['dateTime'] < end_date)]
+    
     def select_team_or_player(self) -> bool:
         return int(input("want to select team (0) or player (1)? "))
 
@@ -32,7 +58,7 @@ class stats:
         DF2 = self.matchDataFrame['awayTeam']
         DF2.columns = ['Team']
         self.teamCounts = pd.concat([DF1, DF2]).value_counts().rename_axis('Team').reset_index(name='Number of matches')
-        print(self.teamCounts.head(10))
+        print(self.teamCounts.head(15))
         self.team = self.teamCounts['Team'].iloc[int(input("select team by index: "))]
         print()
         

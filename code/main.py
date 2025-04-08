@@ -131,18 +131,20 @@ def main():
         elif eventstring == "stats":
             s = stats()
             s.load()
-            x = s.select_team_or_player()
+            # x = s.select_team_or_player()
+            x = 0
             if x==0:
                 s.select_team()
+                s.select_period()
                 s.team_stats()
                 s.per_game()
                 s.totals()
                 s.advanced()
-            if x==1:
-                s.select_player()
-                s.per_game()
-                s.totals()
-                s.advanced()
+            # if x==1:
+            #     s.select_player()
+            #     s.per_game()
+            #     s.totals()
+            #     s.advanced()
             exit()
 
         elif eventstring == "exit":

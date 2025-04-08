@@ -27,6 +27,7 @@ class boxscore():
         self.blk = 0
         self.to = 0
         self.tmto = 0
+        self.pir = 0
         self.pm = 0
         self.pts = 0
         self.fgpct = 0
@@ -75,10 +76,16 @@ class boxscore():
                         self.gamelogs[event.playerID].add(event.actionID, b)
                         if event.actionID2 == 'a':
                             self.gamelogs[event.playerID2].add(event.actionID2, b)
+                        # BLOCKED:
+                        # if event.actionID2 == 'b':
+                        #     self.gamelogs[event.playerID].add("blkd", b)
                     
                 if not event.team == self.team.team:
                     if event.actionID2 in {"s","b"}:
                         self.gamelogs[event.playerID2].add(event.actionID2, b)
+                    # FOULS DRAWN:
+                    # if event.actionID in {"f0", "f1", "f2", "f3", "fu", "fd"}:
+                    #     self.gamelogs[event.playerID2].add("pfd", b)
                     if event.actionID == "start":
                         for player in self.team.starters[int(event.quarter)-1]:
                             self.gamelogs[player].sub(event.actionID, event.quarter, event.time, event.lead)
