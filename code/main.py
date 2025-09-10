@@ -25,7 +25,7 @@ def prints(type:str):
         print("- box:\t\tview boxscore of match")
         print("- save:\t\tsave match as txt")
         print("- export:\texport stats of match as txt/pdf")
-        print("- rawstats:\tsave rawstats of match in txt (sep=';')")
+        # print("- rawstats:\tsave rawstats of match in txt (sep=';')")
         print("- exit:\t\texit program")     
     
 def main():
@@ -78,7 +78,8 @@ def main():
                             
                     f = open("matches/history.txt", "r")
                     lines = f.read().splitlines()
-
+                    f.close()
+                    
                     m = match()
                     m.create_match(lines[0],
                                    lines[1],
@@ -143,22 +144,30 @@ def main():
         
         prints("match")
         eventstring = input()
-            
-        if eventstring[:4] == "edit" and len(eventstring) == 5:            
+        
+        if eventstring[:4] == "edit" and len(eventstring) == 5:
             if m.events == None:
                 m.start_match()
             
             quarter = eventstring[4]
             if not quarter in {"1","2","3","4","5","6","7","8"}: print("invalid quarter")
                 
-            e = event()
-            b = e.extract_eventstring(eventstring)
-            m.add_event(e)
-                                
-            f = open(f"matches/history.txt", "a")
-            f.writelines(eventstring + '\n')
+            f = open(f"matches/history.txt", "r")
+            lines = f.read().splitlines()
             f.close()
-                
+            if lines[-1] == quarter + "end":
+                lines = lines[:-1]
+                f = open(f"matches/history.txt", "w")
+                f.writelines('\n'.join(lines) + '\n')
+                f.close()
+            else:
+                e = event()
+                b = e.extract_eventstring(eventstring)
+                m.add_event(e)
+                f = open(f"matches/history.txt", "w")          
+                f.writelines(eventstring + '\n')
+                f.close()
+            
             if m.count_events(quarter) < 2:
                 b = False
                 while not b:
@@ -177,16 +186,55 @@ def main():
                 eventstring = quarter + input(quarter)
                 e = event()
                 b = e.extract_eventstring(eventstring)
-                if b:                    
+                if b:
                     m.add_event(e)
-
                     f = open(f"matches/history.txt", "a")
                     f.writelines(eventstring + '\n')
                     f.close()
                 else:
                     del e
                     print("invalid event")
-        
+            
+            # edit has ended, load all events again to update
+            f = open("matches/history.txt", "r")
+            lines = f.read().splitlines()
+            f.close()
+            
+            m = match()
+            m.create_match(lines[0],
+                            lines[1],
+                            lines[2],
+                            lines[3],
+                            lines[4],
+                            lines[5])
+            homeplayers = lines[6]
+            awayplayers = lines[7]
+            m.add_lineups(homeplayers.split(";"), awayplayers.split(";"))
+            
+            m.start_match()
+            added_events = 0
+            n_events = len(lines)-8
+            for n in range(8, 8+n_events):
+                eventstring = deepcopy(lines[n])
+                e = event()
+                b = e.extract_eventstring(eventstring)
+                if eventstring[:4] == "edit":
+                    m.add_event(e)
+                    added_events += 1
+                    quarter = eventstring[4]
+                elif eventstring[0] == "H":
+                    homestarters = eventstring[1:].split(",")
+                    del e
+                elif eventstring[0] == "A":
+                    awaystarters = eventstring[1:].split(",")
+                    m.add_starters(quarter, homestarters, awaystarters)              
+                    del e
+                elif b:
+                    m.add_event(e)
+                    added_events += 1
+                else:
+                    del e
+
         if eventstring == "summary":
             if m.events == None or len(m.events) == 0:
                 print("no events")
