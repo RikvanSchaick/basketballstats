@@ -139,13 +139,16 @@ class event():
         self.string = eventstring
         if self.start_quarter(eventstring): return True
         if self.end_quarter(eventstring): return True
-        
         if not self.get_quarter(eventstring): return False
         if not self.get_time(eventstring): return False
         i = self.get_action(eventstring)
         if i==False: return False
         if self.actionID in {"ft", "r"}:
             if not self.get_player(eventstring, i):
+                if not self.get_team(eventstring, i): return False
+        elif self.actionID in {"t"}:
+            j = self.get_player(eventstring, i)
+            if j==False:
                 if not self.get_team(eventstring, i): return False
         elif self.actionID in {"j", "to"}:
             if not self.get_team(eventstring, i): return False
@@ -171,6 +174,8 @@ class event():
         if self.actionID == "ft" and self.playerID == None:
             return f"{terms[self.actionID]}"
         if self.actionID == "r" and self.playerID == None:
+            return f"{terms[self.actionID]}"
+        if self.actionID == "t" and self.playerID == None:
             return f"{terms[self.actionID]}"
         if self.actionID == "out":
             if lineup == None:

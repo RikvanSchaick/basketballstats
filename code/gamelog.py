@@ -17,9 +17,13 @@ class gamelog():
         self.reb = None
         self.ast = None
         self.pf = None
+        # self.pfc = None # Fouls committed
+        # self.pfd = None # Fouls drawn
         self.stl = None
         self.blk = None
+        self.blkd = None # Blocked
         self.to = None
+        self.pir = None # PERFORMANCE INDEX RATING
         self.pm = None
         self.pts = None
         
@@ -67,6 +71,8 @@ class gamelog():
             self.tpa += 1
         
         if action in {"f0", "f1", "f2", "f3", "ft", "fu"}:
+            # if self.pfc == None: self.pfc = 0
+            # self.pfc += 1
             if self.pf == None: self.pf = 0
             self.pf += 1
         
@@ -96,6 +102,16 @@ class gamelog():
             if self.to == None: self.to = 0
             self.to += 1
 
+        # BLOCKED:
+        if action == "blkd":
+            if self.blkd == None: self.blkd = 0
+            self.blkd += 1
+            
+        # FOULS DRAWN:
+        if action == "pfd":
+            if self.pfd == None: self.pfd = 0
+            self.pfd += 1
+
     def sub(self, action:str, quarter:str, time:str, lead:int) -> None:
         if action == "start":
             self.subbedin.append([quarter, time, lead])
@@ -121,6 +137,13 @@ class gamelog():
         for i in range(len(self.subbedin)):
             if self.subbedin[i][0] in quarters:
                 self.sec += self.time_subtraction(self.subbedin[i][1], self.subbedout[i][1])
+                
+    # PERFORMANCE INDEX RATING:
+    def performanceindexrating(self, quarters:list) -> None:
+        if self.pir == None: self.pir = 0
+        for i in range(len(self.subbedin)):
+            if self.subbedin[i][0] in quarters:
+                self.pir = (self.pts + self.reb + self.ast + self.stl + self.blk + self.pfd) - ((self.fga - self.fg) + (self.fta - self.ft) + self.to + self.blkd + self.pfc)
                 
     def plusminus(self, quarters:list) -> None:
         if self.pm == None: self.pm = 0

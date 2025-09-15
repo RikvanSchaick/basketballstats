@@ -4,18 +4,26 @@ from copy import deepcopy
 from datetime import datetime
 from boxscore import boxscore
 from terminoligy import actions_code, actions_terms, quarter_code
+
+from tqdm import tqdm
 import pandas as pd
 import os
 
 class data():
     def __init__(self) -> None:
-        self.df_match = pd.DataFrame(columns=['gameId', 'dateTime', 'homeTeam', 'awayTeam', 'pointsDiff', 'pointsSum', 'quarters', 'status', 'homeScore', 'quarter1home', 'quarter2home', 'quarter3home', 'quarter4home', 'quarter5home', 'homeFieldGoalsMade', 'homeFieldGoalsAttempted', 'homeThreePointersMade', 'homeThreePointersAttempted', 'homeFreeThrowsMade', 'homeFreeThrowsAttempted', 'homeOffRebounds', 'homeDefRebounds', 'homeTeamRebounds', 'homeRebounds', 'homeAssists', 'homePersonalFouls', 'homeSteals', 'homeBlocks', 'homeTurnovers', 'homeLargestLead', 'homeSecondChancePoints', 'homePointsOfTurnovers', 'awayScore', 'quarter1away', 'quarter2away', 'quarter3away', 'quarter4away', 'quarter5away', 'awayFieldGoalsMade', 'awayFieldGoalsAttempted', 'awayThreePointersMade', 'awayThreePointersAttempted', 'awayFreeThrowsMade', 'awayFreeThrowsAttempted', 'awayOffRebounds', 'awayDefRebounds', 'awayTeamRebounds', 'awayRebounds', 'awayAssists', 'awayPersonalFouls', 'awaySteals', 'awayBlocks', 'awayTurnovers', 'awayLargestLead', 'awaySecondChancePoints', 'awayPointsOfTurnovers'])
+        self.df_match = pd.DataFrame(columns=['gameId', 'dateTime', 'homeTeam', 'awayTeam', 'pointsDiff', 'pointsSum', 'quarters', 'status', 'homeScore', 'quarter1home', 'quarter2home', 'quarter3home', 'quarter4home', 'quarter5home', 'homeFieldGoalsMade', 'homeFieldGoalsAttempted', 'homeThreePointersMade', 'homeThreePointersAttempted', 'homeFreeThrowsMade', 'homeFreeThrowsAttempted', 'homeOffRebounds', 'homeDefRebounds', 'homeTeamRebounds', 'homeRebounds', 'homeAssists', 'homePersonalFouls', 'homeSteals', 'homeBlocks', 'homeTurnovers', 'homeLargestLead', 'homeSecondChancePoints', 'homeTeamTurnovers', 'homePointsOfTurnovers', 'awayScore', 'quarter1away', 'quarter2away', 'quarter3away', 'quarter4away', 'quarter5away', 'awayFieldGoalsMade', 'awayFieldGoalsAttempted', 'awayThreePointersMade', 'awayThreePointersAttempted', 'awayFreeThrowsMade', 'awayFreeThrowsAttempted', 'awayOffRebounds', 'awayDefRebounds', 'awayTeamRebounds', 'awayRebounds', 'awayAssists', 'awayPersonalFouls', 'awaySteals', 'awayBlocks', 'awayTurnovers', 'awayLargestLead', 'awaySecondChancePoints', 'awayTeamTurnovers', 'awayPointsOfTurnovers'])
         self.df_player = pd.DataFrame(columns=['gameId', 'name', 'number', 'team', 'starter', 'seconds', 'points', 'fieldGoalsMade', 'fieldGoalsAttempted', 'threePointersMade', 'threePointersAttempted', 'freeThrowsMade', 'freeThrowsAttempted', 'offRebounds', 'defRebounds', 'rebounds', 'assists', 'personalFouls', 'steals', 'blocks', 'turnovers', 'plusMinus'])
-        self.df_playbyplay = pd.DataFrame(columns=['gameId', 'name', 'team', 'homeScore', 'awayScore', 'quarter', 'remainingMinutes', 'remainingSeconds', 'play', 'description'])
+        self.df_playbyplay = pd.DataFrame(columns=['gameId', 'name', 'number', 'team', 'homeScore', 'awayScore', 'quarter', 'remainingMinutes', 'remainingSeconds', 'play', 'description'])
         self.matches = []
     
-    def read(self) -> None:
+    def read(self, prnt=True) -> None:
+        file_list = []
         for filename in os.listdir("matches"):
+            if filename.endswith(".txt") and not filename == "history.txt":
+                file_list.append(filename)
+        file_list.sort(key=lambda x: int(os.path.splitext(x)[0]))
+        
+        for filename in file_list:
             if filename.endswith(".txt") and not filename == "history.txt":
                 f = open("matches/"+filename, "r")
                 lines = f.read().splitlines()
@@ -25,7 +33,8 @@ class data():
                                 lines[2],
                                 lines[3],
                                 lines[4],
-                                lines[5])
+                                lines[5],
+                                False)
                 homeplayers = lines[6]
                 awayplayers = lines[7]
                 m.add_lineups(homeplayers.split(";"), awayplayers.split(";"))
@@ -54,10 +63,10 @@ class data():
                     else:
                         del e
                 
-                print(f"selected match {m.matchID} with {n_events} written lines and {added_events} added events\n")
+                if prnt: print(f"selected match {m.matchID} with {n_events} written lines and {added_events} added events")
                 self.matches.append(m)
         
-        print(f"added a total of {len(self.matches)} matches\n")
+        if prnt: print(f"\nadded a total of {len(self.matches)} matches\n")
                 
     def boxscores(self, match):
         boxHome = boxscore()
@@ -129,6 +138,7 @@ class data():
         match_data.append(boxHome.to)
         match_data.append(match.largest_lead(match.all_quarters())[0])
         match_data.append(match.second_chance_points(match.all_quarters())[0])
+        match_data.append(match.team_turnovers(match.all_quarters())[0])
         match_data.append(match.points_off_turnovers(match.all_quarters())[0])
 
         match_data.append(match.score[1])
@@ -169,6 +179,7 @@ class data():
         match_data.append(boxAway.to)
         match_data.append(match.largest_lead(match.all_quarters())[1])
         match_data.append(match.second_chance_points(match.all_quarters())[1])
+        match_data.append(match.team_turnovers(match.all_quarters())[1])
         match_data.append(match.points_off_turnovers(match.all_quarters())[1])
 
         self.df_match.loc[len(self.df_match.index)] = match_data
@@ -237,6 +248,14 @@ class data():
         for event in match.events:
             play = []
             play.append(match.matchID)
+            if event.playerID is not None:
+                if event.team == "H": 
+                    name = self.df_player.loc[(self.df_player['gameId'] == match.matchID) & (self.df_player['team'] == match.home.name) & (self.df_player['number'] == event.playerID), 'name'].iloc[0]
+                else:
+                    name = self.df_player.loc[(self.df_player['gameId'] == match.matchID) & (self.df_player['team'] == match.away.name) & (self.df_player['number'] == event.playerID), 'name'].iloc[0]
+                play.append(name)          
+            else:
+                play.append(None)
             play.append(event.playerID)
             if event.team == "H": 
                 play.append(match.home.name)
@@ -304,7 +323,9 @@ class data():
                         else:
                             play.append("Team rebound")
                     if event.actionID == 't':
-                        if not event.actionID2 == None:
+                        if event.playerID == None:
+                            play.append("Team turnover")
+                        elif not event.actionID2 == None:
                             play.append(f"Turnover on {match.home.lineup.names[event.playerID]} stolen by {match.away.lineup.names[event.playerID2]}")
                         else:
                             play.append(f"Turnover on {match.home.lineup.names[event.playerID]}")
@@ -363,7 +384,9 @@ class data():
                         else:
                             play.append("Team rebound")
                     if event.actionID == 't':
-                        if not event.actionID2 == None:
+                        if event.playerID == None:
+                            play.append("Team turnover")
+                        elif not event.actionID2 == None:
                             play.append(f"Turnover on {match.away.lineup.names[event.playerID]} stolen by {match.home.lineup.names[event.playerID2]}")
                         else:
                             play.append(f"Turnover on {match.away.lineup.names[event.playerID]}")
@@ -377,7 +400,7 @@ class data():
             self.df_playbyplay.loc[len(self.df_playbyplay.index)] = play
         
     def add_data(self) -> None:
-        for match in self.matches:
+        for match in tqdm(self.matches):
             self.add_match_data(match)
             self.add_player_data(match)
             self.add_playbyplay_data(match)

@@ -26,6 +26,8 @@ class boxscore():
         self.stl = 0
         self.blk = 0
         self.to = 0
+        self.tmto = 0
+        self.pir = 0
         self.pm = 0
         self.pts = 0
         self.fgpct = 0
@@ -55,7 +57,7 @@ class boxscore():
             if event.quarter in quarters:
                 if event.actionID in {"2","3","1","t"}:
                         previous_team = deepcopy(event.team)
-                        
+
                 if event.team == self.team.team:
                     if event.actionID in {"j", "to"}:
                         pass
@@ -63,6 +65,8 @@ class boxscore():
                         pass
                     elif event.actionID == "r" and event.playerID == None:
                         self.tmreb += 1
+                    elif event.actionID == "t" and event.playerID == None:
+                        self.tmto += 1
                     elif event.actionID == "out":
                         self.gamelogs[event.playerID].sub(event.actionID, event.quarter, event.time, event.lead)
                         if not event.actionID2 == None:
@@ -72,10 +76,16 @@ class boxscore():
                         self.gamelogs[event.playerID].add(event.actionID, b)
                         if event.actionID2 == 'a':
                             self.gamelogs[event.playerID2].add(event.actionID2, b)
+                        # BLOCKED:
+                        # if event.actionID2 == 'b':
+                        #     self.gamelogs[event.playerID].add("blkd", b)
                     
                 if not event.team == self.team.team:
                     if event.actionID2 in {"s","b"}:
                         self.gamelogs[event.playerID2].add(event.actionID2, b)
+                    # FOULS DRAWN:
+                    # if event.actionID in {"f0", "f1", "f2", "f3", "fu", "fd"}:
+                    #     self.gamelogs[event.playerID2].add("pfd", b)
                     if event.actionID == "start":
                         for player in self.team.starters[int(event.quarter)-1]:
                             self.gamelogs[player].sub(event.actionID, event.quarter, event.time, event.lead)
@@ -126,3 +136,12 @@ class boxscore():
             print(f"{gamelog.player}\t".expandtabs(3) + f"{player_name}\t".expandtabs(32) + f"{gamelog.sec//60:02d}:{gamelog.sec%60:02d}\t{int(gamelog.fg or 0)}\t{int(gamelog.fga or 0)}\t{int(gamelog.tp or 0)}\t{int(gamelog.tpa or 0)}\t{int(gamelog.ft or 0)}\t{int(gamelog.fta or 0)}\t{int(gamelog.oreb or 0)}\t{int(gamelog.dreb or 0)}\t{int(gamelog.reb or 0)}\t{int(gamelog.ast or 0)}\t{int(gamelog.pf or 0)}\t{int(gamelog.stl or 0)}\t{int(gamelog.blk or 0)}\t{int(gamelog.to or 0)}\t{int(gamelog.pm or 0)}\t{int(gamelog.pts or 0)}".expandtabs(5))
         print("\t".expandtabs(3) + "\t".expandtabs(32) + f"{self.sec//60:02d}:{self.sec%60:02d}\t{self.fg}\t{self.fga}\t{self.tp}\t{self.tpa}\t{self.ft}\t{self.fta}\t{self.oreb}\t{self.dreb}\t{self.reb}\t{self.ast}\t{self.pf}\t{self.stl}\t{self.blk}\t{self.to}\t{self.pm}\t{self.pts}".expandtabs(5))
         print("\t".expandtabs(3) + "\t".expandtabs(32) + f"\t\t {(self.fgpct):.1f}%\t {(self.tppct):.1f}%\t {(self.ftpct):.1f}%\t TM REB: {self.tmreb}".expandtabs(5))
+        
+    def check_boxscore(self, team:team, events:list, quarters:list) -> None:
+        try:
+            self.create_boxscore(team)
+            self.add_gamelogs(events, quarters)
+            self.make_boxscore(events, quarters)
+            return True
+        except Exception as e: 
+            return e
