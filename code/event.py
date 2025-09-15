@@ -2,6 +2,7 @@ from terminoligy import actions_terms
 
 class event():
     def __init__(self) -> None:
+        self.string = None
         self.quarter = None
         self.time = None
         self.actionID = None
@@ -12,6 +13,9 @@ class event():
         self.score = None        
         self.lead = None
         
+    def eventstring(self) -> str:
+        return self.string
+            
     def get_quarter(self, eventstring:str) -> bool:
         if len(eventstring) < 1: return False
         if eventstring[0].isnumeric():
@@ -132,6 +136,7 @@ class event():
         return False
                 
     def extract_eventstring(self, eventstring:str) -> bool:
+        self.string = eventstring
         if self.start_quarter(eventstring): return True
         if self.end_quarter(eventstring): return True
         if not self.get_quarter(eventstring): return False

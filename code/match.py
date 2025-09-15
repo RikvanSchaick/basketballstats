@@ -26,6 +26,7 @@ class match():
         self.location = location
         
         if prnt: print(f"created match {self.matchID}\n{self.away.name} at {self.home.name}\n{self.date}, {self.time}, {self.location}")
+
     
     def add_lineups(self, homeplayers:list, awayplayers:list) -> None:
         if len(homeplayers) < 6 or len(awayplayers) < 6: return False
@@ -62,6 +63,9 @@ class match():
     def add_event(self, event:event) -> None:
         self.update_score(event)
         self.events.append(event)
+        
+    def get_eventstring(self, i:int) -> str:
+        return self.events[i].eventstring()
         
     def last_quarter(self) -> int:
         last_quarter = 0

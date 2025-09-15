@@ -7,6 +7,8 @@ from data_export import data
 from copy import deepcopy
 import os
 import shutil
+from prompt_toolkit import prompt
+from prompt_toolkit.key_binding import KeyBindings
 
 def prints(type:str):
     if type == "intro":
@@ -27,6 +29,73 @@ def prints(type:str):
         print("- export:\texport stats of match as txt/pdf")
         # print("- rawstats:\tsave rawstats of match in txt (sep=';')")
         print("- exit:\t\texit program")     
+    
+def event_input(quarter) -> None:
+    f = open("matches/history.txt", "r")
+    lines = f.readlines()
+    f.close()
+    counta = 0
+    countb = 0
+    default_text = f"{quarter}"
+
+    bindings = KeyBindings()
+    def update_defaulta():
+        nonlocal default_text
+        if counta > 0:
+            default_text = lines[-counta].strip()
+        else:
+            default_text = f"{quarter}"
+
+    def update_defaultb():
+        nonlocal default_text
+        if countb == 1:
+            default_text = lines[-1].strip()[:5]
+        elif countb == 2:
+            default_text = lines[-1].strip()
+        else:
+            default_text = f"{quarter}"
+
+    @bindings.add('up')
+    def _(event):
+        nonlocal counta
+        nonlocal countb
+        if counta < len(lines):
+            countb = 2
+            counta += 1
+            update_defaulta()
+            event.app.current_buffer.text = default_text
+            event.app.current_buffer.cursor_position = len(default_text)
+
+    @bindings.add('down')
+    def _(event):
+        nonlocal counta
+        nonlocal countb
+        if counta > 1:
+            countb = 2
+        elif counta == 1:
+            countb = 0
+        if counta > 0:
+            counta -= 1
+            update_defaulta()
+            event.app.current_buffer.text = default_text
+            event.app.current_buffer.cursor_position = len(default_text)
+            
+    @bindings.add('tab')
+    def _(event):
+        nonlocal counta
+        nonlocal countb
+        countb += 1
+        countb = countb % 3
+        update_defaultb()
+        event.app.current_buffer.text = default_text
+        event.app.current_buffer.cursor_position = len(default_text)
+        if countb == 2:
+            counta = 1
+        else:
+            counta = 0
+
+    eventstring = prompt(default=default_text, key_bindings=bindings)
+    return eventstring
     
 def main():
     eventstring = None
@@ -79,7 +148,8 @@ def main():
                             
                     f = open("matches/history.txt", "r")
                     lines = f.read().splitlines()
-
+                    f.close()
+                    
                     m = match()
                     m.create_match(lines[0],
                                    lines[1],
@@ -154,8 +224,8 @@ def main():
         
         prints("match")
         eventstring = input()
-            
-        if eventstring[:4] == "edit" and len(eventstring) == 5:            
+        
+        if eventstring[:4] == "edit" and len(eventstring) == 5:
             if m.events == None:
                 m.start_match()
             
@@ -182,7 +252,7 @@ def main():
             e = event()
             b = e.extract_eventstring(eventstring)
             m.add_event(e)
-                
+
             if m.count_events(quarter) < 2:
                 b = False
                 while not b:
@@ -198,12 +268,11 @@ def main():
                     
             print("ADD EVENTS (enter 'end' to stop)")
             while not eventstring == quarter + "end":
-                eventstring = quarter + input(quarter)
+                eventstring = event_input(quarter)
                 e = event()
                 b = e.extract_eventstring(eventstring)
-                if b:                    
+                if b:
                     m.add_event(e)
-
                     f = open(f"matches/history.txt", "a")
                     f.writelines(eventstring + '\n')
                     f.close()
@@ -214,7 +283,8 @@ def main():
             # Read file opnieuw om met de hand gefixte dingen in history.txt mee te nemen in de check
             f = open("matches/history.txt", "r")
             lines = f.read().splitlines()
-
+            f.close()
+            
             m = match()
             m.create_match(lines[0],
                             lines[1],
@@ -223,6 +293,7 @@ def main():
                             lines[4],
                             lines[5],
                             False)
+
             homeplayers = lines[6]
             awayplayers = lines[7]
             m.add_lineups(homeplayers.split(";"), awayplayers.split(";"))
