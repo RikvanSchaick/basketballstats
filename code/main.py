@@ -233,7 +233,7 @@ def main():
                 e = event()
                 b = e.extract_eventstring(eventstring)
                 m.add_event(e)
-                f = open(f"matches/history.txt", "w")          
+                f = open(f"matches/history.txt", "a")          
                 f.writelines(eventstring + '\n')
                 f.close()
             
