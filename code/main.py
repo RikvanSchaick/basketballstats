@@ -15,7 +15,6 @@ def prints(type:str):
         print("\nOPTIONS")
         print("- create:\tcreate new match")
         print("- select:\tselect match")
-        print("- data:\t\texport data of all matches as csv")
         print("- stats:\tsee all stats of certain team")
         print("- exit:\t\texit program")
     
@@ -191,14 +190,14 @@ def main():
                 else:
                     print("invalid matchID")
                     eventstring = None
-
-        elif eventstring == "data":
-            d = data()
-            d.read(prnt=False)
-            d.add_data()
-            d.export()
             
         elif eventstring == "stats":
+            d = data()
+            if not d.n_exports():
+                d.read(prnt=False)
+                d.add_data()
+                d.export()
+            
             s = stats()
             s.load()
             # x = s.select_team_or_player()

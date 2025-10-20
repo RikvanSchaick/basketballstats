@@ -16,13 +16,16 @@ class data():
         self.df_playbyplay = pd.DataFrame(columns=['gameId', 'name', 'number', 'team', 'homeScore', 'awayScore', 'quarter', 'remainingMinutes', 'remainingSeconds', 'play', 'description'])
         self.matches = []
     
-    def read(self, prnt=True) -> None:
+    def files(self):
         file_list = []
         for filename in os.listdir("matches"):
             if filename.endswith(".txt") and not filename == "history.txt":
                 file_list.append(filename)
-        file_list.sort(key=lambda x: int(os.path.splitext(x)[0]))
-        
+        file_list.sort(key=lambda x: int(os.path.splitext(x)[0][:6]))
+        return file_list
+    
+    def read(self, prnt=True) -> None:   
+        file_list = self.files()
         for filename in file_list:
             if filename.endswith(".txt") and not filename == "history.txt":
                 f = open("matches/"+filename, "r")
@@ -398,6 +401,11 @@ class data():
                         play.append(f"{match.away.lineup.names[event.playerID2]} enters game for {match.away.lineup.names[event.playerID]}")
                                   
             self.df_playbyplay.loc[len(self.df_playbyplay.index)] = play
+        
+    def n_exports(self) -> int:
+        file_list = self.files()     
+        exports = pd.read_csv("data/match_data_dump.csv")
+        return (len(exports) == len(file_list))
         
     def add_data(self) -> None:
         for match in tqdm(self.matches):
