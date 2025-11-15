@@ -55,6 +55,35 @@ class stats:
     def select_team_or_player(self) -> bool:
         return int(input("want to select team (0) or player (1)? "))
 
+    def selector(self, teamCounts:pd.DataFrame) -> str:
+        from prompt_toolkit.key_binding import KeyBindings
+        from prompt_toolkit import prompt
+        bindings = KeyBindings()
+        teamidx = 0
+        default_text = f"{teamCounts['Team'].iloc[teamidx]} [{teamCounts['Number of matches'].iloc[teamidx]}]"
+        
+        @bindings.add('up')
+        def _(event):
+            nonlocal teamidx
+            if teamidx > 0:
+                teamidx -= 1
+            default_text = f"{teamCounts['Team'].iloc[teamidx]} [{teamCounts['Number of matches'].iloc[teamidx]}]"
+            event.app.current_buffer.text = default_text
+            event.app.current_buffer.cursor_position = len(default_text)
+        
+        @bindings.add('down')
+        def _(event):
+            nonlocal teamidx
+            if teamidx < 30:
+                teamidx += 1
+            default_text = f"{teamCounts['Team'].iloc[teamidx]} [{teamCounts['Number of matches'].iloc[teamidx]}]"
+            event.app.current_buffer.text = default_text
+            event.app.current_buffer.cursor_position = len(default_text)
+        
+        team = prompt(default=default_text, key_bindings=bindings)
+        team = team.split(" [", 1)[0].strip()
+        return team
+    
     def select_team(self, team:str=None) -> str:
         if not isinstance(self.matchDataFrame, pd.DataFrame): return
 
@@ -66,9 +95,7 @@ class stats:
             DF2 = self.matchDataFrame['awayTeam']
             DF2.columns = ['Team']
             self.teamCounts = pd.concat([DF1, DF2]).value_counts().rename_axis('Team').reset_index(name='Number of matches')
-            print(self.teamCounts.head(15))
-            self.team = self.teamCounts['Team'].iloc[int(input("select team by index: "))]
-            print()
+            self.team = self.selector(teamCounts=self.teamCounts)
         return self.team
         
     def select_player(self) -> None:

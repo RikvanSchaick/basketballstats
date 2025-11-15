@@ -29,7 +29,7 @@ def prints(type:str):
         # print("- rawstats:\tsave rawstats of match in txt (sep=';')")
         print("- exit:\t\texit program")     
     
-def event_input(quarter) -> None:
+def event_input(quarter) -> str:
     f = open("matches/history.txt", "r")
     lines = f.readlines()
     f.close()
