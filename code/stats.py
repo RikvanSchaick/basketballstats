@@ -26,41 +26,50 @@ class stats:
         self.playbyplayDataFrame = pd.read_csv('data/playbyplay_data_dump.csv')        
         self.matchDataFrame['dateTime'] = pd.to_datetime(self.matchDataFrame['dateTime'], format='%Y-%m-%d %H:%M:%S')
 
-    def select_period(self) -> int:
-        print("Select time period")
-        self.begin = input("from: ")
-        self.end = input("until: ")
-        
-        if self.begin == "": 
-            start_date = datetime(2000, 1, 1)
-        elif len(self.begin) == 4:
-            start_date = datetime(int(self.begin), 1, 1)
-        elif len(self.begin) == 10:
-            start_date = datetime.strptime(self.begin, '%d-%m-%Y')
-        
-        if self.end == "": 
-            end_date = datetime(3000, 12, 31)
-        elif len(self.end) == 4:
-            end_date = datetime(int(self.end), 12, 31)
-        elif len(self.end) == 10:
-            end_date = datetime.strptime(self.end, '%d-%m-%Y')
-                
+    def select_period(self, begin:datetime, end:datetime) -> None:
+        if begin:
+            start_date = begin
+        else:
+            print("Select begin of time period")
+            self.begin = input("from: ")        
+            if self.begin == "": 
+                start_date = datetime(2000, 1, 1)
+            elif len(self.begin) == 4:
+                start_date = datetime(int(self.begin), 1, 1)
+            elif len(self.begin) == 10:
+                start_date = datetime.strptime(self.begin, '%d-%m-%Y')
+
+        if end:
+            end_date = end
+        else:
+            self.end = input("until: ")
+            if self.end == "": 
+                end_date = datetime(3000, 12, 31)
+            elif len(self.end) == 4:
+                end_date = datetime(int(self.end), 12, 31)
+            elif len(self.end) == 10:
+                end_date = datetime.strptime(self.end, '%d-%m-%Y')
+            
         self.matchDataFrame = self.matchDataFrame[(self.matchDataFrame['dateTime'] > start_date) & (self.matchDataFrame['dateTime'] < end_date)]
     
     def select_team_or_player(self) -> bool:
         return int(input("want to select team (0) or player (1)? "))
 
-    def select_team(self) -> None:
+    def select_team(self, team:str=None) -> str:
         if not isinstance(self.matchDataFrame, pd.DataFrame): return
 
-        DF1 = self.matchDataFrame['homeTeam']
-        DF1.columns = ['Team']
-        DF2 = self.matchDataFrame['awayTeam']
-        DF2.columns = ['Team']
-        self.teamCounts = pd.concat([DF1, DF2]).value_counts().rename_axis('Team').reset_index(name='Number of matches')
-        print(self.teamCounts.head(15))
-        self.team = self.teamCounts['Team'].iloc[int(input("select team by index: "))]
-        print()
+        if team != None:
+            self.team = team
+        else:
+            DF1 = self.matchDataFrame['homeTeam']
+            DF1.columns = ['Team']
+            DF2 = self.matchDataFrame['awayTeam']
+            DF2.columns = ['Team']
+            self.teamCounts = pd.concat([DF1, DF2]).value_counts().rename_axis('Team').reset_index(name='Number of matches')
+            print(self.teamCounts.head(15))
+            self.team = self.teamCounts['Team'].iloc[int(input("select team by index: "))]
+            print()
+        return self.team
         
     def select_player(self) -> None:
         if not isinstance(self.playerDataFrame, pd.DataFrame): return
@@ -109,7 +118,7 @@ class stats:
         self.teamPlayerData['twoPointersAttempted'] = (self.teamPlayerData['fieldGoalsAttempted']-self.teamPlayerData['threePointersAttempted'])
         self.playerCounts = self.teamPlayerData['name'].value_counts().rename_axis('Player').reset_index(name='Number of matches')
 
-    def team_stats(self) -> None:
+    def team_stats(self) -> pd.DataFrame:
         self.teamData()
         if not isinstance(self.teamMatchData, pd.DataFrame): return
                 
@@ -123,12 +132,9 @@ class stats:
         DF4 = self.oppMatchData.drop(['gameId', 'home_away'], axis=1).mean(skipna=True).apply(lambda x: round(x, 2))
         DF5 = pd.concat([DF1, DF2, DF3, DF4], axis=1)
         DF5.columns = ['Team', 'Team/G', 'Opponent', 'Opponent/G']
-        
-        print("TEAM AND OPPONENT STATS")
-        print(DF5)
-        print()
+        return DF5
     
-    def per_game(self) -> None:
+    def per_game(self) -> pd.DataFrame:
         self.playerData()
         if not isinstance(self.teamPlayerData, pd.DataFrame): return
         
@@ -145,12 +151,9 @@ class stats:
         DF7 = DF6[['name', 'size', 'starter_y', 'minutes', 'points', 'fieldGoalsMade', 'fieldGoalsAttempted', 'FG%', 'threePointersMade', 'threePointersAttempted', '3P%', 'twoPointersMade', 'twoPointersAttempted', '2P%', 'freeThrowsMade', 'freeThrowsAttempted', 'FT%', 'offRebounds', 'defRebounds', 'rebounds', 'assists', 'steals', 'blocks', 'turnovers', 'personalFouls']]
         DF7.columns = ['Player', 'G', 'GS', 'MP', 'PTS', 'FG', 'FGA', 'FG%', '3P', '3PA', '3P%', '2P', '2PA', '2P%', 'FT', 'FTA', 'FT%', 'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF']
         DF8 = DF7.sort_values(by=['MP'], ascending=False).reset_index(drop=True)
-        
-        print("PER GAME")
-        print(DF8.to_string())
-        print()
+        return DF8
     
-    def totals(self) -> None:
+    def totals(self) -> pd.DataFrame:
         self.playerData()
         if not isinstance(self.teamPlayerData, pd.DataFrame): return
         
@@ -163,12 +166,9 @@ class stats:
         DF7 = DF6[['name', 'size', 'starter_y', 'minutes', 'points', 'fieldGoalsMade', 'fieldGoalsAttempted', 'threePointersMade', 'threePointersAttempted', 'twoPointersMade', 'twoPointersAttempted', 'freeThrowsMade', 'freeThrowsAttempted', 'offRebounds', 'defRebounds', 'rebounds', 'assists', 'steals', 'blocks', 'turnovers', 'personalFouls']]
         DF7.columns = ['Player', 'G', 'GS', 'MP', 'PTS', 'FG', 'FGA', '3P', '3PA', '2P', '2PA', 'FT', 'FTA', 'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF']
         DF8 = DF7.sort_values(by=['MP'], ascending=False).reset_index(drop=True)
-        
-        print("TOTALS")
-        print(DF8.to_string())
-        print()
+        return DF8
 
-    def advanced(self) -> None:
+    def advanced(self) -> pd.DataFrame:
         self.playerData()
         if not isinstance(self.teamPlayerData, pd.DataFrame): return
         
@@ -184,10 +184,7 @@ class stats:
         DF7 = DF6[['name', 'size', 'starter_y', 'minutes', 'EFG%', 'TS%', 'AST/TO', 'plusMinus']]
         DF7.columns = ['Player', 'G', 'GS', 'MP', 'EFG%', 'TS%', 'AST/TO', '+/-']
         DF8 = DF7.sort_values(by=['MP'], ascending=False).reset_index(drop=True)
-        
-        print("ADVANCED")
-        print(DF8)
-        print()
+        return DF8
 
     def player_logs(self, player, season = None) -> None:
         if season == None:

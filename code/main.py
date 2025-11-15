@@ -1,6 +1,6 @@
 from event import event
 from match import match
-from stats import stats
+from stats_export import statsreport
 from gamereport import gamereport
 # from rawstats import rawstats
 from data_export import data
@@ -198,24 +198,10 @@ def main():
                 d.add_data()
                 d.export()
             
-            s = stats()
-            s.load()
-            # x = s.select_team_or_player()
-            x = 0
-            if x==0:
-                s.select_team()
-                s.select_period()
-                s.team_stats()
-                s.per_game()
-                s.totals()
-                s.advanced()
-            # if x==1:
-            #     s.select_player()
-            #     s.per_game()
-            #     s.totals()
-            #     s.advanced()
+            s = statsreport()
+            s.make_pdf()
             exit()
-
+            
         elif eventstring == "exit":
             exit()
                     
