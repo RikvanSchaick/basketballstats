@@ -38,7 +38,7 @@ class boxscore():
         self.team = team
         self.starters = []
         self.bench = []
-        for player in self.team.lineup.players:
+        for player in self.team.players.players:
             if player[1]:
                 self.starters.append(player[0])
             else:
@@ -91,7 +91,7 @@ class boxscore():
                             self.gamelogs[player].sub(event.actionID, event.quarter, event.time, event.lead)
                             self.gamelogs[player]
                     if event.actionID == "end":
-                        for player in self.team.lineup.players:
+                        for player in self.team.players.players:
                             self.gamelogs[player[0]].sub(event.actionID, event.quarter, event.time, event.lead)
             
     def make_boxscore(self, events:list, quarters:list) -> None:
@@ -132,7 +132,7 @@ class boxscore():
             if not gamelog.player in self.starters:
                 if starters: print()
                 starters = False
-            player_name = gamelog.team.lineup.names[gamelog.player]
+            player_name = gamelog.team.players.names[gamelog.player]
             print(f"{gamelog.player}\t".expandtabs(3) + f"{player_name}\t".expandtabs(32) + f"{gamelog.sec//60:02d}:{gamelog.sec%60:02d}\t{int(gamelog.fg or 0)}\t{int(gamelog.fga or 0)}\t{int(gamelog.tp or 0)}\t{int(gamelog.tpa or 0)}\t{int(gamelog.ft or 0)}\t{int(gamelog.fta or 0)}\t{int(gamelog.oreb or 0)}\t{int(gamelog.dreb or 0)}\t{int(gamelog.reb or 0)}\t{int(gamelog.ast or 0)}\t{int(gamelog.pf or 0)}\t{int(gamelog.stl or 0)}\t{int(gamelog.blk or 0)}\t{int(gamelog.to or 0)}\t{int(gamelog.pm or 0)}\t{int(gamelog.pts or 0)}".expandtabs(5))
         print("\t".expandtabs(3) + "\t".expandtabs(32) + f"{self.sec//60:02d}:{self.sec%60:02d}\t{self.fg}\t{self.fga}\t{self.tp}\t{self.tpa}\t{self.ft}\t{self.fta}\t{self.oreb}\t{self.dreb}\t{self.reb}\t{self.ast}\t{self.pf}\t{self.stl}\t{self.blk}\t{self.to}\t{self.pm}\t{self.pts}".expandtabs(5))
         print("\t".expandtabs(3) + "\t".expandtabs(32) + f"\t\t {(self.fgpct):.1f}%\t {(self.tppct):.1f}%\t {(self.ftpct):.1f}%\t TM REB: {self.tmreb}".expandtabs(5))

@@ -115,7 +115,7 @@ def main():
             while not b:
                 homeplayers = input("players (home)\n")
                 awayplayers = input("players (away)\n")
-                b = m.add_lineups(homeplayers.split(";"), awayplayers.split(";"))
+                b = m.add_teams(homeplayers.split(";"), awayplayers.split(";"))
             
             f = open(f"matches/history.txt", "w")
             f.writelines(m.matchID + '\n')
@@ -159,7 +159,7 @@ def main():
                                    True)
                     homeplayers = lines[6]
                     awayplayers = lines[7]
-                    m.add_lineups(homeplayers.split(";"), awayplayers.split(";"))
+                    m.add_teams(homeplayers.split(";"), awayplayers.split(";"))
                     
                     m.start_match()
                     added_events = 0
@@ -286,7 +286,7 @@ def main():
 
             homeplayers = lines[6]
             awayplayers = lines[7]
-            m.add_lineups(homeplayers.split(";"), awayplayers.split(";"))
+            m.add_teams(homeplayers.split(";"), awayplayers.split(";"))
             
             m.start_match()
             added_events = 0

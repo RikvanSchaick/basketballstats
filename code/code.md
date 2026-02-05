@@ -17,8 +17,8 @@ In deze folder zitten alle python-files die gebruikt zijn (of nog in de maak) vo
     > 3. `terminoligy.py`: Bevat verschillende string vertalingen van een specifieke term, in andere woorden, verschillende manieren om assist te printen.
     > 4. `boxscore.py`: Bevat de class *`boxscore`* met alle functionaliteiten die behoren tot een boxscore van een wedstrijd. Deze class maakt gebruik van `gamelog.py`, `team.py` en `terminoligy.py`. 
     > 5. `gamelog.py`: Bevat de class *`gamelog`* met alle functionaliteiten die behoren tot een gamelog van een wedstrijd. Denk aan het bijhouden van alle punten, fouten, schoten en andere statistieken in een wedstrijd.
-    > 6. `team.py`: Bevat de class *`team`* met alle functionaliteiten die behoren tot een team van een wedstrijd. Deze class maakt gebruik van `lineup.py`. Denk aan welke spelers in een team zitten, welke spelers starten aan een wedstrijd, etc.
-    > 7. `lineup.py`: Bevat de class *`lineup`* met alle functionaliteiten die behoren tot een lineup van een team van een wedstrijd. Denk aan het toevoegen van een speler aan een team voor een wedstrijd.
+    > 6. `team.py`: Bevat de class *`team`* met alle functionaliteiten die behoren tot een team van een wedstrijd. Deze class maakt gebruik van `players.py`. Denk aan welke spelers in een team zitten, welke spelers starten aan een wedstrijd, etc.
+    > 7. `players.py`: Bevat de class *`players`* met alle functionaliteiten die behoren tot de spelers van een team van een wedstrijd. Denk aan het toevoegen van een speler aan een team voor een wedstrijd.
 
 3. **Gamereports**: 
     Het aanmaken van txt- and pdf-files die informatie bevatten van de betreffende game, plus het opslaan van deze files.

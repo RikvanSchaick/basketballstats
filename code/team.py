@@ -1,19 +1,18 @@
-from lineup import lineup
-
+from players import players
 class team():
     def __init__(self, name:str, team:str) -> None:
         self.name = name
         self.team = team
-        self.lineup = None
+        self.players = None
         self.starters = []
         
-    def add_lineup(self, players:list) -> None:
-        self.lineup = lineup()
-        self.lineup.create_lineup(self.team)
-        for player in players:
+    def add_team(self, team:list) -> None:
+        self.players = players()
+        self.players.create_team(self.team)
+        for player in team:
             number, name = player.split(",")
-            self.lineup.add_player(number, name)
+            self.players.add_player(number, name)
             
-    def add_starters(self, quarter:str, players:list) -> None:
-        if quarter == "1": self.lineup.add_starters(players)
-        self.starters.append(players)
+    def add_starters(self, quarter:str, lineup:list) -> None:
+        if quarter == "1": self.players.add_starters(lineup)
+        self.starters.append(lineup)

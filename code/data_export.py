@@ -192,7 +192,7 @@ class data():
         for gamelog in boxHome.gamelogs.values():
             player_data = []
             player_data.append(match.matchID)
-            player_data.append(gamelog.team.lineup.names[gamelog.player])
+            player_data.append(gamelog.team.players.names[gamelog.player])
             player_data.append(gamelog.player)
             player_data.append(match.home.name)
             player_data.append(gamelog.starter)
@@ -221,7 +221,7 @@ class data():
         for gamelog in boxAway.gamelogs.values():
             player_data = []
             player_data.append(match.matchID)
-            player_data.append(gamelog.team.lineup.names[gamelog.player])
+            player_data.append(gamelog.team.players.names[gamelog.player])
             player_data.append(gamelog.player)
             player_data.append(match.away.name)
             player_data.append(gamelog.starter)
@@ -280,125 +280,126 @@ class data():
                 play.append(actions_code[event.actionID])
                 if event.team == "H": 
                     if event.actionID == '1m':
-                        play.append(f"{match.home.lineup.names[event.playerID]} makes free throw")
+                        play.append(f"{match.home.players.names[event.playerID]} makes free throw")
                     if event.actionID == '2m':
                         if not event.actionID2 == None:
-                            play.append(f"{match.home.lineup.names[event.playerID]} makes two pointer assisted by {match.home.lineup.names[event.playerID2]}")
+                            play.append(f"{match.home.players.names[event.playerID]} makes two pointer assisted by {match.home.players.names[event.playerID2]}")
                         else:
-                            play.append(f"{match.home.lineup.names[event.playerID]} makes two pointer")
+                            play.append(f"{match.home.players.names[event.playerID]} makes two pointer")
                     if event.actionID == '3m':
                         if not event.actionID2 == None:
-                            play.append(f"{match.home.lineup.names[event.playerID]} makes three pointer assisted by {match.home.lineup.names[event.playerID2]}")
+                            play.append(f"{match.home.players.names[event.playerID]} makes three pointer assisted by {match.home.players.names[event.playerID2]}")
                         else:
-                            play.append(f"{match.home.lineup.names[event.playerID]} makes three pointer")
+                            play.append(f"{match.home.players.names[event.playerID]} makes three pointer")
                     if event.actionID == '1':
-                        play.append(f"{match.home.lineup.names[event.playerID]} misses free throw")
+                        play.append(f"{match.home.players.names[event.playerID]} misses free throw")
                     if event.actionID == '2':
                         if not event.actionID2 == None:
-                            play.append(f"{match.home.lineup.names[event.playerID]} misses two pointer blocked by {match.away.lineup.names[event.playerID2]}")
+                            play.append(f"{match.home.players.names[event.playerID]} misses two pointer blocked by {match.away.players.names[event.playerID2]}")
                         else:
-                            play.append(f"{match.home.lineup.names[event.playerID]} misses two pointer")
+                            play.append(f"{match.home.players.names[event.playerID]} misses two pointer")
                     if event.actionID == '3':
                         if not event.actionID2 == None:
-                            play.append(f"{match.home.lineup.names[event.playerID]} misses three pointer blocked by {match.away.lineup.names[event.playerID2]}")
+                            play.append(f"{match.home.players.names[event.playerID]} misses three pointer blocked by {match.away.players.names[event.playerID2]}")
                         else:
-                            play.append(f"{match.home.lineup.names[event.playerID]} misses three pointer")
+                            play.append(f"{match.home.players.names[event.playerID]} misses three pointer")
                     if event.actionID == 'f0':
-                        play.append(f"Personal foul on {match.home.lineup.names[event.playerID]}")
+                        play.append(f"Personal foul on {match.home.players.names[event.playerID]}")
                     if event.actionID == 'f1':
-                        play.append(f"Shooting foul on {match.home.lineup.names[event.playerID]}") 
+                        play.append(f"Shooting foul on {match.home.players.names[event.playerID]}") 
                     if event.actionID == 'f2':
-                        play.append(f"Shooting foul on {match.home.lineup.names[event.playerID]}") 
+                        play.append(f"Shooting foul on {match.home.players.names[event.playerID]}") 
                     if event.actionID == 'f3':
-                        play.append(f"Shooting foul on {match.home.lineup.names[event.playerID]}") 
+                        play.append(f"Shooting foul on {match.home.players.names[event.playerID]}") 
                     if event.actionID == 'ft':
                         if not event.playerID == None:
-                            play.append(f"Technical foul on {match.home.lineup.names[event.playerID]}")
+                            play.append(f"Technical foul on {match.home.players.names[event.playerID]}")
                         else:
                             play.append("Technical foul on coach or bench")
                     if event.actionID == 'fu':
-                        play.append(f"Unsportsmanlike foul on {match.home.lineup.names[event.playerID]}")
+                        play.append(f"Unsportsmanlike foul on {match.home.players.names[event.playerID]}")
                     if event.actionID == 'fd':
-                        play.append(f"{match.home.lineup.names[event.playerID]} is disqualified")
+                        play.append(f"{match.home.players.names[event.playerID]} is disqualified")
                     if event.actionID == 'r':
                         if not event.playerID == None:
-                            play.append(f"{match.home.lineup.names[event.playerID]} rebound")
+                            play.append(f"{match.home.players.names[event.playerID]} rebound")
                         else:
                             play.append("Team rebound")
                     if event.actionID == 't':
                         if event.playerID == None:
                             play.append("Team turnover")
+                            
                         elif not event.actionID2 == None:
-                            play.append(f"Turnover on {match.home.lineup.names[event.playerID]} stolen by {match.away.lineup.names[event.playerID2]}")
+                            play.append(f"Turnover on {match.home.players.names[event.playerID]} stolen by {match.away.players.names[event.playerID2]}")
                         else:
-                            play.append(f"Turnover on {match.home.lineup.names[event.playerID]}")
+                            play.append(f"Turnover on {match.home.players.names[event.playerID]}")
                     if event.actionID == 'j':
                         play.append(f"Possession obtained by {match.home.name} after jumpball")
                     if event.actionID == 'to':
                         play.append("Timeout taken by team")
                     if event.actionID == 'out':
-                        play.append(f"{match.home.lineup.names[event.playerID2]} enters game for {match.home.lineup.names[event.playerID]}")
+                        play.append(f"{match.home.players.names[event.playerID2]} enters game for {match.home.players.names[event.playerID]}")
                         
                 if event.team == "A": 
                     if event.actionID == '1m':
-                        play.append(f"{match.away.lineup.names[event.playerID]} makes free throw")
+                        play.append(f"{match.away.players.names[event.playerID]} makes free throw")
                     if event.actionID == '2m':
                         if not event.actionID2 == None:
-                            play.append(f"{match.away.lineup.names[event.playerID]} makes two pointer assisted by {match.away.lineup.names[event.playerID2]}")
+                            play.append(f"{match.away.players.names[event.playerID]} makes two pointer assisted by {match.away.players.names[event.playerID2]}")
                         else:
-                            play.append(f"{match.away.lineup.names[event.playerID]} makes two pointer")
+                            play.append(f"{match.away.players.names[event.playerID]} makes two pointer")
                     if event.actionID == '3m':
                         if not event.actionID2 == None:
-                            play.append(f"{match.away.lineup.names[event.playerID]} makes three pointer assisted by {match.away.lineup.names[event.playerID2]}")
+                            play.append(f"{match.away.players.names[event.playerID]} makes three pointer assisted by {match.away.players.names[event.playerID2]}")
                         else:
-                            play.append(f"{match.away.lineup.names[event.playerID]} makes three pointer")
+                            play.append(f"{match.away.players.names[event.playerID]} makes three pointer")
                     if event.actionID == '1':
-                        play.append(f"{match.away.lineup.names[event.playerID]} misses free throw")
+                        play.append(f"{match.away.players.names[event.playerID]} misses free throw")
                     if event.actionID == '2':
                         if not event.actionID2 == None:
-                            play.append(f"{match.away.lineup.names[event.playerID]} misses two pointer blocked by {match.home.lineup.names[event.playerID2]}")
+                            play.append(f"{match.away.players.names[event.playerID]} misses two pointer blocked by {match.home.players.names[event.playerID2]}")
                         else:
-                            play.append(f"{match.away.lineup.names[event.playerID]} misses two pointer")
+                            play.append(f"{match.away.players.names[event.playerID]} misses two pointer")
                     if event.actionID == '3':
                         if not event.actionID2 == None:
-                            play.append(f"{match.away.lineup.names[event.playerID]} misses three pointer blocked by {match.home.lineup.names[event.playerID2]}")
+                            play.append(f"{match.away.players.names[event.playerID]} misses three pointer blocked by {match.home.players.names[event.playerID2]}")
                         else:
-                            play.append(f"{match.away.lineup.names[event.playerID]} misses three pointer")
+                            play.append(f"{match.away.players.names[event.playerID]} misses three pointer")
                     if event.actionID == 'f0':
-                        play.append(f"Personal foul on {match.away.lineup.names[event.playerID]}")
+                        play.append(f"Personal foul on {match.away.players.names[event.playerID]}")
                     if event.actionID == 'f1':
-                        play.append(f"Shooting foul on {match.away.lineup.names[event.playerID]}") 
+                        play.append(f"Shooting foul on {match.away.players.names[event.playerID]}") 
                     if event.actionID == 'f2':
-                        play.append(f"Shooting foul on {match.away.lineup.names[event.playerID]}") 
+                        play.append(f"Shooting foul on {match.away.players.names[event.playerID]}") 
                     if event.actionID == 'f3':
-                        play.append(f"Shooting foul on {match.away.lineup.names[event.playerID]}") 
+                        play.append(f"Shooting foul on {match.away.players.names[event.playerID]}") 
                     if event.actionID == 'ft':
                         if not event.playerID == None:
-                            play.append(f"Technical foul on {match.away.lineup.names[event.playerID]}")
+                            play.append(f"Technical foul on {match.away.players.names[event.playerID]}")
                         else:
                             play.append("Technical foul on coach or bench")
                     if event.actionID == 'fu':
-                        play.append(f"Unsportsmanlike foul on {match.away.lineup.names[event.playerID]}")
+                        play.append(f"Unsportsmanlike foul on {match.away.players.names[event.playerID]}")
                     if event.actionID == 'fd':
-                        play.append(f"{match.away.lineup.names[event.playerID]} is disqualified")
+                        play.append(f"{match.away.players.names[event.playerID]} is disqualified")
                     if event.actionID == 'r':
                         if not event.playerID == None:
-                            play.append(f"{match.away.lineup.names[event.playerID]} rebound")
+                            play.append(f"{match.away.players.names[event.playerID]} rebound")
                         else:
                             play.append("Team rebound")
                     if event.actionID == 't':
                         if event.playerID == None:
                             play.append("Team turnover")
                         elif not event.actionID2 == None:
-                            play.append(f"Turnover on {match.away.lineup.names[event.playerID]} stolen by {match.home.lineup.names[event.playerID2]}")
+                            play.append(f"Turnover on {match.away.players.names[event.playerID]} stolen by {match.home.players.names[event.playerID2]}")
                         else:
-                            play.append(f"Turnover on {match.away.lineup.names[event.playerID]}")
+                            play.append(f"Turnover on {match.away.players.names[event.playerID]}")
                     if event.actionID == 'j':
                         play.append(f"Possession obtained by {match.away.name} after jumpball")
                     if event.actionID == 'to':
                         play.append("Timeout taken by team")
                     if event.actionID == 'out':
-                        play.append(f"{match.away.lineup.names[event.playerID2]} enters game for {match.away.lineup.names[event.playerID]}")
+                        play.append(f"{match.away.players.names[event.playerID2]} enters game for {match.away.players.names[event.playerID]}")
                                   
             self.df_playbyplay.loc[len(self.df_playbyplay.index)] = play
         

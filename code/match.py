@@ -27,10 +27,10 @@ class match():
         
         if prnt: print(f"created match {self.matchID}\n{self.away.name} at {self.home.name}\n{self.date}, {self.time}, {self.location}")
 
-    def add_lineups(self, homeplayers:list, awayplayers:list) -> None:
+    def add_teams(self, homeplayers:list, awayplayers:list) -> None:
         if len(homeplayers) < 6 or len(awayplayers) < 6: return False
-        self.home.add_lineup(homeplayers)
-        self.away.add_lineup(awayplayers)
+        self.home.add_team(homeplayers)
+        self.away.add_team(awayplayers)
         return True
     
     def start_match(self) -> None:
@@ -80,11 +80,11 @@ class match():
         if event.team == "H":
             if not event.playerID in self.oncourt["_home"][-1]: return f"{event.playerID} not on court"
             if event.playerID2 in self.oncourt["_home"][-1]: return f"{event.playerID2} already on court"
-            if event.playerID2 not in self.home.lineup.names.keys(): return f"{event.playerID2} not in lineup"
+            if event.playerID2 not in self.home.players.names.keys(): return f"{event.playerID2} not on team"
         elif event.team == "A":
             if not event.playerID in self.oncourt["_away"][-1]: return f"{event.playerID} not on court"
             if event.playerID2 in self.oncourt["_away"][-1]: return f"{event.playerID2} already on court"
-            if event.playerID2 not in self.away.lineup.names.keys(): return f"{event.playerID2} not in lineup"
+            if event.playerID2 not in self.away.players.names.keys(): return f"{event.playerID2} not on team"
         return True
         
     def update_score(self, event:event) -> None:

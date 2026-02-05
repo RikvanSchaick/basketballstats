@@ -109,7 +109,7 @@ class gamereport():
             if not gamelog.player in boxh.starters:
                 if starters: self.file.writelines('\n')
                 starters = False
-            player_name = gamelog.team.lineup.names[gamelog.player]
+            player_name = gamelog.team.players.names[gamelog.player]
             self.file.writelines(f"{gamelog.player}\t".expandtabs(3) + f"{player_name}\t".expandtabs(24) + f"{gamelog.sec//60:02d}:{gamelog.sec%60:02d}\t{int(gamelog.fg or 0)}\t{int(gamelog.fga or 0)}\t{int(gamelog.tp or 0)}\t{int(gamelog.tpa or 0)}\t{int(gamelog.ft or 0)}\t{int(gamelog.fta or 0)}\t{int(gamelog.oreb or 0)}\t{int(gamelog.dreb or 0)}\t{int(gamelog.reb or 0)}\t{int(gamelog.ast or 0)}\t{int(gamelog.pf or 0)}\t{int(gamelog.stl or 0)}\t{int(gamelog.blk or 0)}\t{int(gamelog.to or 0)}\t{int(gamelog.pm or 0)}\t{int(gamelog.pts or 0)}".expandtabs(4) + '\n')
         self.file.writelines("\t".expandtabs(3) + "\t".expandtabs(24) + f"{boxh.sec//60:02d}:{boxh.sec%60:02d}\t{boxh.fg}\t{boxh.fga}\t{boxh.tp}\t{boxh.tpa}\t{boxh.ft}\t{boxh.fta}\t{boxh.oreb}\t{boxh.dreb}\t{boxh.reb}\t{boxh.ast}\t{boxh.pf}\t{boxh.stl}\t{boxh.blk}\t{boxh.to}\t{boxh.pm}\t{boxh.pts}".expandtabs(4) + '\n')
         self.file.writelines("\t".expandtabs(3) + "\t".expandtabs(24) + f"\t\t {(boxh.fgpct):.1f}%\t {(boxh.tppct):.1f}%\t {(boxh.ftpct):.1f}%\t TM REB: {boxh.tmreb}".expandtabs(4) + '\n')
@@ -127,7 +127,7 @@ class gamereport():
             if not gamelog.player in boxa.starters:
                 if starters: self.file.writelines('\n')
                 starters = False
-            player_name = gamelog.team.lineup.names[gamelog.player]
+            player_name = gamelog.team.players.names[gamelog.player]
             self.file.writelines(f"{gamelog.player}\t".expandtabs(3) + f"{player_name}\t".expandtabs(24) + f"{gamelog.sec//60:02d}:{gamelog.sec%60:02d}\t{int(gamelog.fg or 0)}\t{int(gamelog.fga or 0)}\t{int(gamelog.tp or 0)}\t{int(gamelog.tpa or 0)}\t{int(gamelog.ft or 0)}\t{int(gamelog.fta or 0)}\t{int(gamelog.oreb or 0)}\t{int(gamelog.dreb or 0)}\t{int(gamelog.reb or 0)}\t{int(gamelog.ast or 0)}\t{int(gamelog.pf or 0)}\t{int(gamelog.stl or 0)}\t{int(gamelog.blk or 0)}\t{int(gamelog.to or 0)}\t{int(gamelog.pm or 0)}\t{int(gamelog.pts or 0)}".expandtabs(4) + '\n')
         self.file.writelines("\t".expandtabs(3) + "\t".expandtabs(24) + f"{boxa.sec//60:02d}:{boxa.sec%60:02d}\t{boxa.fg}\t{boxa.fga}\t{boxa.tp}\t{boxa.tpa}\t{boxa.ft}\t{boxa.fta}\t{boxa.oreb}\t{boxa.dreb}\t{boxa.reb}\t{boxa.ast}\t{boxa.pf}\t{boxa.stl}\t{boxa.blk}\t{boxa.to}\t{boxa.pm}\t{boxa.pts}".expandtabs(4) + '\n')
         self.file.writelines("\t".expandtabs(3) + "\t".expandtabs(24) + f"\t\t {(boxa.fgpct):.1f}%\t {(boxa.tppct):.1f}%\t {(boxa.ftpct):.1f}%\t TM REB: {boxa.tmreb}".expandtabs(4) + '\n')
@@ -359,7 +359,7 @@ class gamereport():
             if not gamelog.player in boxscore.starters:
                 if starters: data.append([])
                 starters = False
-            data.append([f"{gamelog.player}",f"{gamelog.team.lineup.names[gamelog.player]}",f"{gamelog.sec//60:02d}:{gamelog.sec%60:02d}",f"{int(gamelog.fg or 0)}",f"{int(gamelog.fga or 0)}",f"{int(gamelog.tp or 0)}",f"{int(gamelog.tpa or 0)}",f"{int(gamelog.ft or 0)}",f"{int(gamelog.fta or 0)}",f"{int(gamelog.oreb or 0)}",f"{int(gamelog.dreb or 0)}",f"{int(gamelog.reb or 0)}",f"{int(gamelog.ast or 0)}",f"{int(gamelog.pf or 0)}",f"{int(gamelog.stl or 0)}",f"{int(gamelog.blk or 0)}",f"{int(gamelog.to or 0)}",f"{int(gamelog.pm or 0)}",f"{int(gamelog.pts or 0)}"])
+            data.append([f"{gamelog.player}",f"{gamelog.team.players.names[gamelog.player]}",f"{gamelog.sec//60:02d}:{gamelog.sec%60:02d}",f"{int(gamelog.fg or 0)}",f"{int(gamelog.fga or 0)}",f"{int(gamelog.tp or 0)}",f"{int(gamelog.tpa or 0)}",f"{int(gamelog.ft or 0)}",f"{int(gamelog.fta or 0)}",f"{int(gamelog.oreb or 0)}",f"{int(gamelog.dreb or 0)}",f"{int(gamelog.reb or 0)}",f"{int(gamelog.ast or 0)}",f"{int(gamelog.pf or 0)}",f"{int(gamelog.stl or 0)}",f"{int(gamelog.blk or 0)}",f"{int(gamelog.to or 0)}",f"{int(gamelog.pm or 0)}",f"{int(gamelog.pts or 0)}"])
         data.append(["","",f"{boxscore.sec//60:02d}:{boxscore.sec%60:02d}",f"{boxscore.fg}",f"{boxscore.fga}",f"{boxscore.tp}",f"{boxscore.tpa}",f"{boxscore.ft}",f"{boxscore.fta}",f"{boxscore.oreb}",f"{boxscore.dreb}",f"{boxscore.reb}",f"{boxscore.ast}",f"{boxscore.pf}",f"{boxscore.stl}",f"{boxscore.blk}",f"{boxscore.to}",f"{boxscore.pm}",f"{boxscore.pts}"])
 
         self.pdf.set_line_width(0.3)
@@ -452,8 +452,8 @@ class gamereport():
     def pdf_eventlogs(self, quarter:str) -> None:
         
         self.pdf.set_font("Helvetica", style="b", size = self.smalltextsize)
-        self.pdf.cell(w = 0, h = 3, txt = f"HOME Starters: {', '.join([str(self.match.home.lineup.names[starter]) for starter in self.match.home.starters[int(quarter)-1]])}", ln = 1, align = 'L')
-        self.pdf.cell(w = 0, h = 3, txt = f"AWAY Starters: {', '.join([str(self.match.away.lineup.names[starter]) for starter in self.match.away.starters[int(quarter)-1]])}", ln = 1, align = 'L')
+        self.pdf.cell(w = 0, h = 3, txt = f"HOME Starters: {', '.join([str(self.match.home.players.names[starter]) for starter in self.match.home.starters[int(quarter)-1]])}", ln = 1, align = 'L')
+        self.pdf.cell(w = 0, h = 3, txt = f"AWAY Starters: {', '.join([str(self.match.away.players.names[starter]) for starter in self.match.away.starters[int(quarter)-1]])}", ln = 1, align = 'L')
         self.pdf.write(text='\n')
         
         data = [[f"Time", f"{self.match.home.name}", f"Score", f"Lead", f"{self.match.away.name}"]]
@@ -465,18 +465,18 @@ class gamereport():
                     pass
                 if event.team == "H":
                     if event.actionID in {"2m","3m","1m"}:
-                        data.append([f"{event.time[:2]}:{event.time[2:]}", f"{event.print_event(actions_terms,self.match.home.lineup)}", f"{event.print_score(True)[0]}", f"{event.print_score(True)[1]}", ""])
+                        data.append([f"{event.time[:2]}:{event.time[2:]}", f"{event.print_event(actions_terms,self.match.home.players)}", f"{event.print_score(True)[0]}", f"{event.print_score(True)[1]}", ""])
                     elif event.actionID in {"2", "3", "t"} and not event.actionID2 == None:
-                        data.append([f"{event.time[:2]}:{event.time[2:]}", f"{event.print_event(actions_terms,self.match.home.lineup,self.match.away.lineup)[0]}", "", "", f"{event.print_event(actions_terms,self.match.home.lineup,self.match.away.lineup)[1]}"])
+                        data.append([f"{event.time[:2]}:{event.time[2:]}", f"{event.print_event(actions_terms,self.match.home.players,self.match.away.players)[0]}", "", "", f"{event.print_event(actions_terms,self.match.home.players,self.match.away.players)[1]}"])
                     else:
-                        data.append([f"{event.time[:2]}:{event.time[2:]}", f"{event.print_event(actions_terms,self.match.home.lineup)}", "", "", ""])
+                        data.append([f"{event.time[:2]}:{event.time[2:]}", f"{event.print_event(actions_terms,self.match.home.players)}", "", "", ""])
                 if event.team == "A":
                     if event.actionID in {"2m","3m","1m"}:
-                        data.append([f"{event.time[:2]}:{event.time[2:]}","",f"{event.print_score(True)[0]}",f"{event.print_score(True)[1]}",f"{event.print_event(actions_terms,self.match.away.lineup)}"])
+                        data.append([f"{event.time[:2]}:{event.time[2:]}","",f"{event.print_score(True)[0]}",f"{event.print_score(True)[1]}",f"{event.print_event(actions_terms,self.match.away.players)}"])
                     elif event.actionID in {"2", "3", "t"} and not event.actionID2 == None:
-                        data.append([f"{event.time[:2]}:{event.time[2:]}",f"{event.print_event(actions_terms,self.match.away.lineup,self.match.home.lineup)[1]}","","",f"{event.print_event(actions_terms,self.match.away.lineup,self.match.home.lineup)[0]}"])
+                        data.append([f"{event.time[:2]}:{event.time[2:]}",f"{event.print_event(actions_terms,self.match.away.players,self.match.home.players)[1]}","","",f"{event.print_event(actions_terms,self.match.away.players,self.match.home.players)[0]}"])
                     else:
-                        data.append([f"{event.time[:2]}:{event.time[2:]}","","","",f"{event.print_event(actions_terms,self.match.away.lineup)}"])
+                        data.append([f"{event.time[:2]}:{event.time[2:]}","","","",f"{event.print_event(actions_terms,self.match.away.players)}"])
                 
         self.pdf.set_line_width(0)
         with self.pdf.table(align="L",

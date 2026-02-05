@@ -168,7 +168,7 @@ class event():
             return f"{self.score[0]}-{self.score[1]}", f"{self.lead}"
         return f"{self.score[0]}-{self.score[1]}"
     
-    def print_event(self, terms:object, lineup:list = None, lineup2:list = None) -> str:
+    def print_event(self, terms:object, players1:list = None, players2:list = None) -> str:
         if self.actionID in {"j", "to"}:
             return f"{terms[self.actionID]}"
         if self.actionID == "ft" and self.playerID == None:
@@ -178,25 +178,25 @@ class event():
         if self.actionID == "t" and self.playerID == None:
             return f"{terms[self.actionID]}"
         if self.actionID == "out":
-            if lineup == None:
+            if players1 == None:
                 return f"{terms[self.actionID]}: #{self.playerID} {terms[self.actionID2]} #{self.playerID2}"
-            return f"{terms[self.actionID]}: {lineup.names[self.playerID]} {terms[self.actionID2]} {lineup.names[self.playerID2]}"
+            return f"{terms[self.actionID]}: {players1.names[self.playerID]} {terms[self.actionID2]} {players1.names[self.playerID2]}"
         if self.actionID in {'t', '2', '3'} and not self.actionID2 == None:
-            if lineup == None:
+            if players1 == None:
                 return f"#{self.playerID} {terms[self.actionID]}", f"#{self.playerID2} {terms[self.actionID2]}"
-            return f"{lineup.names[self.playerID]} {terms[self.actionID]}", f"{lineup2.names[self.playerID2]} {terms[self.actionID2]}"
+            return f"{players1.names[self.playerID]} {terms[self.actionID]}", f"{players2.names[self.playerID2]} {terms[self.actionID2]}"
         if self.actionID in {'1', '2', '3'}:
-            if lineup == None:
+            if players1 == None:
                 return f"#{self.playerID} {terms[self.actionID]}"
-            return f"{lineup.names[self.playerID]} {terms[self.actionID]}"
+            return f"{players1.names[self.playerID]} {terms[self.actionID]}"
         if self.actionID in {'2m', '3m'} and not self.playerID2 == None:
-            if lineup == None:
+            if players1 == None:
                 return f"#{self.playerID} {terms[self.actionID]} (#{self.playerID2} {terms[self.actionID2]})"
-            return f"{lineup.names[self.playerID]} {terms[self.actionID]} ({lineup.names[self.playerID2]} {terms[self.actionID2]})"
+            return f"{players1.names[self.playerID]} {terms[self.actionID]} ({players1.names[self.playerID2]} {terms[self.actionID2]})"
         elif self.actionID in {'2m', '3m'}:
-            if lineup == None:
+            if players1 == None:
                 return f"#{self.playerID} {terms[self.actionID]}"
-            return f"{lineup.names[self.playerID]} {terms[self.actionID]}"
-        if lineup == None:
+            return f"{players1.names[self.playerID]} {terms[self.actionID]}"
+        if players1 == None:
             return f"#{self.playerID} {terms[self.actionID]}"
-        return f"{lineup.names[self.playerID]} {terms[self.actionID]}"
+        return f"{players1.names[self.playerID]} {terms[self.actionID]}"
