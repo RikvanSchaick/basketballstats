@@ -257,10 +257,15 @@ def main():
                 e = event()
                 b = e.extract_eventstring(eventstring)
                 if b:
-                    m.add_event(e)
-                    f = open(f"matches/history.txt", "a")
-                    f.writelines(eventstring + '\n')
-                    f.close()
+                    c = m.add_event(e)
+                    if e.actionID == "end":
+                        pass
+                    elif not c == True:
+                        print(c)
+                    else:
+                        f = open(f"matches/history.txt", "a")
+                        f.writelines(eventstring + '\n')
+                        f.close()
                 else:
                     del e
                     print("invalid event")

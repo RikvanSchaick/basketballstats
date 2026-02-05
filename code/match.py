@@ -14,8 +14,7 @@ class match():
         self.location = None
         self.events = None
         self.score = None
-        # self.ties = None
-        # self.lead_chances = None
+        self.oncourt = None
         
     def create_match(self, ID:str, home:str, away:str, date:str, time:str, location:str, prnt:bool) -> None:
         self.matchID = ID
@@ -24,10 +23,10 @@ class match():
         self.date = date
         self.time = time
         self.location = location
+        self.oncourt = {"quarter": [], "time": [], "score": [], "_home": [], "_away": []}
         
         if prnt: print(f"created match {self.matchID}\n{self.away.name} at {self.home.name}\n{self.date}, {self.time}, {self.location}")
 
-    
     def add_lineups(self, homeplayers:list, awayplayers:list) -> None:
         if len(homeplayers) < 6 or len(awayplayers) < 6: return False
         self.home.add_lineup(homeplayers)
@@ -38,14 +37,55 @@ class match():
         self.score = [0,0]
         self.events = []
         
-    def add_starters(self, quarter:int, homestarters:list, awaystarters:list) -> None:
+    def add_starters(self, quarter:int, homestarters:list, awaystarters:list) -> bool:
         if not (len(homestarters) == 5 and len(awaystarters) == 5): return False
         if quarter in {"1","2","3","4","5","6","7","8"}:
             self.home.add_starters(quarter, homestarters)
             self.away.add_starters(quarter, awaystarters)
+            time = "1000" if quarter in {"1","2","3","4"} else "500"
+            self.add_oncourt(time=time, quarter=quarter, score=deepcopy(self.score), home=homestarters, away=awaystarters)
             return True
         else:
             return False
+
+    def add_oncourt(self, quarter:int, time:str, score:list, home:list, away:list) -> None:
+        self.oncourt["quarter"].append(quarter)
+        self.oncourt["time"].append(time)
+        self.oncourt["score"].append(score)
+        self.oncourt["_home"].append(home)
+        self.oncourt["_away"].append(away)
+        print(self.oncourt["quarter"][-1],self.oncourt["time"][-1],self.oncourt["score"][-1],self.oncourt["_home"][-1],self.oncourt["_away"][-1])
+
+    def update_oncourt(self, event:event) -> bool:
+        if event.actionID == "out":
+            b = self.substition_check(event)
+            if not b == True: return b
+            _home = deepcopy(self.oncourt["_home"][-1])
+            _away = deepcopy(self.oncourt["_away"][-1])
+            if event.team == "H":
+                _home.remove(event.playerID)
+                _home.append(event.playerID2)
+            elif event.team == "A":
+                _away.remove(event.playerID)
+                _away.append(event.playerID2)
+            self.add_oncourt(quarter=event.quarter, time=event.time, score=deepcopy(self.score), home=_home, away=_away)
+        elif event.actionID == "end":
+            _home = deepcopy(self.oncourt["_home"][-1])
+            _away = deepcopy(self.oncourt["_away"][-1])
+            self.add_oncourt(quarter=event.quarter, time=event.time, score=deepcopy(self.score), home=_home, away=_away)
+        return True
+        
+    def substition_check(self, event:event) -> bool | str:
+        if not event.actionID == "out": return True
+        if event.team == "H":
+            if not event.playerID in self.oncourt["_home"][-1]: return f"{event.playerID} not on court"
+            if event.playerID2 in self.oncourt["_home"][-1]: return f"{event.playerID2} already on court"
+            if event.playerID2 not in self.home.lineup.names.keys(): return f"{event.playerID2} not in lineup"
+        elif event.team == "A":
+            if not event.playerID in self.oncourt["_away"][-1]: return f"{event.playerID} not on court"
+            if event.playerID2 in self.oncourt["_away"][-1]: return f"{event.playerID2} already on court"
+            if event.playerID2 not in self.away.lineup.names.keys(): return f"{event.playerID2} not in lineup"
+        return True
         
     def update_score(self, event:event) -> None:
         if event.actionID in {"2m","3m","1m"}:
@@ -60,9 +100,10 @@ class match():
     def print_score(self) -> None:
         return f"{self.score[0]}-{self.score[1]}"
     
-    def add_event(self, event:event) -> None:
+    def add_event(self, event:event) -> bool:
         self.update_score(event)
         self.events.append(event)
+        return self.update_oncourt(event)
         
     def get_eventstring(self, i:int) -> str:
         return self.events[i].eventstring()
