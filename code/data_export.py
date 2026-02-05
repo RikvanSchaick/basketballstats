@@ -417,3 +417,7 @@ class data():
         self.df_match.to_csv("data/match_data_dump.csv")
         self.df_player.to_csv("data/player_data_dump.csv")
         self.df_playbyplay.to_csv("data/playbyplay_data_dump.csv")
+        
+        self.df_match.to_json("data/match_data_dump.json")
+        self.df_player.to_json("data/player_data_dump.json")
+        self.df_playbyplay.to_json("data/playbyplay_data_dump.json")
