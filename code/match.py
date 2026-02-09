@@ -54,7 +54,6 @@ class match():
         self.oncourt["score"].append(score)
         self.oncourt["_home"].append(home)
         self.oncourt["_away"].append(away)
-        print(self.oncourt["quarter"][-1],self.oncourt["time"][-1],self.oncourt["score"][-1],self.oncourt["_home"][-1],self.oncourt["_away"][-1])
 
     def update_oncourt(self, event:event) -> bool:
         if event.actionID == "out":

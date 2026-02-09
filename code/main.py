@@ -258,9 +258,7 @@ def main():
                 b = e.extract_eventstring(eventstring)
                 if b:
                     c = m.add_event(e)
-                    if e.actionID == "end":
-                        pass
-                    elif not c == True:
+                    if not c == True:
                         print(c)
                     else:
                         f = open(f"matches/history.txt", "a")
