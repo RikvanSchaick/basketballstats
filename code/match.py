@@ -15,6 +15,7 @@ class match():
         self.events = None
         self.score = None
         self.oncourt = None
+        self.possessions = None
         
     def create_match(self, ID:str, home:str, away:str, date:str, time:str, location:str, prnt:bool) -> None:
         self.matchID = ID
@@ -24,6 +25,7 @@ class match():
         self.time = time
         self.location = location
         self.oncourt = {"quarter": [], "time": [], "score": [], "_home": [], "_away": []}
+        self.possessions = []
         
         if prnt: print(f"created match {self.matchID}\n{self.away.name} at {self.home.name}\n{self.date}, {self.time}, {self.location}")
 
@@ -99,9 +101,30 @@ class match():
     def print_score(self) -> None:
         return f"{self.score[0]}-{self.score[1]}"
     
+    def dtime(self, old:str, new:str) -> int:
+        return int(int(old[:2]) * 60 + int(old[2:])) - int(int(new[:2]) * 60 + int(new[2:]))
+    
+    def add_possession(self, quarter:str, time:str, team:str, reason:str) -> None:
+        dtime = self.dtime(self.possessions[-1]["time"], time) if reason not in {"start", "end"} else None
+        self.possessions.append({"quarter": quarter, "time": time, "dtime": dtime, "team": team, "reason": reason})
+    
+    def check_possession(self, event:event) -> None:
+        if event.actionID == "start":
+            self.add_possession(quarter=event.quarter, time=event.time, team=None, reason="start")
+        elif event.actionID == "end":
+            self.add_possession(quarter=event.quarter, time=event.time, team=None, reason="end")
+        elif event.actionID == "t":
+            self.add_possession(quarter=event.quarter, time=event.time, team=event.team, reason="turnover")
+        elif event.actionID == "r":
+            pass
+        elif event.actionID in {"2m", "3m", "1m"}:
+            pass
+        return
+    
     def add_event(self, event:event) -> bool:
         self.update_score(event)
         self.events.append(event)
+        self.check_possession(event)
         return self.update_oncourt(event)
         
     def get_eventstring(self, i:int) -> str:
