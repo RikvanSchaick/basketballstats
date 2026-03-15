@@ -56,6 +56,11 @@ class match():
         self.oncourt["_away"].append(away)
 
     def update_oncourt(self, event:event) -> bool:
+        if event.actionID == "to":
+            _home = deepcopy(self.oncourt["_home"][-1])
+            _away = deepcopy(self.oncourt["_away"][-1])
+            print("home: " + ", ".join(str(player) for player in sorted(_home, key=int)))
+            print("away: " + ", ".join(str(player) for player in sorted(_away, key=int)))
         if event.actionID == "out":
             b = self.substition_check(event)
             if not b == True: return b
