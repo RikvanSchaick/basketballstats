@@ -40,7 +40,7 @@ class data():
                                 False)
                 homeplayers = lines[6]
                 awayplayers = lines[7]
-                m.add_lineups(homeplayers.split(";"), awayplayers.split(";"))
+                m.add_teams(homeplayers.split(";"), awayplayers.split(";"))
                 
                 m.start_match()
                 added_events = 0
