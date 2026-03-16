@@ -264,9 +264,12 @@ def main():
                         f = open(f"matches/history.txt", "a")
                         f.writelines(eventstring + '\n')
                         f.close()
-                else:
+                elif eventstring[1:8] == "oncourt":
+                    m.print_oncourt()
                     del e
+                else:
                     print("invalid event")
+                    del e
             
             # Read file opnieuw om met de hand gefixte dingen in history.txt mee te nemen in de check
             f = open("matches/history.txt", "r")
