@@ -6,6 +6,7 @@ from terminoligy import quarter_terms, team_terms, actions_terms
 
 class match():
     def __init__(self) -> None:
+        self.edit = False
         self.matchID = None
         self.home = None
         self.away = None
@@ -62,7 +63,7 @@ class match():
         print("away: " + ", ".join(str(player) for player in sorted(_away, key=int)))
 
     def update_oncourt(self, event:event) -> bool:
-        if event.actionID == "to":
+        if event.actionID == "to" and self.edit:
             self.print_oncourt()
         if event.actionID == "out":
             b = self.substition_check(event)

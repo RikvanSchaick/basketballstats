@@ -234,6 +234,8 @@ def main():
                 f.writelines(eventstring + '\n')
                 f.close()
             
+            # Start edit-mode
+            m.edit = True
             e = event()
             b = e.extract_eventstring(eventstring)
             m.add_event(e)
@@ -270,6 +272,9 @@ def main():
                 else:
                     print("invalid event")
                     del e
+                    
+            # Stop edit-mode
+            m.edit = False
             
             # Read file opnieuw om met de hand gefixte dingen in history.txt mee te nemen in de check
             f = open("matches/history.txt", "r")
