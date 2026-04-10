@@ -11,6 +11,7 @@ class statsreport():
         self.smalltextsize = 8
         self.page = False
         self.team = None
+        self.player = None
 
     def select_team(self) -> None:
         if not isinstance(self.matchDataFrame, pd.DataFrame): return
@@ -144,9 +145,9 @@ class statsreport():
             self.print_term(table, "TRB", "Total Rebounds", "A rebound occurs when a player recovers the ball after a missed shot. This statistic is the number of total rebounds a player or team has collected on either offense or defense.", None)
             self.print_term(table, "TS%", "True Shooting Percentage", "A shooting percentage that factors in the value of three-point field goals and free throws in addition to conventional two-point field goals.", "PTS/[2*(FGA+0.44*FTA)]")
        
-    def pdf_export(self) -> None:
+    def pdf_export(self, name: str) -> None:
         self.footer()
-        self.pdf.output(f"data/stats.pdf")
+        self.pdf.output(f"data/{name}.pdf")
 
     def seasons_range(self, mindate:datetime, maxdate:datetime) -> {int, int}:
         firstseason = mindate.year-1 if mindate.month < 8 else mindate.year
@@ -296,7 +297,7 @@ class statsreport():
                 for datum in data_row:
                     row.cell(datum)        
 
-    def make_pdf(self) -> None:
+    def export_team_stats(self) -> None:
         total = stats() 
         total.load()
         self.team = total.select_team()
@@ -318,4 +319,9 @@ class statsreport():
             self.stats_page(stats=seasonal)
 
         self.pdf_glossary()
-        self.pdf_export()
+        self.pdf_export(name=f"{self.team}_stats")
+
+    def export_player_stats(self) -> None:
+        total = stats() 
+        total.load()
+        self.player = total.select_player()

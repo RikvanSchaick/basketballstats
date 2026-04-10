@@ -55,28 +55,29 @@ class stats:
     def select_team_or_player(self) -> bool:
         return int(input("want to select team (0) or player (1)? "))
 
-    def selector(self, teamCounts:pd.DataFrame) -> str:
+    def selector(self, Counts:pd.DataFrame, Team:str=True) -> str:
         from prompt_toolkit.key_binding import KeyBindings
         from prompt_toolkit import prompt
         bindings = KeyBindings()
-        teamidx = 0
-        default_text = f"{teamCounts['Team'].iloc[teamidx]} [{teamCounts['Number of matches'].iloc[teamidx]}]"
+        rowidx = 0
+        col = "Team" if Team else "Player"
+        default_text = f"{Counts[col].iloc[rowidx]} [{Counts['Number of matches'].iloc[rowidx]}]"
         
         @bindings.add('up')
         def _(event):
-            nonlocal teamidx
-            if teamidx > 0:
-                teamidx -= 1
-            default_text = f"{teamCounts['Team'].iloc[teamidx]} [{teamCounts['Number of matches'].iloc[teamidx]}]"
+            nonlocal rowidx
+            if rowidx > 0:
+                rowidx -= 1
+            default_text = f"{Counts[col].iloc[rowidx]} [{Counts['Number of matches'].iloc[rowidx]}]"
             event.app.current_buffer.text = default_text
             event.app.current_buffer.cursor_position = len(default_text)
         
         @bindings.add('down')
         def _(event):
-            nonlocal teamidx
-            if teamidx < 30:
-                teamidx += 1
-            default_text = f"{teamCounts['Team'].iloc[teamidx]} [{teamCounts['Number of matches'].iloc[teamidx]}]"
+            nonlocal rowidx
+            if rowidx < 30 and rowidx < len(Counts)-1:
+                rowidx += 1
+            default_text = f"{Counts[col].iloc[rowidx]} [{Counts['Number of matches'].iloc[rowidx]}]"
             event.app.current_buffer.text = default_text
             event.app.current_buffer.cursor_position = len(default_text)
         
@@ -95,17 +96,28 @@ class stats:
             DF2 = self.matchDataFrame['awayTeam']
             DF2.columns = ['Team']
             self.teamCounts = pd.concat([DF1, DF2]).value_counts().rename_axis('Team').reset_index(name='Number of matches')
-            self.team = self.selector(teamCounts=self.teamCounts)
+            self.team = self.selector(Counts=self.teamCounts, Team=True)
         return self.team
         
     def select_player(self) -> None:
         if not isinstance(self.playerDataFrame, pd.DataFrame): return
         
-        self.playerCounts = self.playerDataFrame['name'].value_counts().rename_axis('Player').reset_index(name='Number of matches')
-        print(self.playerCounts.head(10))
-        self.player = self.playerCounts['Player'].iloc[int(input("select player by index: "))]
+        while True:
+            player_name = input("select player by name: ")
+            nameDataFrame = self.playerDataFrame[self.playerDataFrame['name'].str.contains(player_name, case=False, na=False)]        
+            self.playerCounts = nameDataFrame['name'].value_counts().rename_axis('Player').reset_index(name='Number of matches')
+            if len(self.playerCounts) == 0:
+                print("No players found.")
+                continue
+            elif len(self.playerCounts) == 1:
+                self.player = self.playerCounts['Player'].iloc[0]
+                print(f"selected {self.player}")
+                break
+            else:
+                self.player = self.selector(Counts=self.playerCounts, Team=False)
+                break
         print()
-        
+
     def teamData(self) -> None:
         if not isinstance(self.team, str): return
         if not isinstance(self.matchDataFrame, pd.DataFrame): return

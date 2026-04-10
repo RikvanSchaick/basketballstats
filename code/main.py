@@ -211,10 +211,11 @@ def main():
                 
                 if eventstring == "team":
                     s = statsreport()
-                    s.make_pdf()
+                    s.export_team_stats()
                 
                 elif eventstring == "player":
-                    pass
+                    s = statsreport()
+                    s.export_player_stats()
                         
         elif eventstring == "exit":
             exit()
