@@ -25,9 +25,15 @@ def prints(type:str):
         print("- log:\t\tview gamelog of match")
         print("- box:\t\tview boxscore of match")
         print("- save:\t\tsave match as txt")
-        print("- export:\texport stats of match as txt/pdf")
+        print("- export:\texport stats as txt/pdf")
         # print("- rawstats:\tsave rawstats of match in txt (sep=';')")
-        print("- exit:\t\texit program")     
+        print("- exit:\t\texit program")  
+        
+    if type == "stats":
+        print("\nOPTIONS")
+        print("- team:\t\tview stats of certain team")
+        print("- player:\tview stats of certain player")
+        print("- exit:\t\texit program")
     
 def event_input(quarter) -> str:
     f = open("matches/history.txt", "r")
@@ -198,10 +204,18 @@ def main():
                 d.add_data()
                 d.export()
             
-            s = statsreport()
-            s.make_pdf()
-            exit()
-            
+            eventstring = None
+            while not eventstring == "exit":
+                prints("stats")
+                eventstring = input()
+                
+                if eventstring == "team":
+                    s = statsreport()
+                    s.make_pdf()
+                
+                elif eventstring == "player":
+                    pass
+                        
         elif eventstring == "exit":
             exit()
                     
