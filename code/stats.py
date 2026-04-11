@@ -116,7 +116,9 @@ class stats:
             else:
                 self.player = self.selector(Counts=self.playerCounts, Team=False)
                 break
-        print()
+            
+        self.team = list(self.playerDataFrame[self.playerDataFrame['name'] == self.player]['team'].unique())
+        return self.player, self.team
 
     def teamData(self) -> None:
         if not isinstance(self.team, str): return

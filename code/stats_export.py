@@ -324,4 +324,18 @@ class statsreport():
     def export_player_stats(self) -> None:
         total = stats() 
         total.load()
-        self.player = total.select_player()
+        self.player, self.team = total.select_player()
+        game_ids = total.playerDataFrame[total.playerDataFrame['name'] == self.player]['gameId'].unique().tolist()
+        mask = total.matchDataFrame['gameId'].isin(game_ids)
+        firstseason, lastseason = self.seasons_range(total.matchDataFrame.loc[mask, 'dateTime'].min(), total.matchDataFrame.loc[mask, 'dateTime'].max())
+
+        self.create_pdf()
+        self.new_page(self.player, "ALL TIME")
+        self.pdf.set_font("Helvetica", style="b", size = self.smalltextsize)
+
+        for year in range(firstseason, lastseason + 1):
+            season = f"SEASON {year}-{year + 1}"
+            self.new_page(self.player, season)
+
+        self.pdf_glossary()
+        self.pdf_export(name=f"{self.player}_stats")
