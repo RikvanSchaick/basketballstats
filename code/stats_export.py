@@ -154,7 +154,7 @@ class statsreport():
         lastseason = maxdate.year if maxdate.month >= 8 else maxdate.year-1
         return firstseason, lastseason
 
-    def stats_page(self, stats:stats) -> None:
+    def team_stats_page(self, stats:stats) -> None:
         teamstats = stats.team_stats()
         self.pdf.set_font("Helvetica", style="b", size = 7)
         self.pdf.cell(w = 0, h = 4, txt = f"Team and Opponent Statistics", ln = 1, align = 'L')     
@@ -308,7 +308,7 @@ class statsreport():
         self.new_page(self.team, "ALL TIME")
         self.pdf.set_font("Helvetica", style="b", size = self.smalltextsize)
 
-        self.stats_page(stats=total)
+        self.team_stats_page(stats=total)
         for year in range(firstseason, lastseason + 1):
             season = f"SEASON {year}-{year + 1}"
             self.new_page(self.team, season)
@@ -316,10 +316,58 @@ class statsreport():
             seasonal.load()
             seasonal.select_team(self.team)
             seasonal.select_period(begin=datetime(year, 8, 1), end=datetime(year + 1, 7, 31))
-            self.stats_page(stats=seasonal)
+            self.team_stats_page(stats=seasonal)
 
         self.pdf_glossary()
         self.pdf_export(name=f"{self.team}_stats")
+
+    def player_career_page(self, stats:stats) -> None:
+        """
+        Data over de per game statistieken van de betreffende speler gescheiden over elk seizoen. 
+        Per seizoen aangeven bij welk team de speler speelde; bij meerdere seizoenen bijvoorbeeld VSE-1/VU16-1. 
+        
+        - Career highs in PTS, REB, AST, STL, BLK
+        
+        - Een regel met de gemiddeldes over alle gespeelde wedstrijden per seizoen
+        - Een total regel met de gemiddelden over alle seizoenen (career averages.)
+        
+        - Een regel met de totale statistieken over alle gespeelde wedstrijden per seizoen
+        - Een total regel met de totale statistieken over alle seizoenen (career totals.)
+        """
+        pass
+    
+        # Filter dataset naar specifieke speler
+        # Functie voor career highs met speler specifieke dataset als input
+        # Functie voor tabel met averages met speler specifieke dataset als input
+        # Functie voor tabel met totals met speler specifieke dataset als input
+        
+    def player_season_page(self, stats:stats) -> None:
+        """
+        Gamelog Summary:
+        Aangeven van totals in ranges met volgende statistieken: 
+        1. MP:  [0-10, 10-20, 20-30, 30-40, 40+]
+        2. PTS: [0-4, 5-9, 10-14, 15-19, 20+]
+        3. REB: [0-2, 3-5, 6-9, 10-13, 14+]
+        4. AST: [0-2, 3-5, 6-9, 10-13, 14+]
+        5. STL: [0, 1-2, 3-4, 5-6, 7+]
+        6. BLK: [0, 1-2, 3-4, 5-6, 7+]
+        7. TOV: [0, 1-2, 3-4, 5-6, 7+]
+        8. PF:  [0, 1-2, 3-4, 5]
+
+        Data over de per game en totale statistieken van de betreffende speler over een seizoen.
+        - Een regel met de gemiddeldes over alle gespeelde wedstrijden in het seizoen per team
+        - Een total regel met de gemiddelden over alle teams
+        
+        Per team waar speelster dat seizoen speelde:
+        - Tabel met alle box scores van de speler per gespeelde wedstrijd bij dat team. 
+        - Total regel met de totale statistieken van de speler bij dat team in dat seizoen.
+        """   
+        pass
+
+        # Filter dataset naar specifieke speler
+        # Functie voor gamelog summary met speler specifieke dataset als input
+        # Functie voor tabel met averages per team met speler specifieke dataset als input
+        # Functie voor tabel per team met box scores per wedstrijd met speler specifieke dataset als input
 
     def export_player_stats(self) -> None:
         total = stats() 
@@ -333,9 +381,15 @@ class statsreport():
         self.new_page(self.player, "ALL TIME")
         self.pdf.set_font("Helvetica", style="b", size = self.smalltextsize)
 
-        for year in range(firstseason, lastseason + 1):
+        self.player_career_page(stats=total)
+        for year in range(firstseason, lastseason + 1):         
             season = f"SEASON {year}-{year + 1}"
             self.new_page(self.player, season)
+            seasonal = stats() 
+            seasonal.load()
+            seasonal.select_team(self.team)
+            seasonal.select_period(begin=datetime(year, 8, 1), end=datetime(year + 1, 7, 31))            
+            self.player_season_page(stats=seasonal)
 
         self.pdf_glossary()
         self.pdf_export(name=f"{self.player}_stats")
