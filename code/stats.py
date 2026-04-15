@@ -237,3 +237,17 @@ class stats:
         print(f"PLAYER LOGS: ({player})")
         print(DF2)
         print()
+        
+    def careerhighs(self) -> None:
+        if not isinstance(self.player, str): return
+        if not isinstance(self.matchDataFrame, pd.DataFrame): return
+        DF1 = self.playerDataFrame[self.playerDataFrame['name'] == self.player]
+        print(DF1[['points', 'rebounds', 'assists', 'steals', 'blocks']])
+
+        pts_max = DF1['points'].max()
+        reb_max = DF1['rebounds'].max()
+        ast_max = DF1['assists'].max()
+        stl_max = DF1['steals'].max()
+        blk_max = DF1['blocks'].max()
+        
+        return {"pts": pts_max, "reb": reb_max, "ast": ast_max, "stl": stl_max, "blk": blk_max}

@@ -336,6 +336,30 @@ class statsreport():
         """
         pass
     
+        highs = stats.careerhighs()
+        self.pdf.set_font("Helvetica", style="b", size = 7)
+        self.pdf.cell(w = 0, h = 4, txt = f"Career Highs", ln = 1, align = 'L')     
+        self.pdf.set_font("Helvetica", style="b", size = 5.5)                
+        data = [['Statistic', 'Career High']]
+        data.append(['Points', str(int(highs['pts'])) if pd.notna(highs['pts']) else ""])
+        data.append(['Rebounds', str(int(highs['reb'])) if pd.notna(highs['reb']) else ""])
+        data.append(['Assists', str(int(highs['ast'])) if pd.notna(highs['ast']) else ""])
+        data.append(['Steals', str(int(highs['stl'])) if pd.notna(highs['stl']) else ""])
+        data.append(['Blocks', str(int(highs['blk'])) if pd.notna(highs['blk']) else ""])
+        
+        self.pdf.set_line_width(0.15)
+        with self.pdf.table(align="L",
+                    width=35,
+                    borders_layout="SINGLE_TOP_LINE",
+                    line_height=3,
+                    col_widths=(3,3), 
+                    text_align=("LEFT", "CENTER")
+        ) as table:
+            for data_row in data:
+                row = table.row()
+                for datum in data_row:
+                    row.cell(datum)        
+    
         # Filter dataset naar specifieke speler
         # Functie voor career highs met speler specifieke dataset als input
         # Functie voor tabel met averages met speler specifieke dataset als input
