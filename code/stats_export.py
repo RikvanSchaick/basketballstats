@@ -461,6 +461,35 @@ class statsreport():
                 row = table.row()
                 for datum in data_row:
                     row.cell(datum)
+                    
+        self.pdf.write(text='\n')
+        summary = stats.gamelog_summary()
+        self.pdf.set_font("Helvetica", style="b", size = 9)
+        self.pdf.cell(w = 0, h = 4, txt = f"Gamelog Summary", ln = 1, align = 'L')
+        self.pdf.set_font("Helvetica", style="b", size = 7)
+        with self.pdf.table(align="L",
+                    width=115,
+                    borders_layout="SINGLE_TOP_LINE",
+                    line_height=3,
+                    col_widths=(3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2), 
+                    text_align=("CENTER", "LEFT", "CENTER", "LEFT", "CENTER", "LEFT", "CENTER", "LEFT", "CENTER", "LEFT", "CENTER", "LEFT", "CENTER", "LEFT", "CENTER", "LEFT")
+        ) as table:
+            row = table.row()
+            row.cell("Minutes", colspan=2)
+            row.cell("Points", colspan=2)
+            row.cell("Rebounds", colspan=2)
+            row.cell("Assists", colspan=2)
+            row.cell("Steals", colspan=2)
+            row.cell("Blocks", colspan=2)
+            row.cell("Turnovers", colspan=2)
+            row.cell("Fouls", colspan=2)
+            
+            for i in range(len(summary[0])):
+                row = table.row()
+                for item in summary:
+                    row.cell(item[i][0])
+                    row.cell(str(item[i][1]))
+        
 
     def player_season_page(self, stats:stats) -> None:
         """
@@ -483,10 +512,35 @@ class statsreport():
         - Tabel met alle box scores van de speler per gespeelde wedstrijd bij dat team. 
         - Total regel met de totale statistieken van de speler bij dat team in dat seizoen.
         """   
-        pass
 
-        # Filter dataset naar specifieke speler
         # Functie voor gamelog summary met speler specifieke dataset als input
+        summary = stats.gamelog_summary()
+        self.pdf.set_font("Helvetica", style="b", size = 9)
+        self.pdf.cell(w = 0, h = 4, txt = f"Gamelog Summary", ln = 1, align = 'L')
+        self.pdf.set_font("Helvetica", style="b", size = 7)
+        with self.pdf.table(align="L",
+                    width=115,
+                    borders_layout="SINGLE_TOP_LINE",
+                    line_height=3,
+                    col_widths=(3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2), 
+                    text_align=("CENTER", "LEFT", "CENTER", "LEFT", "CENTER", "LEFT", "CENTER", "LEFT", "CENTER", "LEFT", "CENTER", "LEFT", "CENTER", "LEFT", "CENTER", "LEFT")
+        ) as table:
+            row = table.row()
+            row.cell("Minutes", colspan=2)
+            row.cell("Points", colspan=2)
+            row.cell("Rebounds", colspan=2)
+            row.cell("Assists", colspan=2)
+            row.cell("Steals", colspan=2)
+            row.cell("Blocks", colspan=2)
+            row.cell("Turnovers", colspan=2)
+            row.cell("Fouls", colspan=2)
+            
+            for i in range(len(summary[0])):
+                row = table.row()
+                for item in summary:
+                    row.cell(item[i][0])
+                    row.cell(str(item[i][1]))
+        
         # Functie voor tabel met averages per team met speler specifieke dataset als input
         # Functie voor tabel per team met box scores per wedstrijd met speler specifieke dataset als input
 
@@ -503,13 +557,15 @@ class statsreport():
         self.pdf.set_font("Helvetica", style="b", size = self.smalltextsize)
 
         self.player_career_page(stats=total)
-        for year in range(firstseason, lastseason + 1):
-            season = f"SEASON {year}-{year + 1}"
-            self.new_page(self.player, season)
+        for year in range(firstseason, lastseason+1):
             seasonal = stats() 
             seasonal.load()
-            seasonal.select_team(self.team)
+            seasonal.select_player(self.player)
             seasonal.select_period(begin=datetime(year, 8, 1), end=datetime(year + 1, 7, 31))            
+            if not seasonal.check_playerData():
+                continue
+            season = f"SEASON {year}-{year + 1}"   
+            self.new_page(self.player, season)
             self.player_season_page(stats=seasonal)
 
         self.pdf_glossary()

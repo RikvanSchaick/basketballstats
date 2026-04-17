@@ -99,8 +99,12 @@ class stats:
             self.team = self.selector(Counts=self.teamCounts, Team=True)
         return self.team
         
-    def select_player(self) -> None:
+    def select_player(self, player:str=None) -> str:
         if not isinstance(self.playerDataFrame, pd.DataFrame): return
+
+        if player != None:
+            self.player = player
+            return self.player
 
         while True:
             player_name = input("select player by name: ")
@@ -326,3 +330,118 @@ class stats:
         DF11.columns = ['Season', 'G', 'GS', 'MP', 'PTS', 'FG', 'FGA', 'FG%', '3P', '3PA', '3P%', '2P', '2PA', '2P%', 'FT', 'FTA', 'FT%', 'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF']
         DF12 = pd.concat([DF9, DF11], ignore_index=True)
         return DF12
+
+    def check_playerData(self) -> bool:
+        if not isinstance(self.player, str): return pd.DataFrame()
+        if not isinstance(self.playerDataFrame, pd.DataFrame): return pd.DataFrame()
+        DF1 = self.playerDataFrame[self.playerDataFrame['name'] == self.player]
+        if len(DF1['gameId'][DF1['gameId'].isin(self.matchDataFrame['gameId'])]) == 0:
+            return False        
+        return True
+    
+    def gamelog_summary(self) -> pd.DataFrame:
+        if not isinstance(self.player, str): return pd.DataFrame()
+        if not isinstance(self.playerDataFrame, pd.DataFrame): return pd.DataFrame()
+        DF1 = self.playerDataFrame[self.playerDataFrame['name'] == self.player]
+        DF1 = DF1[DF1['gameId'].isin(self.matchDataFrame['gameId'])]
+        DF1['minutes'] = round(DF1['seconds'] / 60, 1)
+        
+        MP_count = []
+        for minute in [(0,10), (10,20), (20,30), (30,40), (40, 999)]:
+            count = len(DF1[(DF1['minutes'] >= minute[0]) & (DF1['minutes'] < minute[1])])
+            if count > 0: 
+                if minute[1] == 999:
+                    MP_count.append((f"{minute[0]}+", count))
+                else:
+                    MP_count.append((f"{minute[0]}-{minute[1]}", count))
+
+        PTS_count = []
+        for point in [(0,5), (5,10), (10,15), (15,20), (20, 999)]:
+            count = len(DF1[(DF1['points'] >= point[0]) & (DF1['points'] < point[1])])
+            if count > 0: 
+                if point[1] == 999:
+                    PTS_count.append((f"{point[0]}+", count))
+                else:
+                    PTS_count.append((f"{point[0]}-{point[1]-1}", count))        
+
+        REB_count = []
+        for rebound in [(0,3), (3,6), (6,10), (10,14), (14, 999)]:
+            count = len(DF1[(DF1['rebounds'] >= rebound[0]) & (DF1['rebounds'] < rebound[1])])
+            if count > 0: 
+                if rebound[1] == 999:
+                    REB_count.append((f"{rebound[0]}+", count))
+                else:
+                    REB_count.append((f"{rebound[0]}-{rebound[1]-1}", count))
+
+        AST_count = []
+        for assist in [(0,3), (3,6), (6,10), (10,14), (14, 999)]:
+            count = len(DF1[(DF1['assists'] >= assist[0]) & (DF1['assists'] < assist[1])])
+            if count > 0: 
+                if assist[1] == 999:
+                    AST_count.append((f"{assist[0]}+", count))
+                else:
+                    AST_count.append((f"{assist[0]}-{assist[1]-1}", count))
+        
+        STL_count = []
+        for steal in [(0,1), (1,3), (3,5), (5,7), (7, 999)]:
+            count = len(DF1[(DF1['steals'] >= steal[0]) & (DF1['steals'] < steal[1])])
+            if count > 0: 
+                if steal[1] == 999:
+                    STL_count.append((f"{steal[0]}+", count))
+                elif steal[0] == 0:
+                    STL_count.append((f"{steal[0]}", count))
+                else:
+                    STL_count.append((f"{steal[0]}-{steal[1]-1}", count))
+        
+        BLK_count = []
+        for block in [(0,1), (1,3), (3,5), (5,7), (7, 999)]:
+            count = len(DF1[(DF1['blocks'] >= block[0]) & (DF1['blocks'] < block[1])])
+            if count > 0: 
+                if block[1] == 999:
+                    BLK_count.append((f"{block[0]}+", count))
+                elif block[0] == 0:
+                    BLK_count.append((f"{block[0]}", count))
+                else:
+                    BLK_count.append((f"{block[0]}-{block[1]-1}", count))
+
+        TOV_count = []
+        for turnover in [(0,1), (1,3), (3,5), (5,7), (7, 999)]:
+            count = len(DF1[(DF1['turnovers'] >= turnover[0]) & (DF1['turnovers'] < turnover[1])])
+            if count > 0: 
+                if turnover[1] == 999:
+                    TOV_count.append((f"{turnover[0]}+", count))
+                elif turnover[0] == 0:
+                    TOV_count.append((f"{turnover[0]}", count))
+                else:
+                    TOV_count.append((f"{turnover[0]}-{turnover[1]-1}", count))
+        
+        PF_count = []
+        for foul in [(0,1), (1,3), (3,5), (5, 999)]:
+            count = len(DF1[(DF1['personalFouls'] >= foul[0]) & (DF1['personalFouls'] < foul[1])])
+            if count > 0: 
+                if foul[1] == 999:
+                    PF_count.append((f"{foul[0]}+", count))
+                elif foul[0] == 0:
+                    PF_count.append((f"{foul[0]}", count))
+                else:
+                    PF_count.append((f"{foul[0]}-{foul[1]-1}", count))
+        
+        max_len = max(len(MP_count), len(PTS_count), len(REB_count), len(AST_count), len(STL_count), len(BLK_count), len(TOV_count), len(PF_count))
+        for _ in range(max_len - len(MP_count)):
+            MP_count.append(("", ""))
+        for _ in range(max_len - len(PTS_count)):
+            PTS_count.append(("", ""))
+        for _ in range(max_len - len(REB_count)):
+            REB_count.append(("", ""))
+        for _ in range(max_len - len(AST_count)):
+            AST_count.append(("", ""))
+        for _ in range(max_len - len(STL_count)):
+            STL_count.append(("", ""))
+        for _ in range(max_len - len(BLK_count)):
+            BLK_count.append(("", ""))
+        for _ in range(max_len - len(TOV_count)):
+            TOV_count.append(("", ""))
+        for _ in range(max_len - len(PF_count)):
+            PF_count.append(("", ""))
+        
+        return [MP_count, PTS_count, REB_count, AST_count, STL_count, BLK_count, TOV_count, PF_count]
