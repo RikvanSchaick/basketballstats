@@ -465,7 +465,7 @@ class statsreport():
         self.pdf.write(text='\n')
         summary = stats.gamelog_summary()
         self.pdf.set_font("Helvetica", style="b", size = 9)
-        self.pdf.cell(w = 0, h = 4, txt = f"Gamelog Summary", ln = 1, align = 'L')
+        self.pdf.cell(w = 0, h = 4, txt = f"Game Log Summary", ln = 1, align = 'L')
         self.pdf.set_font("Helvetica", style="b", size = 7)
         with self.pdf.table(align="L",
                     width=115,
@@ -489,8 +489,7 @@ class statsreport():
                 for item in summary:
                     row.cell(item[i][0])
                     row.cell(str(item[i][1]))
-        
-
+                    
     def player_season_page(self, stats:stats) -> None:
         """
         Gamelog Summary:
@@ -513,10 +512,47 @@ class statsreport():
         - Total regel met de totale statistieken van de speler bij dat team in dat seizoen.
         """   
 
+        # Functie voor tabel met averages per team met speler specifieke dataset als input
+        averages = stats.player_career_averages()
+        self.pdf.set_font("Helvetica", style="b", size = 9)
+        self.pdf.cell(w = 0, h = 4, txt = f"Seasonal Statistics", ln = 1, align = 'L')
+        self.pdf.set_font("Helvetica", style="b", size = 7)
+        data_averages = [['Summary', 'G', 'PTS', 'TRB', 'AST', 'STL', 'BLK', 'FG%', '3P%', 'FT%']]
+        for idx, row in averages.iterrows():
+            season = "Career" if idx == 2 else str(row['Season'])
+            data_averages.append([
+            season,
+            str(int(row['G'])) if pd.notna(row['G']) else "",
+            f"{row['PTS']:.1f}" if pd.notna(row['PTS']) else "",
+            f"{row['TRB']:.1f}" if pd.notna(row['TRB']) else "",
+            f"{row['AST']:.1f}" if pd.notna(row['AST']) else "",
+            f"{row['STL']:.1f}" if pd.notna(row['STL']) else "",
+            f"{row['BLK']:.1f}" if pd.notna(row['BLK']) else "",
+            f"{row['FG%']:.3f}".lstrip("0") if pd.notna(row['FG%']) else "",
+            f"{row['3P%']:.3f}".lstrip("0") if pd.notna(row['3P%']) else "",
+            f"{row['FT%']:.3f}".lstrip("0") if pd.notna(row['FT%']) else ""
+            ])
+        self.pdf.set_line_width(0.15)
+        with self.pdf.table(align="L",
+                    borders_layout="SINGLE_TOP_LINE",
+                    line_height=3,
+                    col_widths=(6, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3), 
+                    text_align=("LEFT", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER")
+        ) as table:
+            for data_row in data_averages[:2]:
+                row = table.row()
+                for datum in data_row:
+                    row.cell(datum)
+            for data_row in data_averages[-1:]:
+                row = table.row()
+                for datum in data_row:
+                    row.cell(datum)
+                                    
         # Functie voor gamelog summary met speler specifieke dataset als input
+        self.pdf.write(text='\n')
         summary = stats.gamelog_summary()
         self.pdf.set_font("Helvetica", style="b", size = 9)
-        self.pdf.cell(w = 0, h = 4, txt = f"Gamelog Summary", ln = 1, align = 'L')
+        self.pdf.cell(w = 0, h = 4, txt = f"Game Log Summary", ln = 1, align = 'L')
         self.pdf.set_font("Helvetica", style="b", size = 7)
         with self.pdf.table(align="L",
                     width=115,
@@ -534,14 +570,12 @@ class statsreport():
             row.cell("Blocks", colspan=2)
             row.cell("Turnovers", colspan=2)
             row.cell("Fouls", colspan=2)
-            
             for i in range(len(summary[0])):
                 row = table.row()
                 for item in summary:
                     row.cell(item[i][0])
                     row.cell(str(item[i][1]))
         
-        # Functie voor tabel met averages per team met speler specifieke dataset als input
         # Functie voor tabel per team met box scores per wedstrijd met speler specifieke dataset als input
 
     def export_player_stats(self) -> None:
