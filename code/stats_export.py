@@ -472,7 +472,7 @@ class statsreport():
                     borders_layout="SINGLE_TOP_LINE",
                     line_height=3,
                     col_widths=(3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2), 
-                    text_align=("CENTER", "LEFT", "CENTER", "LEFT", "CENTER", "LEFT", "CENTER", "LEFT", "CENTER", "LEFT", "CENTER", "LEFT", "CENTER", "LEFT", "CENTER", "LEFT")
+                    text_align=("CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER")
         ) as table:
             row = table.row()
             row.cell("Minutes", colspan=2)
@@ -513,16 +513,16 @@ class statsreport():
         """   
 
         # Functie voor tabel met averages per team met speler specifieke dataset als input
-        averages = stats.player_career_averages()
+        averages = stats.player_career_averages(teamsplit=True)
         self.pdf.set_font("Helvetica", style="b", size = 9)
         self.pdf.cell(w = 0, h = 4, txt = f"Seasonal Statistics", ln = 1, align = 'L')
         self.pdf.set_font("Helvetica", style="b", size = 7)
-        data_averages = [['Summary', 'G', 'PTS', 'TRB', 'AST', 'STL', 'BLK', 'FG%', '3P%', 'FT%']]
+        data_averages = [['Summary', 'Team', 'G', 'PTS', 'TRB', 'AST', 'STL', 'BLK', 'FG%', '3P%', 'FT%']]
         for idx, row in averages.iterrows():
-            season = "Career" if idx == 2 else str(row['Season'])
             data_averages.append([
-            season,
-            str(int(row['G'])) if pd.notna(row['G']) else "",
+            f"{row['Season']}" if pd.notna(row['Season']) else "",
+            f"{row['Team']}" if pd.notna(row['Team']) else "",
+            f"{row['G']}" if pd.notna(row['G']) else "",
             f"{row['PTS']:.1f}" if pd.notna(row['PTS']) else "",
             f"{row['TRB']:.1f}" if pd.notna(row['TRB']) else "",
             f"{row['AST']:.1f}" if pd.notna(row['AST']) else "",
@@ -534,20 +534,29 @@ class statsreport():
             ])
         self.pdf.set_line_width(0.15)
         with self.pdf.table(align="L",
+                    width=100,
                     borders_layout="SINGLE_TOP_LINE",
                     line_height=3,
-                    col_widths=(6, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3), 
-                    text_align=("LEFT", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER")
+                    col_widths=(6, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3), 
+                    text_align=("LEFT", "LEFT", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER")
         ) as table:
-            for data_row in data_averages[:2]:
+            for data_row in data_averages[:-1]:
                 row = table.row()
                 for datum in data_row:
                     row.cell(datum)
+                    
+        with self.pdf.table(align="L",
+                    width=100,
+                    borders_layout="SINGLE_TOP_LINE",
+                    line_height=3,
+                    col_widths=(6, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3), 
+                    text_align=("LEFT", "LEFT", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER")
+        ) as table:
             for data_row in data_averages[-1:]:
                 row = table.row()
                 for datum in data_row:
-                    row.cell(datum)
-                                    
+                    row.cell(datum, border="TOP")
+                                                        
         # Functie voor gamelog summary met speler specifieke dataset als input
         self.pdf.write(text='\n')
         summary = stats.gamelog_summary()
@@ -559,7 +568,7 @@ class statsreport():
                     borders_layout="SINGLE_TOP_LINE",
                     line_height=3,
                     col_widths=(3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2), 
-                    text_align=("CENTER", "LEFT", "CENTER", "LEFT", "CENTER", "LEFT", "CENTER", "LEFT", "CENTER", "LEFT", "CENTER", "LEFT", "CENTER", "LEFT", "CENTER", "LEFT")
+                    text_align=("CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER")
         ) as table:
             row = table.row()
             row.cell("Minutes", colspan=2)

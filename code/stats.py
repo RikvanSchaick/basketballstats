@@ -253,44 +253,85 @@ class stats:
         blk_max = DF1['blocks'].max()
         return {"pts": pts_max, "reb": reb_max, "ast": ast_max, "stl": stl_max, "blk": blk_max}
     
-    def player_career_averages(self) -> pd.DataFrame:
+    def player_career_averages(self, teamsplit:bool=False) -> pd.DataFrame:
         if not isinstance(self.player, str): return pd.DataFrame()
         if not isinstance(self.matchDataFrame, pd.DataFrame): return pd.DataFrame()
-        DF1 = self.playerDataFrame[self.playerDataFrame['name'] == self.player]
-        DF2 = DF1.merge(self.matchDataFrame[['gameId', 'dateTime']], on='gameId', how='left')
-        DF2['season'] = DF2['dateTime'].apply(lambda x: f"{x.year}-{str(x.year+1)[-2:]}" if x.month >= 8 else f"{x.year-1}-{str(x.year)[-2:]}")
-        DF3 = DF2.drop(['gameId', 'starter', 'name', 'number', 'team', 'dateTime'], axis=1)
-        DF4 = DF3.groupby('season', as_index=False).mean()
-        DF4['twoPointersMade'] = (DF4['fieldGoalsMade']-DF4['threePointersMade'])
-        DF4['twoPointersAttempted'] = (DF4['fieldGoalsAttempted']-DF4['threePointersAttempted'])
-        DF4['minutes'] = (DF4['seconds'] / 60)
-        DF4['FG%'] = (DF4['fieldGoalsMade']/DF4['fieldGoalsAttempted'])
-        DF4['3P%'] = (DF4['threePointersMade']/DF4['threePointersAttempted'])
-        DF4['2P%'] = (DF4['twoPointersMade']/DF4['twoPointersAttempted'])
-        DF4['FT%'] = (DF4['freeThrowsMade']/DF4['freeThrowsAttempted'])
-        DF5 = DF2.groupby('season', as_index=False).size()
-        DF6 = pd.merge(DF4, DF5, on='season')
-        DF7 = DF2.groupby('season')['starter'].sum()
-        DF8 = pd.merge(DF6, DF7, on='season')
-        DF9 = DF8[['season', 'size', 'starter', 'minutes', 'points', 'fieldGoalsMade', 'fieldGoalsAttempted', 'FG%', 'threePointersMade', 'threePointersAttempted', '3P%', 'twoPointersMade', 'twoPointersAttempted', '2P%', 'freeThrowsMade', 'freeThrowsAttempted', 'FT%', 'offRebounds', 'defRebounds', 'rebounds', 'assists', 'steals', 'blocks', 'turnovers', 'personalFouls']]
-        DF9.columns = ['Season', 'G', 'GS', 'MP', 'PTS', 'FG', 'FGA', 'FG%', '3P', '3PA', '3P%', '2P', '2PA', '2P%', 'FT', 'FTA', 'FT%', 'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF']
+        if teamsplit:
+            DF1 = self.playerDataFrame[self.playerDataFrame['name'] == self.player]
+            DF2 = DF1.merge(self.matchDataFrame[['gameId', 'dateTime']], on='gameId', how='left')
+            DF2['season'] = DF2['dateTime'].apply(lambda x: f"{x.year}-{str(x.year+1)[-2:]}" if x.month >= 8 else f"{x.year-1}-{str(x.year)[-2:]}")
+            DF3 = DF2.drop(['gameId', 'starter', 'name', 'number', 'dateTime'], axis=1)
+            DF4 = DF3.groupby(['team', 'season'], as_index=False).mean()
+            DF4['twoPointersMade'] = (DF4['fieldGoalsMade']-DF4['threePointersMade'])
+            DF4['twoPointersAttempted'] = (DF4['fieldGoalsAttempted']-DF4['threePointersAttempted'])
+            DF4['minutes'] = (DF4['seconds'] / 60)
+            DF4['FG%'] = (DF4['fieldGoalsMade']/DF4['fieldGoalsAttempted'])
+            DF4['3P%'] = (DF4['threePointersMade']/DF4['threePointersAttempted'])
+            DF4['2P%'] = (DF4['twoPointersMade']/DF4['twoPointersAttempted'])
+            DF4['FT%'] = (DF4['freeThrowsMade']/DF4['freeThrowsAttempted'])
+            DF5 = DF2.groupby(['team', 'season'], as_index=False).size()
+            DF6 = pd.merge(DF4, DF5, on=['team', 'season'])
+            DF7 = DF2.groupby(['team', 'season'])['starter'].sum()
+            DF8 = pd.merge(DF6, DF7, on=['team', 'season'])
+            DF9 = DF8[['season', 'team', 'size', 'starter', 'minutes', 'points', 'fieldGoalsMade', 'fieldGoalsAttempted', 'FG%', 'threePointersMade', 'threePointersAttempted', '3P%', 'twoPointersMade', 'twoPointersAttempted', '2P%', 'freeThrowsMade', 'freeThrowsAttempted', 'FT%', 'offRebounds', 'defRebounds', 'rebounds', 'assists', 'steals', 'blocks', 'turnovers', 'personalFouls']]
+            DF9.columns = ['Season', 'Team', 'G', 'GS', 'MP', 'PTS', 'FG', 'FGA', 'FG%', '3P', '3PA', '3P%', '2P', '2PA', '2P%', 'FT', 'FTA', 'FT%', 'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF']
+            
+            DF10 = DF3.drop(['season', 'team'], axis=1, errors='ignore').mean(skipna=True)    
+            DF10['Season'] = f"Career"
+            DF10['Team'] = ""
+            DF10['twoPointersMade'] = (DF10['fieldGoalsMade'] - DF10['threePointersMade'])
+            DF10['twoPointersAttempted'] = (DF10['fieldGoalsAttempted'] - DF10['threePointersAttempted'])
+            DF10['minutes'] = (DF10['seconds'] / 60)
+            DF10['FG%'] = (DF10['fieldGoalsMade'] / DF10['fieldGoalsAttempted'])
+            DF10['3P%'] = (DF10['threePointersMade'] / DF10['threePointersAttempted'])
+            DF10['2P%'] = (DF10['twoPointersMade'] / DF10['twoPointersAttempted'])
+            DF10['FT%'] = (DF10['freeThrowsMade'] / DF10['freeThrowsAttempted'])
+            DF10['G'] = len(DF2['gameId'].unique())
+            DF10['GS'] = DF2['starter'].sum()
+            DF10 = DF10[['Season', 'Team', 'G', 'GS', 'minutes', 'points', 'fieldGoalsMade', 'fieldGoalsAttempted', 'FG%', 'threePointersMade', 'threePointersAttempted', '3P%', 'twoPointersMade', 'twoPointersAttempted', '2P%', 'freeThrowsMade', 'freeThrowsAttempted', 'FT%', 'offRebounds', 'defRebounds', 'rebounds', 'assists', 'steals', 'blocks', 'turnovers', 'personalFouls']]
+            DF11 = pd.DataFrame([DF10.values], columns=DF10.index)
+            DF11.columns = ['Season', 'Team', 'G', 'GS', 'MP', 'PTS', 'FG', 'FGA', 'FG%', '3P', '3PA', '3P%', '2P', '2PA', '2P%', 'FT', 'FTA', 'FT%', 'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF']
+            DF12 = pd.concat([DF9, DF11], ignore_index=True)
+            DF12 = DF12[DF12['Season'].astype(str) != 'nan-an'].reset_index(drop=True)
+            DF12['Team'] = (DF12['Team'].str.extract(r'\(([^()]*)\)', expand=False).fillna(DF12['Team']))
+            return DF12
+            
+        else:
+            DF1 = self.playerDataFrame[self.playerDataFrame['name'] == self.player]
+            DF2 = DF1.merge(self.matchDataFrame[['gameId', 'dateTime']], on='gameId', how='left')
+            DF2['season'] = DF2['dateTime'].apply(lambda x: f"{x.year}-{str(x.year+1)[-2:]}" if x.month >= 8 else f"{x.year-1}-{str(x.year)[-2:]}")
+            DF3 = DF2.drop(['gameId', 'starter', 'name', 'number', 'team', 'dateTime'], axis=1)
+            DF4 = DF3.groupby('season', as_index=False).mean()
+            DF4['twoPointersMade'] = (DF4['fieldGoalsMade']-DF4['threePointersMade'])
+            DF4['twoPointersAttempted'] = (DF4['fieldGoalsAttempted']-DF4['threePointersAttempted'])
+            DF4['minutes'] = (DF4['seconds'] / 60)
+            DF4['FG%'] = (DF4['fieldGoalsMade']/DF4['fieldGoalsAttempted'])
+            DF4['3P%'] = (DF4['threePointersMade']/DF4['threePointersAttempted'])
+            DF4['2P%'] = (DF4['twoPointersMade']/DF4['twoPointersAttempted'])
+            DF4['FT%'] = (DF4['freeThrowsMade']/DF4['freeThrowsAttempted'])
+            DF5 = DF2.groupby('season', as_index=False).size()
+            DF6 = pd.merge(DF4, DF5, on='season')
+            DF7 = DF2.groupby('season')['starter'].sum()
+            DF8 = pd.merge(DF6, DF7, on='season')
+            DF9 = DF8[['season', 'size', 'starter', 'minutes', 'points', 'fieldGoalsMade', 'fieldGoalsAttempted', 'FG%', 'threePointersMade', 'threePointersAttempted', '3P%', 'twoPointersMade', 'twoPointersAttempted', '2P%', 'freeThrowsMade', 'freeThrowsAttempted', 'FT%', 'offRebounds', 'defRebounds', 'rebounds', 'assists', 'steals', 'blocks', 'turnovers', 'personalFouls']]
+            DF9.columns = ['Season', 'G', 'GS', 'MP', 'PTS', 'FG', 'FGA', 'FG%', '3P', '3PA', '3P%', '2P', '2PA', '2P%', 'FT', 'FTA', 'FT%', 'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF']
         
-        DF10 = DF3.drop(['season'], axis=1, errors='ignore').mean(skipna=True)    
-        DF10['Season'] = f"{int(DF2['season'].nunique())} seasons"
-        DF10['twoPointersMade'] = (DF10['fieldGoalsMade'] - DF10['threePointersMade'])
-        DF10['twoPointersAttempted'] = (DF10['fieldGoalsAttempted'] - DF10['threePointersAttempted'])
-        DF10['minutes'] = (DF10['seconds'] / 60)
-        DF10['FG%'] = (DF10['fieldGoalsMade'] / DF10['fieldGoalsAttempted'])
-        DF10['3P%'] = (DF10['threePointersMade'] / DF10['threePointersAttempted'])
-        DF10['2P%'] = (DF10['twoPointersMade'] / DF10['twoPointersAttempted'])
-        DF10['FT%'] = (DF10['freeThrowsMade'] / DF10['freeThrowsAttempted'])
-        DF10['G'] = len(DF2['gameId'].unique())
-        DF10['GS'] = DF2['starter'].sum()
-        DF10 = DF10[['Season', 'G', 'GS', 'minutes', 'points', 'fieldGoalsMade', 'fieldGoalsAttempted', 'FG%', 'threePointersMade', 'threePointersAttempted', '3P%', 'twoPointersMade', 'twoPointersAttempted', '2P%', 'freeThrowsMade', 'freeThrowsAttempted', 'FT%', 'offRebounds', 'defRebounds', 'rebounds', 'assists', 'steals', 'blocks', 'turnovers', 'personalFouls']]
-        DF11 = pd.DataFrame([DF10.values], columns=DF10.index)
-        DF11.columns = ['Season', 'G', 'GS', 'MP', 'PTS', 'FG', 'FGA', 'FG%', '3P', '3PA', '3P%', '2P', '2PA', '2P%', 'FT', 'FTA', 'FT%', 'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF']
-        DF12 = pd.concat([DF9, DF11], ignore_index=True)
-        return DF12
+            DF10 = DF3.drop(['season'], axis=1, errors='ignore').mean(skipna=True)    
+            DF10['Season'] = f"{int(DF2['season'].nunique())} seasons"
+            DF10['twoPointersMade'] = (DF10['fieldGoalsMade'] - DF10['threePointersMade'])
+            DF10['twoPointersAttempted'] = (DF10['fieldGoalsAttempted'] - DF10['threePointersAttempted'])
+            DF10['minutes'] = (DF10['seconds'] / 60)
+            DF10['FG%'] = (DF10['fieldGoalsMade'] / DF10['fieldGoalsAttempted'])
+            DF10['3P%'] = (DF10['threePointersMade'] / DF10['threePointersAttempted'])
+            DF10['2P%'] = (DF10['twoPointersMade'] / DF10['twoPointersAttempted'])
+            DF10['FT%'] = (DF10['freeThrowsMade'] / DF10['freeThrowsAttempted'])
+            DF10['G'] = len(DF2['gameId'].unique())
+            DF10['GS'] = DF2['starter'].sum()
+            DF10 = DF10[['Season', 'G', 'GS', 'minutes', 'points', 'fieldGoalsMade', 'fieldGoalsAttempted', 'FG%', 'threePointersMade', 'threePointersAttempted', '3P%', 'twoPointersMade', 'twoPointersAttempted', '2P%', 'freeThrowsMade', 'freeThrowsAttempted', 'FT%', 'offRebounds', 'defRebounds', 'rebounds', 'assists', 'steals', 'blocks', 'turnovers', 'personalFouls']]
+            DF11 = pd.DataFrame([DF10.values], columns=DF10.index)
+            DF11.columns = ['Season', 'G', 'GS', 'MP', 'PTS', 'FG', 'FGA', 'FG%', '3P', '3PA', '3P%', '2P', '2PA', '2P%', 'FT', 'FTA', 'FT%', 'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF']
+            DF12 = pd.concat([DF9, DF11], ignore_index=True)
+            return DF12
     
     def player_career_totals(self) -> pd.DataFrame:
         if not isinstance(self.player, str): return pd.DataFrame()
