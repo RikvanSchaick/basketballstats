@@ -278,7 +278,7 @@ class stats:
             
             DF10 = DF3.drop(['season', 'team'], axis=1, errors='ignore').mean(skipna=True)    
             DF10['Season'] = f"Career"
-            DF10['Team'] = ""
+            DF10['Team'] = None
             DF10['twoPointersMade'] = (DF10['fieldGoalsMade'] - DF10['threePointersMade'])
             DF10['twoPointersAttempted'] = (DF10['fieldGoalsAttempted'] - DF10['threePointersAttempted'])
             DF10['minutes'] = (DF10['seconds'] / 60)
@@ -293,7 +293,6 @@ class stats:
             DF11.columns = ['Season', 'Team', 'G', 'GS', 'MP', 'PTS', 'FG', 'FGA', 'FG%', '3P', '3PA', '3P%', '2P', '2PA', '2P%', 'FT', 'FTA', 'FT%', 'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF']
             DF12 = pd.concat([DF9, DF11], ignore_index=True)
             DF12 = DF12[DF12['Season'].astype(str) != 'nan-an'].reset_index(drop=True)
-            DF12['Team'] = (DF12['Team'].str.extract(r'\(([^()]*)\)', expand=False).fillna(DF12['Team']))
             return DF12
             
         else:
@@ -486,3 +485,50 @@ class stats:
             PF_count.append(("", ""))
         
         return [MP_count, PTS_count, REB_count, AST_count, STL_count, BLK_count, TOV_count, PF_count]
+    
+    def gamelog(self, team=str):
+        if not isinstance(self.matchDataFrame, pd.DataFrame): return pd.DataFrame()
+        MATCHES = self.matchDataFrame[(self.matchDataFrame['homeTeam'] == team) | (self.matchDataFrame['awayTeam'] == team)]
+        PLAYED = self.playerDataFrame[(self.playerDataFrame['name'] == self.player) & (self.playerDataFrame['team'] == team)]
+        JOINED = MATCHES[['gameId', 'dateTime', 'homeTeam', 'awayTeam', 'homeScore', 'awayScore']].merge(PLAYED, on='gameId', how='left')
+        JOINED['minutes'] = JOINED['seconds'].apply(lambda s: f"{int(s // 60)}:{int(s % 60):02d}" if pd.notna(s) else "")
+        JOINED['FG%'] = (JOINED['fieldGoalsMade'] / JOINED['fieldGoalsAttempted'])
+        JOINED['3P%'] = (JOINED['threePointersMade'] / JOINED['threePointersAttempted'])
+        JOINED['FT%'] = (JOINED['freeThrowsMade'] / JOINED['freeThrowsAttempted'])
+        JOINED['Team'] = team
+        JOINED['Opp'] = JOINED.apply(lambda row: row['homeTeam'] if row['homeTeam'] != team else row['awayTeam'], axis=1)
+        JOINED['@'] = JOINED.apply(lambda row: '@' if row['homeTeam'] != team else '', axis=1)
+        JOINED['GS'] = JOINED['starter'].apply(lambda x: '*' if x is True else '')
+        JOINED['Score'] = JOINED.apply(lambda row: f"{row['homeScore']}-{row['awayScore']}",axis=1)
+        JOINED['Winner'] = JOINED.apply(lambda row: row['homeTeam'] if row['homeScore'] > row['awayScore'] else row['awayTeam'], axis=1)
+        JOINED['W/L'] = JOINED.apply(lambda row: 'W' if (row['Winner'] == team) else 'L', axis=1)
+        JOINED['Result'] = JOINED['W/L'] + ', ' + JOINED['Score']
+        if len(JOINED['name'].dropna())/len(MATCHES) < 0:
+            JOINED = JOINED[JOINED['name'].notna()]
+        else:
+            JOINED.loc[JOINED['name'].isna(), 'GS'] = 'Inactive'
+        JOINED = JOINED.sort_values(by=['dateTime'], ascending=True).reset_index(drop=True)
+        JOINED['Game'] = range(1, len(JOINED) + 1)
+        JOINED2 = JOINED[['Game', 'dateTime', 'Team', '@', 'Opp', 'Result', 'GS', 'minutes', 'points', 'fieldGoalsMade', 'fieldGoalsAttempted', 'FG%', 'threePointersMade', 'threePointersAttempted', '3P%', 'freeThrowsMade', 'freeThrowsAttempted', 'FT%', 'offRebounds', 'defRebounds', 'rebounds', 'assists', 'steals', 'blocks', 'turnovers', 'personalFouls', 'plusMinus']]
+        JOINED2.columns = ['Game', 'Date', 'Team', '@', 'Opp', 'Result', 'GS', "MP", "PTS", "FG", "FGA", "FG%", "3P", "3PA", "3P%", "FT", "FTA", "FT%", "ORB", "DRB", "TOT", "AST", "STL", "BLK", "PF", "TOV", "+/-"]
+        JOINED2['Opp'] = JOINED2['Opp'].str.split(' (', n=1, regex=False).str[0]
+        JOINED2['Opp'] = JOINED2['Opp'].apply(lambda x: (f"{x}" if len(x) < 19 else f"{x[:17]}...") if pd.notna(x) else None)
+        
+        JOINED3 = JOINED2.drop(['Game', 'Date', 'Team', '@', 'Opp', 'Result', 'GS', 'MP', "FG%", "3P%", "FT%" ], axis=1, errors='ignore').sum(skipna=True)    
+        JOINED3['Game'] = None
+        JOINED3['Date'] = None
+        JOINED3['Team'] = None
+        JOINED3['@'] = None
+        JOINED3['Opp'] = None
+        JOINED3['Result'] = f"{(JOINED['W/L'] == 'W').sum()}-{(JOINED['W/L'] == 'L').sum()}"
+        JOINED3['GS'] = str(int((JOINED['GS'] == '*').sum()))
+        JOINED3['MP'] = int(JOINED['seconds'].sum() / 60)
+        JOINED3['FG%'] = (JOINED3['FG'] / JOINED3['FGA']) if JOINED3['FGA'] > 0 else ""
+        JOINED3['3P%'] = (JOINED3['3P'] / JOINED3['3PA']) if JOINED3['3PA'] > 0 else ""
+        JOINED3['FT%'] = (JOINED3['FT'] / JOINED3['FTA']) if JOINED3['FTA'] > 0 else ""
+        JOINED3 = JOINED3[['Game', 'Date', 'Team', '@', 'Opp', 'Result', 'GS', "MP", "PTS", "FG", "FGA", "FG%", "3P", "3PA", "3P%", "FT", "FTA", "FT%", "ORB", "DRB", "TOT", "AST", "STL", "BLK", "PF", "TOV", "+/-"]]
+        JOINED3 = pd.DataFrame([JOINED3.values], columns=JOINED3.index)
+        JOINED3.columns = ['Game', 'Date', 'Team', '@', 'Opp', 'Result', 'GS', "MP", "PTS", "FG", "FGA", "FG%", "3P", "3PA", "3P%", "FT", "FTA", "FT%", "ORB", "DRB", "TOT", "AST", "STL", "BLK", "PF", "TOV", "+/-"]
+        # JOINED4 = pd.concat([JOINED2, JOINED3], ignore_index=True)
+        JOINED4 = pd.concat([d.dropna(axis=1, how='all') for d in [JOINED2, JOINED3]])
+        return JOINED4

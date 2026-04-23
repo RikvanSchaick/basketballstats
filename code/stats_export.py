@@ -491,37 +491,16 @@ class statsreport():
                     row.cell(str(item[i][1]))
                     
     def player_season_page(self, stats:stats) -> None:
-        """
-        Gamelog Summary:
-        Aangeven van totals in ranges met volgende statistieken: 
-        1. MP:  [0-10, 10-20, 20-30, 30-40, 40+]
-        2. PTS: [0-4, 5-9, 10-14, 15-19, 20+]
-        3. REB: [0-2, 3-5, 6-9, 10-13, 14+]
-        4. AST: [0-2, 3-5, 6-9, 10-13, 14+]
-        5. STL: [0, 1-2, 3-4, 5-6, 7+]
-        6. BLK: [0, 1-2, 3-4, 5-6, 7+]
-        7. TOV: [0, 1-2, 3-4, 5-6, 7+]
-        8. PF:  [0, 1-2, 3-4, 5]
-
-        Data over de per game en totale statistieken van de betreffende speler over een seizoen.
-        - Een regel met de gemiddeldes over alle gespeelde wedstrijden in het seizoen per team
-        - Een total regel met de gemiddelden over alle teams
-        
-        Per team waar speelster dat seizoen speelde:
-        - Tabel met alle box scores van de speler per gespeelde wedstrijd bij dat team. 
-        - Total regel met de totale statistieken van de speler bij dat team in dat seizoen.
-        """   
-
-        # Functie voor tabel met averages per team met speler specifieke dataset als input
         averages = stats.player_career_averages(teamsplit=True)
         self.pdf.set_font("Helvetica", style="b", size = 9)
         self.pdf.cell(w = 0, h = 4, txt = f"Seasonal Statistics", ln = 1, align = 'L')
         self.pdf.set_font("Helvetica", style="b", size = 7)
         data_averages = [['Summary', 'Team', 'G', 'PTS', 'TRB', 'AST', 'STL', 'BLK', 'FG%', '3P%', 'FT%']]
+        averages['Team2'] = (averages['Team'].str.extract(r'\(([^()]*)\)', expand=False).fillna(averages['Team']))
         for idx, row in averages.iterrows():
             data_averages.append([
             f"{row['Season']}" if pd.notna(row['Season']) else "",
-            f"{row['Team']}" if pd.notna(row['Team']) else "",
+            f"{row['Team2']}" if pd.notna(row['Team2']) else "",
             f"{row['G']}" if pd.notna(row['G']) else "",
             f"{row['PTS']:.1f}" if pd.notna(row['PTS']) else "",
             f"{row['TRB']:.1f}" if pd.notna(row['TRB']) else "",
@@ -557,7 +536,6 @@ class statsreport():
                 for datum in data_row:
                     row.cell(datum, border="TOP")
                                                         
-        # Functie voor gamelog summary met speler specifieke dataset als input
         self.pdf.write(text='\n')
         summary = stats.gamelog_summary()
         self.pdf.set_font("Helvetica", style="b", size = 9)
@@ -585,8 +563,67 @@ class statsreport():
                     row.cell(item[i][0])
                     row.cell(str(item[i][1]))
         
-        # Functie voor tabel per team met box scores per wedstrijd met speler specifieke dataset als input
-
+        for team in averages['Team'].dropna().unique():
+            self.pdf.write(text='\n')
+            games = stats.gamelog(team = team)
+            self.pdf.set_font("Helvetica", style="b", size = 9)
+            self.pdf.cell(w = 0, h = 4, txt = f"Game Log", ln = 1, align = 'L')
+            self.pdf.set_font("Helvetica", style="bi", size = 6)
+            if len(averages['Team'].dropna().unique()) > 1:
+                self.pdf.cell(w = 0, h = 4, txt = f"When playing for {team}", ln = 1, align = 'L')
+            self.pdf.set_font("Helvetica", style="b", size = 6)
+            gamelog = [['#', 'Date', '', 'Opp', 'Result', 'GS', "MP", "PTS", "FG", "FGA", "FG%", "3P", "3PA", "3P%", "FT", "FTA", "FT%", "ORB", "DRB", "TOT", "AST", "STL", "BLK", "TOV", "PF", "+/-"]]
+            for idx, row in games.iterrows():
+                gamelog.append([
+                f"{int(row['Game'])}" if pd.notna(row['Game']) else "",
+                f"{pd.to_datetime(row['Date']).date()}" if pd.notna(row['Date']) else "",
+                f"{row['@']}" if pd.notna(row['@']) else "",
+                f"{str(row['Opp'])}" if pd.notna(row['Opp']) else "",
+                f"{row['Result']}" if pd.notna(row['Result']) else "",
+                f"{row['GS']}" if pd.notna(row['GS']) else "",
+                f"{row['MP']}" if pd.notna(row['MP']) else "",
+                f"{row['PTS']:.0f}" if pd.notna(row['PTS']) else "",
+                f"{row['FG']:.0f}" if pd.notna(row['FG']) else "",
+                f"{row['FGA']:.0f}" if pd.notna(row['FGA']) else "",
+                f"{row['FG%']:.3f}".lstrip("0") if pd.notna(row['FG%']) and row['FG%'] != "" else "",
+                f"{row['3P']:.0f}" if pd.notna(row['3P']) else "",
+                f"{row['3PA']:.0f}" if pd.notna(row['3PA']) else "",
+                f"{row['3P%']:.3f}".lstrip("0") if pd.notna(row['3P%']) and row['3P%'] != "" else "",
+                f"{row['FT']:.0f}" if pd.notna(row['FT']) else "",
+                f"{row['FTA']:.0f}" if pd.notna(row['FTA']) else "",
+                f"{row['FT%']:.3f}".lstrip("0") if pd.notna(row['FT%']) and row['FT%'] != "" else "",
+                f"{row['ORB']:.0f}" if pd.notna(row['ORB']) else "",
+                f"{row['DRB']:.0f}" if pd.notna(row['DRB']) else "",
+                f"{row['TOT']:.0f}" if pd.notna(row['TOT']) else "",
+                f"{row['AST']:.0f}" if pd.notna(row['AST']) else "",
+                f"{row['STL']:.0f}" if pd.notna(row['STL']) else "",
+                f"{row['BLK']:.0f}" if pd.notna(row['BLK']) else "",
+                f"{row['TOV']:.0f}" if pd.notna(row['TOV']) else "",
+                f"{row['PF']:.0f}" if pd.notna(row['PF']) else "",
+                f"{row['+/-']:.0f}" if pd.notna(row['+/-']) else ""
+                ])
+            self.pdf.set_line_width(0.15)
+            with self.pdf.table(align="L",
+                        borders_layout="SINGLE_TOP_LINE",
+                        line_height=3,
+                        col_widths=(0.9, 2.7, 0.85, 5.2, 2.5, 1.1, 1.6, 1.4, 1.3, 1.4, 1.5, 1.3, 1.4, 1.5, 1.3, 1.4, 1.5, 1.4, 1.4, 1.4, 1.4, 1.4, 1.4, 1.4, 1.3, 1.3), 
+                        text_align=("RIGHT", "LEFT", "RIGHT", "LEFT", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER")
+            ) as table:
+                for idx, data_row in enumerate(gamelog):
+                    row = table.row()
+                    for datum in data_row:
+                        if datum == "Inactive": 
+                            self.pdf.set_font("Helvetica", style="bi", size = 4.5)
+                            row.cell(datum, colspan=21)  
+                            self.pdf.set_font("Helvetica", style="b", size = 6)
+                            break
+                        if idx == len(gamelog) - 1:
+                            row.cell(datum, border="TOP") 
+                        else:
+                            row.cell(datum)
+            self.pdf.set_font("Helvetica", style="bi", size = 4.5)
+            self.pdf.cell(w = 0, h = 4, txt = f"* Games not annotated, are not shown in the game log", ln = 1, align = 'R')
+                
     def export_player_stats(self) -> None:
         total = stats() 
         total.load()
