@@ -283,7 +283,7 @@ class stats:
             DF10['twoPointersAttempted'] = (DF10['fieldGoalsAttempted'] - DF10['threePointersAttempted'])
             DF10['minutes'] = (DF10['seconds'] / 60)
             DF10['FG%'] = (DF10['fieldGoalsMade'] / DF10['fieldGoalsAttempted'])
-            DF10['3P%'] = (DF10['threePointersMade'] / DF10['threePointersAttempted'])
+            DF10['3P%'] = (DF10['threePointersMade'] / DF10['threePointersAttempted']) if DF10['threePointersAttempted'] != 0 else 0
             DF10['2P%'] = (DF10['twoPointersMade'] / DF10['twoPointersAttempted'])
             DF10['FT%'] = (DF10['freeThrowsMade'] / DF10['freeThrowsAttempted'])
             DF10['G'] = len(DF2['gameId'].unique())
@@ -321,7 +321,7 @@ class stats:
             DF10['twoPointersAttempted'] = (DF10['fieldGoalsAttempted'] - DF10['threePointersAttempted'])
             DF10['minutes'] = (DF10['seconds'] / 60)
             DF10['FG%'] = (DF10['fieldGoalsMade'] / DF10['fieldGoalsAttempted'])
-            DF10['3P%'] = (DF10['threePointersMade'] / DF10['threePointersAttempted'])
+            DF10['3P%'] = (DF10['threePointersMade'] / DF10['threePointersAttempted']) if DF10['threePointersAttempted'] != 0 else 0
             DF10['2P%'] = (DF10['twoPointersMade'] / DF10['twoPointersAttempted'])
             DF10['FT%'] = (DF10['freeThrowsMade'] / DF10['freeThrowsAttempted'])
             DF10['G'] = len(DF2['gameId'].unique())
@@ -344,7 +344,7 @@ class stats:
         DF4['twoPointersAttempted'] = (DF4['fieldGoalsAttempted']-DF4['threePointersAttempted'])
         DF4['minutes'] = (DF4['seconds'] / 60)
         DF4['FG%'] = (DF4['fieldGoalsMade']/DF4['fieldGoalsAttempted'])
-        DF4['3P%'] = (DF4['threePointersMade']/DF4['threePointersAttempted'])
+        DF4['3P%'] = DF4['threePointersMade'] / DF4['threePointersAttempted'].replace(0, float('nan'))
         DF4['2P%'] = (DF4['twoPointersMade']/DF4['twoPointersAttempted'])
         DF4['FT%'] = (DF4['freeThrowsMade']/DF4['freeThrowsAttempted'])
         DF5 = DF2.groupby('season', as_index=False).size()
@@ -360,7 +360,7 @@ class stats:
         DF10['twoPointersAttempted'] = (DF10['fieldGoalsAttempted'] - DF10['threePointersAttempted'])
         DF10['minutes'] = (DF10['seconds'] / 60)
         DF10['FG%'] = (DF10['fieldGoalsMade'] / DF10['fieldGoalsAttempted'])
-        DF10['3P%'] = (DF10['threePointersMade'] / DF10['threePointersAttempted'])
+        DF10['3P%'] = (DF10['threePointersMade'] / DF10['threePointersAttempted']) if DF10['threePointersAttempted'] != 0 else 0
         DF10['2P%'] = (DF10['twoPointersMade'] / DF10['twoPointersAttempted'])
         DF10['FT%'] = (DF10['freeThrowsMade'] / DF10['freeThrowsAttempted'])
         DF10['G'] = len(DF2['gameId'].unique())

@@ -106,6 +106,7 @@ def main():
     eventstring = None
     while not eventstring in {"create", "select", "exit"}:
         prints("intro")
+        # eventstring = "stats"
         eventstring = input()
         
         if eventstring == "create":
@@ -207,6 +208,7 @@ def main():
             eventstring = None
             while not eventstring == "exit":
                 prints("stats")
+                # eventstring = "player"
                 eventstring = input()
                 
                 if eventstring == "team":
@@ -216,7 +218,7 @@ def main():
                 elif eventstring == "player":
                     s = statsreport()
                     s.export_player_stats()
-                        
+                    # exit()
         elif eventstring == "exit":
             exit()
                     
