@@ -8,6 +8,8 @@ In deze folder zitten alle python-files die gebruikt zijn (of nog in de maak) vo
     > **Files:**
     > 1. `main.py`: Geeft toegang tot alle functionaliteiten van het programma. 
    
+   Optionele argumenten voor de gameclock-autofill (zie punt 6): `--csv`, `--anchor-clock`, `--anchor` en `--no-video-clock`.
+
 2. **Game events**: 
    Het aanmaken/inladen van een wedstrijd, bijhouden van events in een wedstrijd, het zien van de boxscores and eventlogs in de terminal en het opslaan van de events data van de wedstrijd.
 
@@ -39,3 +41,19 @@ In deze folder zitten alle python-files die gebruikt zijn (of nog in de maak) vo
 
     > **Files:**
     > 1. `scoreboard.py`: Bevat de class *`scoreboard`* met alle functionaliteiten die behoren tot het automatiseren van de gegevens uit het scoreboard van de Carla de Liefde hal. Functionaliteiten zijn nog niet af.
+
+6. **Gameclock uit video**: 
+   Het automatisch invullen van de tijd van een event, op basis van de video die open staat in QuickTime Player. In edit-mode (`edit1` t/m `edit8`) wordt de speelklok van de video automatisch als tijd van de event gebruikt, zodat alleen de actie nog getypt hoeft te worden.
+
+    > **Files:**
+    > 1. `gameclock.py`: Bevat de class *`GameClockTracker`*, die op de achtergrond de afspeelpositie van QuickTime Player uitleest en die via een CSV-log omzet naar de speelklok. De omzetting naar de vier cijfers van `event.get_time()` gebeurt in `clock_to_event_time()`. Deze class maakt gebruik van `quicktime_timestamp/tracker.py`.
+
+   Werking en instellingen:
+
+   - De klok wordt opgezet bij het betreden van het eerste edit-kwart, zodat een wedstrijd eerst aangemaakt/geselecteerd kan worden.
+   - Eenmalig wordt gevraagd de video op het beeld te zetten waar de speelklok voor het eerst `09:59` toont (aanpasbaar met `--anchor-clock`).
+   - De tijd wordt live bijgewerkt in de invoerregel zelf: de eerste vijf tekens (kwart + MMSS) volgen de video zolang de prompt open staat, dus de opgeslagen tijd is de speelklok op het moment van Enter. Pauzeer de video op de actie om een exacte tijd vast te leggen.
+   - Alleen die vijf tekens veranderen; de actiecode die je typt blijft staan, net als de cursorpositie.
+   - Pas je de tijd zelf aan, dan stoppen de automatische updates voor die regel. Wijzigingen in de actiecode doen dat niet.
+   - Zonder QuickTime, zonder geldige mapping of met `--no-video-clock` blijft alles handmatig; pijltjestoetsen en Tab werken ongewijzigd.
+   - Tests staan in `tests/test_gameclock.py` (mapping) en `tests/test_event_input.py` (live invoerregel).
