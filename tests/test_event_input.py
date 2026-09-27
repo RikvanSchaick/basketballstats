@@ -288,8 +288,10 @@ class ManualFallbackTests(unittest.TestCase):
     def test_late_sample_does_not_corrupt_typed_text(self):
         # The user typed the time by hand before a reading appeared; the live
         # updater must leave that line alone rather than splicing a prefix in.
-        result, _ = run_prompt(lambda: _FakeTracker([None, None, "0941"], tick=0.5),
-                               [(b"09412H5", 0.4), (b"", 1.8), ENTER])
+        # The tick has to outlast run_prompt's settle, otherwise the reading
+        # lands before the keystrokes and the premise no longer holds.
+        result, _ = run_prompt(lambda: _FakeTracker([None, None, "0941"], tick=1.0),
+                               [(b"09412H5", 0.4), (b"", 2.4), ENTER])
         self.assertEqual(result, "109412H5")
 
 

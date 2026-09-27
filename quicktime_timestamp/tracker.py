@@ -179,6 +179,23 @@ class ClockLogError(Exception):
     """Raised when the game-clock CSV cannot be used."""
 
 
+# Optional third column. Each row is either a quarter number or one of the
+# context labels below, which mark the stretches where the game clock is not
+# running.
+PERIOD_COLUMN = "period"
+PERIOD_CONTEXTS = ("Pregame", "Timeout", "Break", "Half Time")
+
+
+def normalise_period(value):
+    """Return an int quarter, a context label, or None when the cell is empty."""
+    text = (value or "").strip()
+    if not text:
+        return None
+    if text.isdigit():
+        return int(text)
+    return text
+
+
 def parse_wall_clock(value):
     """Parse ``HH:MM:SS.mmm`` into seconds since midnight."""
     parts = value.strip().split(":")
@@ -219,8 +236,13 @@ def parse_anchor_value(value):
     return seconds
 
 
-def load_clock_log(path):
-    """Read the CSV into parallel (times, clocks) lists, handling a midnight wrap."""
+def load_clock_log(path, with_periods=False):
+    """Read the CSV into parallel lists, handling a midnight wrap.
+
+    Returns ``(times, clocks)``, or ``(times, clocks, periods)`` when
+    ``with_periods`` is set. The ``period`` column is optional: a CSV without it
+    yields a list of ``None`` so callers keep their pre-period behaviour.
+    """
     try:
         with open(path, newline="", encoding="utf-8-sig") as handle:
             rows = list(csv.DictReader(handle))
@@ -237,8 +259,9 @@ def load_clock_log(path):
                 f"{path} is missing the '{column}' column "
                 f"(found: {', '.join(str(f) for f in fields)})"
             )
+    has_periods = PERIOD_COLUMN in fields
 
-    times, clocks = [], []
+    times, clocks, periods = [], [], []
     wrap = 0.0
     previous = None
     for number, row in enumerate(rows, start=2):
@@ -263,7 +286,10 @@ def load_clock_log(path):
         previous = seconds
         times.append(seconds)
         clocks.append(clock)
+        periods.append(normalise_period(row.get(PERIOD_COLUMN)) if has_periods else None)
 
+    if with_periods:
+        return times, clocks, periods
     return times, clocks
 
 
@@ -304,26 +330,63 @@ def discover_csv(explicit, directory):
 
 
 class ClockReading:
-    """A game clock value plus whether it sits past the end of the log."""
+    """A game clock value, plus the period context the row was recorded in."""
 
-    def __init__(self, text, past_end=False):
+    def __init__(self, text, past_end=False, period=None, quarter=None, held=None):
         self.text = text
         self.past_end = past_end
+        # Raw normalised period of this row: an int quarter, a context label, or
+        # None when the CSV has no period column.
+        self.period = period
+        # The quarter this row belongs to, carried through stoppages.
+        self.quarter = quarter
+        # Game clock that quarter last showed, carried through stoppages.
+        self.held = held
+
+    @property
+    def in_stoppage(self):
+        """True for a Timeout/Break/Half Time/Pregame row."""
+        return self.period is not None and not isinstance(self.period, int)
 
 
 class ClockMap:
     """Maps a video timestamp onto the game clock that was showing at that moment."""
 
-    def __init__(self, times, clocks, offset):
+    def __init__(self, times, clocks, offset, periods=None):
         self.times = times
         self.clocks = clocks
         self.offset = offset
+        self.periods = periods
+        self.has_periods = bool(periods) and any(p is not None for p in periods)
+        self.quarters, self.held = self._carry_quarters()
+
+    def _carry_quarters(self):
+        """Per row: the quarter it belongs to and that quarter's last clock.
+
+        During a stoppage the CSV logs that stoppage's own countdown, so the
+        game clock has to be carried forward from the row before it started.
+        """
+        quarters, held = [], []
+        quarter = clock = None
+        periods = self.periods or [None] * len(self.clocks)
+        for text, period in zip(self.clocks, periods):
+            if isinstance(period, int):
+                quarter, clock = period, text
+            quarters.append(quarter)
+            held.append(clock)
+        return quarters, held
 
     def lookup(self, video_seconds):
         index = bisect.bisect_right(self.times, video_seconds + self.offset) - 1
         if index < 0:
             return None
-        return ClockReading(self.clocks[index], past_end=index == len(self.clocks) - 1)
+        return ClockReading(
+            self.clocks[index],
+            past_end=index == len(self.clocks) - 1,
+            period=self.periods[index] if self.periods else None,
+            quarter=self.quarters[index],
+            held=self.held[index],
+        )
 
 
 def find_anchor_real_time(times, clocks, anchor_clock):
@@ -335,6 +398,32 @@ def find_anchor_real_time(times, clocks, anchor_clock):
         f"Game clock {anchor_clock!r} never appears in the CSV. "
         "Pick a value that does with --anchor-clock."
     )
+
+
+def find_quarter_anchor(times, clocks, periods, quarter):
+    """``(clock, real_time)`` of the first tick after ``quarter`` starts.
+
+    A period opens on a static value (10:00, or 05:00 for a short overtime) that
+    can sit on screen for a while, so the first row showing something else is the
+    only frame a user can reliably scrub to.
+    """
+    try:
+        wanted = int(quarter)
+    except (TypeError, ValueError):
+        raise ClockLogError(f"{quarter!r} is not a quarter number") from None
+
+    rows = [index for index, period in enumerate(periods or []) if period == wanted]
+    if not rows:
+        raise ClockLogError(
+            f"Quarter {wanted} never appears in the CSV's '{PERIOD_COLUMN}' column."
+        )
+
+    opening = clocks[rows[0]]
+    for index in rows:
+        if clocks[index] != opening:
+            return clocks[index], times[index]
+    # Only the opening value was ever logged for this quarter.
+    return opening, times[rows[0]]
 
 
 class Poller:

@@ -51,9 +51,14 @@ In deze folder zitten alle python-files die gebruikt zijn (of nog in de maak) vo
    Werking en instellingen:
 
    - De klok wordt opgezet bij het betreden van het eerste edit-kwart, zodat een wedstrijd eerst aangemaakt/geselecteerd kan worden.
-   - Eenmalig wordt gevraagd de video op het beeld te zetten waar de speelklok voor het eerst `09:59` toont (aanpasbaar met `--anchor-clock`).
+   - Bij **elk** `edit<N>`-commando wordt gevraagd of de video opnieuw gelijkgezet moet worden: `Sync video for quarter N? (y/n):`. Alleen een getypte `y` start het synchroniseren; bij `n`, een lege regel of wat dan ook blijft de bestaande synchronisatie van kracht voor dat kwart.
+   - Bij een `y` wordt gevraagd de video op het beeld te zetten waar de speelklok van dát kwart voor het eerst `09:59` toont (`04:59` bij een verlenging van vijf minuten), en daarna op Enter te drukken. Het juiste beeld wordt per kwart uit de `period`-kolom van de CSV gehaald.
+   - Is er nog geen synchronisatie, of staat er een andere video open in QuickTime Player, dan wordt er niet gevraagd maar meteen gesynchroniseerd — zonder offset valt er immers niets te behouden.
+   - Met `--anchor`, zonder terminal of met `--no-video-clock` wordt de vraag overgeslagen.
+   - De CSV heeft een optionele `period`-kolom met per regel het kwartnummer (`1`, `2`, …) of de context (`Pregame`, `Timeout`, `Break`, `Half Time`). Tijdens een onderbreking logt `game_clock` de aftelklok van die onderbreking zelf; de speelklok is dan de laatste waarde van het kwart dat onderbroken werd, en dát is wat er wordt ingevuld.
+   - Staat de video in een ánder kwart dan het kwart dat je aan het invoeren bent, dan wordt er geen tijd ingevuld en blijft alleen het kwartcijfer staan. Dat is het signaal dat er opnieuw gesynchroniseerd moet worden.
    - De tijd wordt live bijgewerkt in de invoerregel zelf: de eerste vijf tekens (kwart + MMSS) volgen de video zolang de prompt open staat, dus de opgeslagen tijd is de speelklok op het moment van Enter. Pauzeer de video op de actie om een exacte tijd vast te leggen.
    - Alleen die vijf tekens veranderen; de actiecode die je typt blijft staan, net als de cursorpositie.
    - Pas je de tijd zelf aan, dan stoppen de automatische updates voor die regel. Wijzigingen in de actiecode doen dat niet.
-   - Zonder QuickTime, zonder geldige mapping of met `--no-video-clock` blijft alles handmatig; pijltjestoetsen en Tab werken ongewijzigd.
-   - Tests staan in `tests/test_gameclock.py` (mapping) en `tests/test_event_input.py` (live invoerregel).
+   - Zonder QuickTime, zonder geldige mapping of met `--no-video-clock` blijft alles handmatig; pijltjestoetsen en Tab werken ongewijzigd. Een CSV zonder `period`-kolom blijft werken zoals voorheen.
+   - Tests staan in `tests/test_gameclock.py` (mapping, `period`-kolom en kwart-anchors), `tests/test_quarter_sync.py` (de sync-vraag per kwart) en `tests/test_event_input.py` (live invoerregel).

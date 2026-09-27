@@ -10,6 +10,7 @@ import argparse
 import asyncio
 import os
 import shutil
+import sys
 from prompt_toolkit import PromptSession
 from prompt_toolkit.document import Document
 from prompt_toolkit.key_binding import KeyBindings
@@ -47,7 +48,7 @@ def _clock_prefix(tracker, quarter):
     return f"{quarter}{sample.event_time}"
 
 
-def setup_tracker(options):
+def setup_tracker(options, quarter=None):
     """Build the game-clock tracker, or return None to stay fully manual."""
     if options.no_video_clock:
         return None
@@ -59,6 +60,7 @@ def setup_tracker(options):
         path = tracker.load_csv()
         print(f"\nGAME CLOCK: using {path.name}")
         tracker.start()
+        tracker.set_quarter(quarter)
         info = tracker.anchor_to_video(on_wait=lambda msg: print(f"  {msg}"))
     except ClockLogError as exc:
         print(f"\nGAME CLOCK: {exc}")
@@ -70,9 +72,61 @@ def setup_tracker(options):
         tracker.stop()
         return None
 
-    print(f"GAME CLOCK: {info['document']} anchored at {info['video_seconds']:.3f}s "
-          f"= {options.anchor_clock} ({info['real_time_text']})")
+    print_anchor(info)
     return tracker
+
+
+def print_anchor(info):
+    """One-line confirmation of where the video was lined up with the CSV."""
+    where = (f"quarter {info['quarter']} " if info["quarter"] is not None else "")
+    print(f"GAME CLOCK: {info['document']} anchored at {info['video_seconds']:.3f}s "
+          f"= {where}{info['anchor_clock']} ({info['real_time_text']}), "
+          f"offset {info['offset']:+.3f}s")
+
+
+def ask_sync(quarter):
+    """Ask whether the video still lines up with the CSV for this quarter."""
+    try:
+        reply = input(f"Sync video for quarter {quarter}? (y/n): ")
+    except EOFError:
+        return False
+    # Only an explicit "y" re-syncs; anything else keeps the current offset.
+    return reply.strip().lower() == "y"
+
+
+def anchor_quarter(tracker, quarter):
+    """Re-anchor the video on `quarter`. False means fall back to manual times."""
+    tracker.invalidate_anchor()
+    try:
+        info = tracker.anchor_to_video(quarter=quarter,
+                                       on_wait=lambda msg: print(f"  {msg}"))
+    except (ClockLogError, KeyboardInterrupt, EOFError) as exc:
+        print(f"GAME CLOCK: {exc or 'anchoring cancelled'}; "
+              "type the times yourself.")
+        return False
+    print_anchor(info)
+    return True
+
+
+def sync_quarter(tracker, quarter, options):
+    """Per-quarter sync step. Returns the tracker, or None to go manual."""
+    tracker.set_quarter(quarter)
+
+    # Without an offset there is nothing to keep, so never offer to skip.
+    if not tracker.ready:
+        print("\nGAME CLOCK: the video is not lined up with the CSV yet.")
+    elif tracker.document_changed():
+        print("\nGAME CLOCK: a different video is open in QuickTime Player.")
+    elif options.anchor is not None or not sys.stdin.isatty():
+        return tracker
+    elif not ask_sync(quarter):
+        print(f"GAME CLOCK: keeping the current sync for quarter {quarter}.")
+        return tracker
+
+    if anchor_quarter(tracker, quarter):
+        return tracker
+    tracker.stop()
+    return None
 
 
 def event_input(quarter, tracker=None) -> str:
@@ -377,7 +431,7 @@ def _run_app(options, holder):
                 m.start_match()
             
             quarter = eventstring[4]
-            if not quarter in {"1","2","3","4","5","6","7","8"}: print("invalid quarter")
+            if not quarter in {"1","2","3","4","5","6","7","8","9"}: print("invalid quarter")
                
             # check of laatste line het einde was van hetzelfde kwart 
             f = open(f"matches/history.txt", "r")
@@ -418,21 +472,10 @@ def _run_app(options, holder):
             # Set the tracker up on the first edit quarter, so a match can be
             # created or selected before anchoring interrupts.
             if tracker is None and not options.no_video_clock:
-                tracker = setup_tracker(options)
-                holder["tracker"] = tracker
-            elif tracker is not None and tracker.document_changed():
-                print("\nGAME CLOCK: a different video is open in QuickTime Player.")
-                tracker.invalidate_anchor()
-                try:
-                    info = tracker.anchor_to_video(on_wait=lambda msg: print(f"  {msg}"))
-                    print(f"GAME CLOCK: {info['document']} anchored at "
-                          f"{info['video_seconds']:.3f}s = {options.anchor_clock}")
-                except (ClockLogError, KeyboardInterrupt) as exc:
-                    print(f"GAME CLOCK: {exc or 'anchoring cancelled'}; "
-                          "type the times yourself.")
-                    tracker.stop()
-                    tracker = None
-                    holder["tracker"] = None
+                tracker = setup_tracker(options, quarter)
+            elif tracker is not None:
+                tracker = sync_quarter(tracker, quarter, options)
+            holder["tracker"] = tracker
 
             print("ADD EVENTS (enter 'end' to stop)")
             while not eventstring == quarter + "end":

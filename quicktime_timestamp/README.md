@@ -61,22 +61,45 @@ python3 main.py --interval 0.05              # poll faster (default 0.1 = ~10 Hz
 A CSV sitting next to `main.py`, named `time_*.csv`:
 
 ```csv
-real_time,game_clock
-13:53:08.230,10:00
-13:53:25.443,09:59
-13:53:26.443,09:58
+real_time,game_clock,period
+19:33:05.146,10:00,1
+19:33:26.046,09:59,1
+19:33:26.950,09:58,1
 ```
 
 - `real_time` is wall clock as `HH:MM:SS.mmm`; `game_clock` is `MM:SS`.
 - Each row is the instant the game clock **changed to** that value, so a row's clock
   is displayed until the next row's `real_time`. That is what makes stoppages work:
-  in the sample file the clock sits at `09:41` from `13:53:43.410` all the way to
-  `13:53:50.209`.
+  in the sample file the clock sits at `07:55` from `19:36:40.258` all the way to
+  `19:37:18.061`.
 - If `--csv` is omitted and exactly one `time_*.csv` is present, it is used
   automatically. If there are several, you are asked to pick one.
 - A row earlier than its predecessor is treated as a midnight rollover and 86400 s is
   added so the series stays monotonic. Empty, malformed or still-out-of-order files
   are rejected with a message naming the offending line.
+
+### The `period` column
+
+`period` is **optional**. A CSV without it keeps working exactly as before; a CSV with
+it unlocks the per-quarter syncing described below. Each row is either:
+
+- a **quarter number** (`1`, `2`, `3`, `4`, `5`, … — `5` and up are overtimes), or
+- a **context label**: `Pregame`, `Timeout`, `Break`, `Half Time`.
+
+The important subtlety: during a context row the `game_clock` column holds **that
+stoppage's own countdown**, not the frozen game clock. A timeout in the sample file
+logs `01:00` counting down to `00:00`, a break `02:00`, half time `10:00`:
+
+```csv
+19:35:29.953,07:55,1          <- last tick before the timeout
+19:35:37.936,01:00,Timeout    <- the timeout's countdown, not the game clock
+19:35:38.036,00:59,Timeout
+19:36:40.258,07:55,1          <- play resumes at the clock it stopped on
+```
+
+So the game clock during a stoppage is the last value logged for the quarter the
+stoppage interrupted (`07:55` above). `ClockMap` carries that value forward, which is
+what the basketball app auto-fills for events entered during a timeout.
 
 ### Anchoring
 
@@ -86,6 +109,23 @@ point at the frame where the game clock first reads `09:59` (configurable via
 Every later lookup is `bisect_right(times, video_time + offset) - 1`.
 
 This assumes the video runs at real-time speed with no cuts, so one anchor is enough.
+
+### Per-quarter anchoring
+
+With a `period` column, `find_quarter_anchor(times, clocks, periods, quarter)` returns
+the anchor for one quarter instead of the whole game: the first row of that quarter
+whose clock differs from the value the quarter opened on. A period opens on a static
+`10:00` (or `05:00` for a short overtime) that can sit on screen for a while, so the
+first *tick* is the only frame you can reliably scrub to.
+
+Because it filters on `period`, the lookup skips the break or half time that precedes
+the quarter, even though those rows count through the same `MM:SS` range. Quarters that
+never appear in the CSV raise `ClockLogError`; a quarter with only its opening row
+logged (an overtime that tipped off just before the recording stopped) anchors on that
+opening value.
+
+The basketball app uses this to re-line the video up at the start of every quarter —
+see the edit-mode section of `code/code.md`.
 
 ## macOS permissions
 
