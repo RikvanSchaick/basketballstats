@@ -26,6 +26,7 @@ matches/*
 !matches/matches.md
 video/*
 !video/video.md
+/quicktime_timestamp/gameclock_logs/
 venv/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
