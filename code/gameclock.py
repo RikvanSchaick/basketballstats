@@ -132,8 +132,9 @@ class GameClockTracker:
     """Background QuickTime poller that hands out game-clock event times."""
 
     def __init__(self, csv_path=None, anchor_clock=DEFAULT_ANCHOR_CLOCK,
-                 anchor=None, interval=DEFAULT_INTERVAL, base_dir=None):
+                 anchor=None, interval=DEFAULT_INTERVAL, base_dir=None, match_id=None):
         self.csv_path = csv_path
+        self.match_id = match_id
         self.anchor_clock = anchor_clock
         self.anchor = anchor
         self.interval = interval
@@ -160,7 +161,7 @@ class GameClockTracker:
 
     def load_csv(self):
         """Resolve and parse the clock log. Raises :class:`ClockLogError`."""
-        path = discover_csv(self.csv_path, self.base_dir)
+        path = discover_csv(self.csv_path, self.base_dir, match_id=self.match_id)
         self.times, self.clocks, self.periods = load_clock_log(path, with_periods=True)
         self.csv_path = path
         self.source_name = path.name

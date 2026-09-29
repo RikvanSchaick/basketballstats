@@ -293,13 +293,18 @@ def load_clock_log(path, with_periods=False):
     return times, clocks
 
 
-def discover_csv(explicit, directory):
-    """Resolve --csv, or find the single time_*.csv sitting next to main.py."""
+def discover_csv(explicit, directory, match_id=None):
+    """Resolve --csv, a match log, or a time_*.csv sitting next to main.py."""
     if explicit:
         path = Path(explicit).expanduser()
         if not path.is_file():
             raise ClockLogError(f"CSV not found: {path}")
         return path
+
+    if match_id is not None:
+        path = directory / "gameclock_logs" / f"{match_id}.csv"
+        if path.is_file():
+            return path
 
     candidates = sorted(directory.glob("time_*.csv"))
     if not candidates:

@@ -48,14 +48,15 @@ def _clock_prefix(tracker, quarter):
     return f"{quarter}{sample.event_time}"
 
 
-def setup_tracker(options, quarter=None):
+def setup_tracker(options, quarter=None, match_id=None):
     """Build the game-clock tracker, or return None to stay fully manual."""
     if options.no_video_clock:
         return None
 
     tracker = GameClockTracker(csv_path=options.csv,
                                anchor_clock=options.anchor_clock,
-                               anchor=options.anchor)
+                               anchor=options.anchor,
+                               match_id=match_id)
     try:
         path = tracker.load_csv()
         print(f"\nGAME CLOCK: using {path.name}")
@@ -472,7 +473,7 @@ def _run_app(options, holder):
             # Set the tracker up on the first edit quarter, so a match can be
             # created or selected before anchoring interrupts.
             if tracker is None and not options.no_video_clock:
-                tracker = setup_tracker(options, quarter)
+                tracker = setup_tracker(options, quarter, match_id=m.matchID)
             elif tracker is not None:
                 tracker = sync_quarter(tracker, quarter, options)
             holder["tracker"] = tracker
