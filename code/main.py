@@ -4,11 +4,20 @@ from stats_export import statsreport
 from gamereport import gamereport
 # from rawstats import rawstats
 from data_export import data
+from gameclock import ClockLogError, GameClockTracker, DEFAULT_ANCHOR_CLOCK, parse_anchor_value
 from copy import deepcopy
+import argparse
+import asyncio
 import os
 import shutil
-from prompt_toolkit import prompt
+import sys
+from prompt_toolkit import PromptSession
+from prompt_toolkit.document import Document
 from prompt_toolkit.key_binding import KeyBindings
+
+# Event strings start with the period digit plus MMSS.
+PREFIX_LEN = 5
+LIVE_CLOCK_INTERVAL = 0.2
 
 def prints(type:str):
     if type == "intro":
@@ -29,13 +38,123 @@ def prints(type:str):
         # print("- rawstats:\tsave rawstats of match in txt (sep=';')")
         print("- exit:\t\texit program")     
     
-def event_input(quarter) -> str:
+def _clock_prefix(tracker, quarter):
+    """Event-string prefix (quarter + MMSS) from the video, or None."""
+    if tracker is None:
+        return None
+    sample = tracker.sample()
+    if sample is None or not sample.usable:
+        return None
+    return f"{quarter}{sample.event_time}"
+
+
+def setup_tracker(options, quarter=None, match_id=None):
+    """Build the game-clock tracker, or return None to stay fully manual."""
+    if options.no_video_clock:
+        return None
+
+    tracker = GameClockTracker(csv_path=options.csv,
+                               anchor_clock=options.anchor_clock,
+                               anchor=options.anchor,
+                               match_id=match_id)
+    try:
+        path = tracker.load_csv()
+        print(f"\nGAME CLOCK: using {path.name}")
+        tracker.start()
+        tracker.set_quarter(quarter)
+        info = tracker.anchor_to_video(on_wait=lambda msg: print(f"  {msg}"))
+    except ClockLogError as exc:
+        print(f"\nGAME CLOCK: {exc}")
+        print("Continuing without automatic clock times; type them yourself.")
+        tracker.stop()
+        return None
+    except KeyboardInterrupt:
+        print("\nGAME CLOCK: anchoring cancelled; type the times yourself.")
+        tracker.stop()
+        return None
+
+    print_anchor(info)
+    return tracker
+
+
+def print_anchor(info):
+    """One-line confirmation of where the video was lined up with the CSV."""
+    where = (f"quarter {info['quarter']} " if info["quarter"] is not None else "")
+    print(f"GAME CLOCK: {info['document']} anchored at {info['video_seconds']:.3f}s "
+          f"= {where}{info['anchor_clock']} ({info['real_time_text']}), "
+          f"offset {info['offset']:+.3f}s")
+
+
+def ask_sync(quarter):
+    """Ask whether the video still lines up with the CSV for this quarter."""
+    try:
+        reply = input(f"Sync video for quarter {quarter}? (y/n): ")
+    except EOFError:
+        return False
+    # Only an explicit "y" re-syncs; anything else keeps the current offset.
+    return reply.strip().lower() == "y"
+
+
+def anchor_quarter(tracker, quarter):
+    """Re-anchor the video on `quarter`. False means fall back to manual times."""
+    tracker.invalidate_anchor()
+    try:
+        info = tracker.anchor_to_video(quarter=quarter,
+                                       on_wait=lambda msg: print(f"  {msg}"))
+    except (ClockLogError, KeyboardInterrupt, EOFError) as exc:
+        print(f"GAME CLOCK: {exc or 'anchoring cancelled'}; "
+              "type the times yourself.")
+        return False
+    print_anchor(info)
+    return True
+
+
+def sync_quarter(tracker, quarter, options):
+    """Per-quarter sync step. Returns the tracker, or None to go manual."""
+    tracker.set_quarter(quarter)
+
+    # Without an offset there is nothing to keep, so never offer to skip.
+    if not tracker.ready:
+        print("\nGAME CLOCK: the video is not lined up with the CSV yet.")
+    elif tracker.document_changed():
+        print("\nGAME CLOCK: a different video is open in QuickTime Player.")
+    elif options.anchor is not None or not sys.stdin.isatty():
+        return tracker
+    elif not ask_sync(quarter):
+        print(f"GAME CLOCK: keeping the current sync for quarter {quarter}.")
+        return tracker
+
+    if anchor_quarter(tracker, quarter):
+        return tracker
+    tracker.stop()
+    return None
+
+
+def event_input(quarter, tracker=None) -> str:
     f = open("matches/history.txt", "r")
     lines = f.readlines()
     f.close()
     counta = 0
     countb = 0
-    default_text = f"{quarter}"
+
+    # The first five characters (period digit + MMSS) are kept in step with the
+    # video while the prompt is open; everything the user types after them is
+    # left alone.
+    autofill = _clock_prefix(tracker, quarter)
+    default_text = autofill or f"{quarter}"
+
+    # "prefix" is the text this code last wrote, so a mismatch means the user
+    # edited it themselves. "bare" marks the quarter-only fallback, which may
+    # only be upgraded while the line is still untouched.
+    live = {
+        "active": tracker is not None,
+        "prefix": default_text,
+        "bare": autofill is None,
+    }
+
+    def base_default():
+        """The text for the 'new event' state, with the freshest clock."""
+        return _clock_prefix(tracker, quarter) or autofill or f"{quarter}"
 
     bindings = KeyBindings()
     def update_defaulta():
@@ -43,7 +162,7 @@ def event_input(quarter) -> str:
         if counta > 0:
             default_text = lines[-counta].strip()
         else:
-            default_text = f"{quarter}"
+            default_text = base_default()
 
     def update_defaultb():
         nonlocal default_text
@@ -52,7 +171,17 @@ def event_input(quarter) -> str:
         elif countb == 2:
             default_text = lines[-1].strip()
         else:
-            default_text = f"{quarter}"
+            default_text = base_default()
+
+    def apply_recall(event, at_base):
+        """Write a recalled/base entry and resync the live-clock state."""
+        event.app.current_buffer.text = default_text
+        event.app.current_buffer.cursor_position = len(default_text)
+        # Only the plain new-event state keeps following the video.
+        live["active"] = at_base and tracker is not None
+        if live["active"]:
+            live["prefix"] = default_text
+            live["bare"] = len(default_text) < PREFIX_LEN
 
     @bindings.add('up')
     def _(event):
@@ -62,8 +191,7 @@ def event_input(quarter) -> str:
             countb = 2
             counta += 1
             update_defaulta()
-            event.app.current_buffer.text = default_text
-            event.app.current_buffer.cursor_position = len(default_text)
+            apply_recall(event, at_base=False)
 
     @bindings.add('down')
     def _(event):
@@ -76,8 +204,7 @@ def event_input(quarter) -> str:
         if counta > 0:
             counta -= 1
             update_defaulta()
-            event.app.current_buffer.text = default_text
-            event.app.current_buffer.cursor_position = len(default_text)
+            apply_recall(event, at_base=counta == 0 and countb == 0)
             
     @bindings.add('tab')
     def _(event):
@@ -86,17 +213,107 @@ def event_input(quarter) -> str:
         countb += 1
         countb = countb % 3
         update_defaultb()
-        event.app.current_buffer.text = default_text
-        event.app.current_buffer.cursor_position = len(default_text)
+        apply_recall(event, at_base=countb == 0)
         if countb == 2:
             counta = 1
         else:
             counta = 0
 
-    eventstring = prompt(default=default_text, key_bindings=bindings)
+    session = PromptSession(key_bindings=bindings)
+    buffer = session.default_buffer
+
+    def refresh_prefix():
+        """Re-point the prefix at the current clock; False stops the updates."""
+        fresh = _clock_prefix(tracker, quarter)
+        if not fresh:
+            return True
+        prefix = live["prefix"]
+        text = buffer.text
+
+        if live["bare"]:
+            # Nothing typed yet, so the quarter-only line can become a full
+            # prefix. Once the user starts typing, leave it to them.
+            if text != prefix:
+                return False
+            updated, cursor = fresh, len(fresh)
+        else:
+            if not text.startswith(prefix):
+                return False  # the user edited the clock themselves
+            if fresh == prefix:
+                return True
+            shift = len(fresh) - len(prefix)
+            updated = fresh + text[len(prefix):]
+            cursor = (buffer.cursor_position + shift
+                      if buffer.cursor_position >= len(prefix)
+                      else min(buffer.cursor_position, len(fresh)))
+
+        live["prefix"] = fresh
+        live["bare"] = False
+        if updated != text:
+            buffer.set_document(Document(updated, cursor), bypass_readonly=True)
+        return True
+
+    async def follow_clock():
+        while True:
+            await asyncio.sleep(LIVE_CLOCK_INTERVAL)
+            if not live["active"]:
+                continue
+            if not refresh_prefix():
+                live["active"] = False
+
+    def start_following():
+        # Background tasks are cancelled and awaited by the application itself
+        # when the prompt finishes, including on Ctrl+C.
+        session.app.create_background_task(follow_clock())
+
+    eventstring = session.prompt(
+        default=default_text,
+        pre_run=start_following if tracker is not None else None,
+    )
     return eventstring
     
+def parse_args(argv=None):
+    parser = argparse.ArgumentParser(
+        description="Basketball match event entry, with optional game-clock "
+                    "autofill from a video open in QuickTime Player.")
+    parser.add_argument(
+        "--csv",
+        help="Game-clock CSV. Defaults to the single time_*.csv in "
+             "quicktime_timestamp/; you are asked to pick when there are several.")
+    parser.add_argument(
+        "--anchor-clock", default=DEFAULT_ANCHOR_CLOCK,
+        help="Game clock value used to line the video up with the CSV "
+             "(default: %(default)s).")
+    parser.add_argument(
+        "--anchor",
+        help="Video timestamp showing --anchor-clock, as seconds, MM:SS.mmm or "
+             "HH:MM:SS.mmm. Skips the interactive anchor prompt.")
+    parser.add_argument(
+        "--no-video-clock", action="store_true",
+        help="Disable QuickTime clock autofill and type every event time by hand.")
+    options = parser.parse_args(argv)
+
+    if options.anchor is not None:
+        try:
+            options.anchor = parse_anchor_value(options.anchor)
+        except ValueError as exc:
+            parser.error(f"--anchor: {exc}")
+    return options
+
+
 def main():
+    options = parse_args()
+    holder = {}
+    try:
+        _run_app(options, holder)
+    finally:
+        # The background poller owns an osascript process; always shut it down.
+        if holder.get("tracker") is not None:
+            holder["tracker"].stop()
+
+
+def _run_app(options, holder):
+    tracker = None
     eventstring = None
     while not eventstring in {"create", "select", "exit"}:
         prints("intro")
@@ -215,7 +432,7 @@ def main():
                 m.start_match()
             
             quarter = eventstring[4]
-            if not quarter in {"1","2","3","4","5","6","7","8"}: print("invalid quarter")
+            if not quarter in {"1","2","3","4","5","6","7","8","9"}: print("invalid quarter")
                
             # check of laatste line het einde was van hetzelfde kwart 
             f = open(f"matches/history.txt", "r")
@@ -253,9 +470,17 @@ def main():
                         f.writelines(f"A{str(awaystarters)}" + '\n')
                         f.close()
                     
+            # Set the tracker up on the first edit quarter, so a match can be
+            # created or selected before anchoring interrupts.
+            if tracker is None and not options.no_video_clock:
+                tracker = setup_tracker(options, quarter, match_id=m.matchID)
+            elif tracker is not None:
+                tracker = sync_quarter(tracker, quarter, options)
+            holder["tracker"] = tracker
+
             print("ADD EVENTS (enter 'end' to stop)")
             while not eventstring == quarter + "end":
-                eventstring = event_input(quarter)
+                eventstring = event_input(quarter, tracker)
                 e = event()
                 b = e.extract_eventstring(eventstring)
                 if b:
