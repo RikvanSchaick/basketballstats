@@ -11,6 +11,7 @@ class statsreport():
         self.smalltextsize = 8
         self.page = False
         self.team = None
+        self.player = None
 
     def select_team(self) -> None:
         if not isinstance(self.matchDataFrame, pd.DataFrame): return
@@ -144,16 +145,16 @@ class statsreport():
             self.print_term(table, "TRB", "Total Rebounds", "A rebound occurs when a player recovers the ball after a missed shot. This statistic is the number of total rebounds a player or team has collected on either offense or defense.", None)
             self.print_term(table, "TS%", "True Shooting Percentage", "A shooting percentage that factors in the value of three-point field goals and free throws in addition to conventional two-point field goals.", "PTS/[2*(FGA+0.44*FTA)]")
        
-    def pdf_export(self) -> None:
+    def pdf_export(self, name: str) -> None:
         self.footer()
-        self.pdf.output(f"data/stats.pdf")
+        self.pdf.output(f"data/{name}.pdf")
 
     def seasons_range(self, mindate:datetime, maxdate:datetime) -> {int, int}:
         firstseason = mindate.year-1 if mindate.month < 8 else mindate.year
         lastseason = maxdate.year if maxdate.month >= 8 else maxdate.year-1
         return firstseason, lastseason
 
-    def stats_page(self, stats:stats) -> None:
+    def team_stats_page(self, stats:stats) -> None:
         teamstats = stats.team_stats()
         self.pdf.set_font("Helvetica", style="b", size = 7)
         self.pdf.cell(w = 0, h = 4, txt = f"Team and Opponent Statistics", ln = 1, align = 'L')     
@@ -296,7 +297,7 @@ class statsreport():
                 for datum in data_row:
                     row.cell(datum)        
 
-    def make_pdf(self) -> None:
+    def export_team_stats(self) -> None:
         total = stats() 
         total.load()
         self.team = total.select_team()
@@ -307,7 +308,7 @@ class statsreport():
         self.new_page(self.team, "ALL TIME")
         self.pdf.set_font("Helvetica", style="b", size = self.smalltextsize)
 
-        self.stats_page(stats=total)
+        self.team_stats_page(stats=total)
         for year in range(firstseason, lastseason + 1):
             season = f"SEASON {year}-{year + 1}"
             self.new_page(self.team, season)
@@ -315,7 +316,337 @@ class statsreport():
             seasonal.load()
             seasonal.select_team(self.team)
             seasonal.select_period(begin=datetime(year, 8, 1), end=datetime(year + 1, 7, 31))
-            self.stats_page(stats=seasonal)
+            self.team_stats_page(stats=seasonal)
 
         self.pdf_glossary()
-        self.pdf_export()
+        self.pdf_export(name=f"{self.team}_stats")
+
+    def player_career_page(self, stats:stats) -> None:    
+        highs = stats.careerhighs()
+        self.pdf.set_font("Helvetica", style="b", size = 9)
+        self.pdf.cell(w = 0, h = 4, txt = f"Career Highs", ln = 1, align = 'L')     
+        self.pdf.set_font("Helvetica", style="b", size = 7)                
+        data = [['Statistic', 'Career High']]
+        data.append(['Points', str(int(highs['pts'])) if pd.notna(highs['pts']) else ""])
+        data.append(['Rebounds', str(int(highs['reb'])) if pd.notna(highs['reb']) else ""])
+        data.append(['Assists', str(int(highs['ast'])) if pd.notna(highs['ast']) else ""])
+        data.append(['Steals', str(int(highs['stl'])) if pd.notna(highs['stl']) else ""])
+        data.append(['Blocks', str(int(highs['blk'])) if pd.notna(highs['blk']) else ""])
+        
+        self.pdf.set_line_width(0.15)
+        with self.pdf.table(align="L",
+                    width=35,
+                    borders_layout="SINGLE_TOP_LINE",
+                    line_height=3,
+                    col_widths=(3,3), 
+                    text_align=("LEFT", "CENTER")
+        ) as table:
+            for data_row in data:
+                row = table.row()
+                for datum in data_row:
+                    row.cell(datum)        
+    
+        self.pdf.write(text='\n')
+        averages = stats.player_career_averages()
+        self.pdf.set_font("Helvetica", style="b", size = 9)
+        self.pdf.cell(w = 0, h = 4, txt = f"Career Averages", ln = 1, align = 'L')
+        self.pdf.set_font("Helvetica", style="b", size = 7)
+        data = [['Season', 'G', 'GS', 'MP', 'PTS', 'FG', 'FGA', 'FG%', '3P', '3PA', '3P%', '2P', '2PA', '2P%', 'FT', 'FTA', 'FT%', 'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF']]
+        for idx, row in averages.iterrows():
+            data.append([
+            str(row['Season']),
+            str(int(row['G'])) if pd.notna(row['G']) else "",
+            str(int(row['GS'])) if pd.notna(row['GS']) else "",
+            f"{row['MP']:.1f}" if pd.notna(row['MP']) else "",
+            f"{row['PTS']:.1f}" if pd.notna(row['PTS']) else "",
+            f"{row['FG']:.1f}" if pd.notna(row['FG']) else "",
+            f"{row['FGA']:.1f}" if pd.notna(row['FGA']) else "",
+            f"{row['FG%']:.3f}".lstrip("0") if pd.notna(row['FG%']) else "",
+            f"{row['3P']:.1f}" if pd.notna(row['3P']) else "",
+            f"{row['3PA']:.1f}" if pd.notna(row['3PA']) else "",
+            f"{row['3P%']:.3f}".lstrip("0") if pd.notna(row['3P%']) else "",
+            f"{row['2P']:.1f}" if pd.notna(row['2P']) else "",
+            f"{row['2PA']:.1f}" if pd.notna(row['2PA']) else "",
+            f"{row['2P%']:.3f}".lstrip("0") if pd.notna(row['2P%']) else "",
+            f"{row['FT']:.1f}" if pd.notna(row['FT']) else "",
+            f"{row['FTA']:.1f}" if pd.notna(row['FTA']) else "",
+            f"{row['FT%']:.3f}".lstrip("0") if pd.notna(row['FT%']) else "",
+            f"{row['ORB']:.1f}" if pd.notna(row['ORB']) else "",
+            f"{row['DRB']:.1f}" if pd.notna(row['DRB']) else "",
+            f"{row['TRB']:.1f}" if pd.notna(row['TRB']) else "",
+            f"{row['AST']:.1f}" if pd.notna(row['AST']) else "",
+            f"{row['STL']:.1f}" if pd.notna(row['STL']) else "",
+            f"{row['BLK']:.1f}" if pd.notna(row['BLK']) else "",
+            f"{row['TOV']:.1f}" if pd.notna(row['TOV']) else "",
+            f"{row['PF']:.1f}" if pd.notna(row['PF']) else ""
+            ])
+        self.pdf.set_line_width(0.15)
+        with self.pdf.table(align="L",
+                    borders_layout="SINGLE_TOP_LINE",
+                    line_height=3,
+                    col_widths=(6, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3), 
+                    text_align=("LEFT", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER")
+        ) as table:
+            for data_row in data[:-2]:
+                row = table.row()
+                for datum in data_row:
+                    row.cell(datum)
+
+        self.pdf.set_line_width(0.15)
+        with self.pdf.table(align="L",
+                    borders_layout="SINGLE_TOP_LINE",
+                    line_height=3,
+                    col_widths=(6, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3), 
+                    text_align=("LEFT", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER")
+        ) as table:
+            for data_row in data[-2:]:
+                row = table.row()
+                for datum in data_row:
+                    row.cell(datum)
+                         
+        self.pdf.write(text='\n')
+        totals = stats.player_career_totals()
+        self.pdf.set_font("Helvetica", style="b", size = 9)
+        self.pdf.cell(w = 0, h = 4, txt = f"Career Totals", ln = 1, align = 'L')
+        self.pdf.set_font("Helvetica", style="b", size = 7)
+        data = [['Season', 'G', 'GS', 'MP', 'PTS', 'FG', 'FGA', 'FG%', '3P', '3PA', '3P%', '2P', '2PA', '2P%', 'FT', 'FTA', 'FT%', 'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF']]
+        for idx, row in totals.iterrows():
+            data.append([
+            str(row['Season']),
+            str(int(row['G'])) if pd.notna(row['G']) else "",
+            str(int(row['GS'])) if pd.notna(row['GS']) else "",
+            f"{row['MP']:.0f}" if pd.notna(row['MP']) else "",
+            f"{row['PTS']:.0f}" if pd.notna(row['PTS']) else "",
+            f"{row['FG']:.0f}" if pd.notna(row['FG']) else "",
+            f"{row['FGA']:.0f}" if pd.notna(row['FGA']) else "",
+            f"{row['FG%']:.3f}".lstrip("0") if pd.notna(row['FG%']) else "",
+            f"{row['3P']:.0f}" if pd.notna(row['3P']) else "",
+            f"{row['3PA']:.0f}" if pd.notna(row['3PA']) else "",
+            f"{row['3P%']:.3f}".lstrip("0") if pd.notna(row['3P%']) else "",
+            f"{row['2P']:.0f}" if pd.notna(row['2P']) else "",
+            f"{row['2PA']:.0f}" if pd.notna(row['2PA']) else "",
+            f"{row['2P%']:.3f}".lstrip("0") if pd.notna(row['2P%']) else "",
+            f"{row['FT']:.0f}" if pd.notna(row['FT']) else "",
+            f"{row['FTA']:.0f}" if pd.notna(row['FTA']) else "",
+            f"{row['FT%']:.3f}".lstrip("0") if pd.notna(row['FT%']) else "",
+            f"{row['ORB']:.0f}" if pd.notna(row['ORB']) else "",
+            f"{row['DRB']:.0f}" if pd.notna(row['DRB']) else "",
+            f"{row['TRB']:.0f}" if pd.notna(row['TRB']) else "",
+            f"{row['AST']:.0f}" if pd.notna(row['AST']) else "",
+            f"{row['STL']:.0f}" if pd.notna(row['STL']) else "",
+            f"{row['BLK']:.0f}" if pd.notna(row['BLK']) else "",
+            f"{row['TOV']:.0f}" if pd.notna(row['TOV']) else "",
+            f"{row['PF']:.0f}" if pd.notna(row['PF']) else ""
+            ])
+        self.pdf.set_line_width(0.15)
+        with self.pdf.table(align="L",
+                    borders_layout="SINGLE_TOP_LINE",
+                    line_height=3,
+                    col_widths=(6, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3), 
+                    text_align=("LEFT", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER")
+        ) as table:
+            for data_row in data[:-2]:
+                row = table.row()
+                for datum in data_row:
+                    row.cell(datum)
+
+        self.pdf.set_line_width(0.15)
+        with self.pdf.table(align="L",
+                    borders_layout="SINGLE_TOP_LINE",
+                    line_height=3,
+                    col_widths=(6, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3), 
+                    text_align=("LEFT", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER")
+        ) as table:
+            for data_row in data[-2:]:
+                row = table.row()
+                for datum in data_row:
+                    row.cell(datum)
+                    
+        self.pdf.write(text='\n')
+        summary = stats.gamelog_summary()
+        self.pdf.set_font("Helvetica", style="b", size = 9)
+        self.pdf.cell(w = 0, h = 4, txt = f"Game Log Summary", ln = 1, align = 'L')
+        self.pdf.set_font("Helvetica", style="b", size = 7)
+        with self.pdf.table(align="L",
+                    width=115,
+                    borders_layout="SINGLE_TOP_LINE",
+                    line_height=3,
+                    col_widths=(3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2), 
+                    text_align=("CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER")
+        ) as table:
+            row = table.row()
+            row.cell("Minutes", colspan=2)
+            row.cell("Points", colspan=2)
+            row.cell("Rebounds", colspan=2)
+            row.cell("Assists", colspan=2)
+            row.cell("Steals", colspan=2)
+            row.cell("Blocks", colspan=2)
+            row.cell("Turnovers", colspan=2)
+            row.cell("Fouls", colspan=2)
+            
+            for i in range(len(summary[0])):
+                row = table.row()
+                for item in summary:
+                    row.cell(item[i][0])
+                    row.cell(str(item[i][1]))
+                    
+    def player_season_page(self, stats:stats) -> None:
+        averages = stats.player_career_averages(teamsplit=True)
+        self.pdf.set_font("Helvetica", style="b", size = 9)
+        self.pdf.cell(w = 0, h = 4, txt = f"Seasonal Statistics", ln = 1, align = 'L')
+        self.pdf.set_font("Helvetica", style="b", size = 7)
+        data_averages = [['Summary', 'Team', 'G', 'PTS', 'TRB', 'AST', 'STL', 'BLK', 'FG%', '3P%', 'FT%']]
+        averages['Team2'] = (averages['Team'].str.extract(r'\(([^()]*)\)', expand=False).fillna(averages['Team']))
+        for idx, row in averages.iterrows():
+            data_averages.append([
+            f"{row['Season']}" if pd.notna(row['Season']) else "",
+            f"{row['Team2']}" if pd.notna(row['Team2']) else "",
+            f"{row['G']}" if pd.notna(row['G']) else "",
+            f"{row['PTS']:.1f}" if pd.notna(row['PTS']) else "",
+            f"{row['TRB']:.1f}" if pd.notna(row['TRB']) else "",
+            f"{row['AST']:.1f}" if pd.notna(row['AST']) else "",
+            f"{row['STL']:.1f}" if pd.notna(row['STL']) else "",
+            f"{row['BLK']:.1f}" if pd.notna(row['BLK']) else "",
+            f"{row['FG%']:.3f}".lstrip("0") if pd.notna(row['FG%']) else "",
+            f"{row['3P%']:.3f}".lstrip("0") if pd.notna(row['3P%']) else "",
+            f"{row['FT%']:.3f}".lstrip("0") if pd.notna(row['FT%']) else ""
+            ])
+        self.pdf.set_line_width(0.15)
+        with self.pdf.table(align="L",
+                    width=100,
+                    borders_layout="SINGLE_TOP_LINE",
+                    line_height=3,
+                    col_widths=(6, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3), 
+                    text_align=("LEFT", "LEFT", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER")
+        ) as table:
+            for data_row in data_averages[:-1]:
+                row = table.row()
+                for datum in data_row:
+                    row.cell(datum)
+                    
+        with self.pdf.table(align="L",
+                    width=100,
+                    borders_layout="SINGLE_TOP_LINE",
+                    line_height=3,
+                    col_widths=(6, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3), 
+                    text_align=("LEFT", "LEFT", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER")
+        ) as table:
+            for data_row in data_averages[-1:]:
+                row = table.row()
+                for datum in data_row:
+                    row.cell(datum, border="TOP")
+                                                        
+        self.pdf.write(text='\n')
+        summary = stats.gamelog_summary()
+        self.pdf.set_font("Helvetica", style="b", size = 9)
+        self.pdf.cell(w = 0, h = 4, txt = f"Game Log Summary", ln = 1, align = 'L')
+        self.pdf.set_font("Helvetica", style="b", size = 7)
+        with self.pdf.table(align="L",
+                    width=115,
+                    borders_layout="SINGLE_TOP_LINE",
+                    line_height=3,
+                    col_widths=(3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2), 
+                    text_align=("CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER")
+        ) as table:
+            row = table.row()
+            row.cell("Minutes", colspan=2)
+            row.cell("Points", colspan=2)
+            row.cell("Rebounds", colspan=2)
+            row.cell("Assists", colspan=2)
+            row.cell("Steals", colspan=2)
+            row.cell("Blocks", colspan=2)
+            row.cell("Turnovers", colspan=2)
+            row.cell("Fouls", colspan=2)
+            for i in range(len(summary[0])):
+                row = table.row()
+                for item in summary:
+                    row.cell(item[i][0])
+                    row.cell(str(item[i][1]))
+        
+        for team in averages['Team'].dropna().unique():
+            self.pdf.write(text='\n')
+            games = stats.gamelog(team = team)
+            self.pdf.set_font("Helvetica", style="b", size = 9)
+            self.pdf.cell(w = 0, h = 4, txt = f"Game Log", ln = 1, align = 'L')
+            self.pdf.set_font("Helvetica", style="bi", size = 6)
+            if len(averages['Team'].dropna().unique()) > 1:
+                self.pdf.cell(w = 0, h = 4, txt = f"When playing for {team}", ln = 1, align = 'L')
+            self.pdf.set_font("Helvetica", style="b", size = 6)
+            gamelog = [['#', 'Date', '', 'Opp', 'Result', 'GS', "MP", "PTS", "FG", "FGA", "FG%", "3P", "3PA", "3P%", "FT", "FTA", "FT%", "ORB", "DRB", "TOT", "AST", "STL", "BLK", "TOV", "PF", "+/-"]]
+            for idx, row in games.iterrows():
+                gamelog.append([
+                f"{int(row['Game'])}" if pd.notna(row['Game']) else "",
+                f"{pd.to_datetime(row['Date']).date()}" if pd.notna(row['Date']) else "",
+                f"{row['@']}" if pd.notna(row['@']) else "",
+                f"{str(row['Opp'])}" if pd.notna(row['Opp']) else "",
+                f"{row['Result']}" if pd.notna(row['Result']) else "",
+                f"{row['GS']}" if pd.notna(row['GS']) else "",
+                f"{row['MP']}" if pd.notna(row['MP']) else "",
+                f"{row['PTS']:.0f}" if pd.notna(row['PTS']) else "",
+                f"{row['FG']:.0f}" if pd.notna(row['FG']) else "",
+                f"{row['FGA']:.0f}" if pd.notna(row['FGA']) else "",
+                f"{row['FG%']:.3f}".lstrip("0") if pd.notna(row['FG%']) and row['FG%'] != "" else "",
+                f"{row['3P']:.0f}" if pd.notna(row['3P']) else "",
+                f"{row['3PA']:.0f}" if pd.notna(row['3PA']) else "",
+                f"{row['3P%']:.3f}".lstrip("0") if pd.notna(row['3P%']) and row['3P%'] != "" else "",
+                f"{row['FT']:.0f}" if pd.notna(row['FT']) else "",
+                f"{row['FTA']:.0f}" if pd.notna(row['FTA']) else "",
+                f"{row['FT%']:.3f}".lstrip("0") if pd.notna(row['FT%']) and row['FT%'] != "" else "",
+                f"{row['ORB']:.0f}" if pd.notna(row['ORB']) else "",
+                f"{row['DRB']:.0f}" if pd.notna(row['DRB']) else "",
+                f"{row['TOT']:.0f}" if pd.notna(row['TOT']) else "",
+                f"{row['AST']:.0f}" if pd.notna(row['AST']) else "",
+                f"{row['STL']:.0f}" if pd.notna(row['STL']) else "",
+                f"{row['BLK']:.0f}" if pd.notna(row['BLK']) else "",
+                f"{row['TOV']:.0f}" if pd.notna(row['TOV']) else "",
+                f"{row['PF']:.0f}" if pd.notna(row['PF']) else "",
+                f"{row['+/-']:.0f}" if pd.notna(row['+/-']) else ""
+                ])
+            self.pdf.set_line_width(0.15)
+            with self.pdf.table(align="L",
+                        borders_layout="SINGLE_TOP_LINE",
+                        line_height=3,
+                        col_widths=(0.9, 2.7, 0.85, 5.2, 2.5, 1.1, 1.6, 1.4, 1.3, 1.4, 1.5, 1.3, 1.4, 1.5, 1.3, 1.4, 1.5, 1.4, 1.4, 1.4, 1.4, 1.4, 1.4, 1.4, 1.3, 1.3), 
+                        text_align=("RIGHT", "LEFT", "RIGHT", "LEFT", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER")
+            ) as table:
+                for idx, data_row in enumerate(gamelog):
+                    row = table.row()
+                    for datum in data_row:
+                        if datum == "Inactive": 
+                            self.pdf.set_font("Helvetica", style="bi", size = 4.5)
+                            row.cell(datum, colspan=21)  
+                            self.pdf.set_font("Helvetica", style="b", size = 6)
+                            break
+                        if idx == len(gamelog) - 1:
+                            row.cell(datum, border="TOP") 
+                        else:
+                            row.cell(datum)
+            self.pdf.set_font("Helvetica", style="bi", size = 4.5)
+            self.pdf.cell(w = 0, h = 4, txt = f"* Games not annotated, are not shown in the game log", ln = 1, align = 'R')
+                
+    def export_player_stats(self) -> None:
+        total = stats() 
+        total.load()
+        self.player, self.team = total.select_player()
+        game_ids = total.playerDataFrame[total.playerDataFrame['name'] == self.player]['gameId'].unique().tolist()
+        mask = total.matchDataFrame['gameId'].isin(game_ids)
+        firstseason, lastseason = self.seasons_range(total.matchDataFrame.loc[mask, 'dateTime'].min(), total.matchDataFrame.loc[mask, 'dateTime'].max())
+
+        self.create_pdf()
+        self.new_page(self.player, "ALL TIME")
+        self.pdf.set_font("Helvetica", style="b", size = self.smalltextsize)
+
+        self.player_career_page(stats=total)
+        for year in range(firstseason, lastseason+1):
+            seasonal = stats() 
+            seasonal.load()
+            seasonal.select_player(self.player)
+            seasonal.select_period(begin=datetime(year, 8, 1), end=datetime(year + 1, 7, 31))            
+            if not seasonal.check_playerData():
+                continue
+            season = f"SEASON {year}-{year + 1}"   
+            self.new_page(self.player, season)
+            self.player_season_page(stats=seasonal)
+
+        self.pdf_glossary()
+        self.pdf_export(name=f"{self.player}_stats")

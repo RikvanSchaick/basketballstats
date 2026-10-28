@@ -419,6 +419,17 @@ class data():
         self.df_player.to_csv("data/player_data_dump.csv")
         self.df_playbyplay.to_csv("data/playbyplay_data_dump.csv")
         
-        self.df_match.to_json("data/match_data_dump.json")
-        self.df_player.to_json("data/player_data_dump.json")
-        self.df_playbyplay.to_json("data/playbyplay_data_dump.json")
+        
+        import json
+        matchdata = self.df_match.copy()
+        matchdata["dateTime"] = matchdata["dateTime"].astype(str)
+        with open("/Users/rikvanschaick/Downloads/match_data.json", "w") as f:
+            json.dump(matchdata.to_dict(orient="records"), f, indent=2)        
+        with open("/Users/rikvanschaick/Downloads/player_data.json", "w") as f:
+            json.dump(self.df_player.to_dict(orient="records"), f, indent=2)        
+        with open("/Users/rikvanschaick/Downloads/playbyplay_data.json", "w") as f:
+            json.dump(self.df_playbyplay.to_dict(orient="records"), f, indent=2)        
+            
+        # self.df_match.to_json("/Users/rikvanschaick/Downloads/match_data_dump.json")
+        # self.df_player.to_json("/Users/rikvanschaick/Downloads/player_data_dump.json")
+        # self.df_playbyplay.to_json("/Users/rikvanschaick/Downloads/playbyplay_data_dump.json")
