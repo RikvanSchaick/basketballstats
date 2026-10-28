@@ -510,7 +510,7 @@ class stats:
         JOINED = JOINED.sort_values(by=['dateTime'], ascending=True).reset_index(drop=True)
         JOINED['Game'] = range(1, len(JOINED) + 1)
         JOINED2 = JOINED[['Game', 'dateTime', 'Team', '@', 'Opp', 'Result', 'GS', 'minutes', 'points', 'fieldGoalsMade', 'fieldGoalsAttempted', 'FG%', 'threePointersMade', 'threePointersAttempted', '3P%', 'freeThrowsMade', 'freeThrowsAttempted', 'FT%', 'offRebounds', 'defRebounds', 'rebounds', 'assists', 'steals', 'blocks', 'turnovers', 'personalFouls', 'plusMinus']]
-        JOINED2.columns = ['Game', 'Date', 'Team', '@', 'Opp', 'Result', 'GS', "MP", "PTS", "FG", "FGA", "FG%", "3P", "3PA", "3P%", "FT", "FTA", "FT%", "ORB", "DRB", "TOT", "AST", "STL", "BLK", "PF", "TOV", "+/-"]
+        JOINED2.columns = ['Game', 'Date', 'Team', '@', 'Opp', 'Result', 'GS', "MP", "PTS", "FG", "FGA", "FG%", "3P", "3PA", "3P%", "FT", "FTA", "FT%", "ORB", "DRB", "TOT", "AST", "STL", "BLK", "TOV", "PF", "+/-"]
         JOINED2['Opp'] = JOINED2['Opp'].str.split(' (', n=1, regex=False).str[0]
         JOINED2['Opp'] = JOINED2['Opp'].apply(lambda x: (f"{x}" if len(x) < 19 else f"{x[:17]}...") if pd.notna(x) else None)
         
