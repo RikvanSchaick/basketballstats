@@ -18,19 +18,16 @@ class gamereport():
         self.page = False
         
     def create_txt(self) -> None:
-        self.file = open(self.DIR, "w")
         self.file.writelines("GAME REPORT" + '\n\n')
         self.file.writelines(f"{self.match.home.name} against {self.match.away.name} ({self.match.matchID})" + '\n')
         self.file.writelines(f"{self.match.date}, {self.match.time}, {self.match.location}" + '\n\n')
         self.file.writelines("\n\n")
-        self.file.close()
         
     def txt_period_scores(self, quarters:list) -> None:
         quartersprint, totalpointshome, totalpointsaway = self.match.score_by_period(quarters)
         et1 = 16
         et2 = 5
         
-        self.file = open(self.DIR, "a")
         self.file.writelines("PERIOD SCORES\t".expandtabs(et1))
         
         for quarterprint in quartersprint:
@@ -46,7 +43,6 @@ class gamereport():
         for pointsaway in totalpointsaway:
             self.file.writelines(f"{pointsaway}\t".expandtabs(et2))
         self.file.writelines("\n\n")
-        self.file.close()   
          
     def txt_lead_tracker(self, quarters:list) -> None:
         lc = self.match.lead_chances(quarters)
@@ -55,12 +51,10 @@ class gamereport():
         et1 = 16
         et2 = 10
         
-        self.file = open(self.DIR, "a")
         self.file.writelines("LEAD TRACKER\t".expandtabs(et1) + '\n')
         self.file.writelines(f"Ties {ties}\t".expandtabs(et2) + '\n')
         self.file.writelines(f"Lead Changes {lc}\t".expandtabs(et2) + '\n')
         self.file.writelines("\n")
-        self.file.close()
             
     def txt_linescores(self, quarters:list, boxh:object, boxa:object, fullgame:bool) -> None:
         et1 = 16
@@ -76,12 +70,10 @@ class gamereport():
             tsp_H, tsp_A = TSpct(boxh.pts, boxh.fga, boxh.fta), TSpct(boxa.pts, boxa.fga, boxa.fta)
             att_H, att_A = ASTtoTO(boxh.ast, boxh.to), ASTtoTO(boxa.ast, boxa.to)
             
-            self.file = open(self.DIR, "a")
             self.file.writelines("LINESCORES\t".expandtabs(et1) + "Big Ld\t".expandtabs(et2) + "2nd PTS\t".expandtabs(et2) + "TEAM TO\t".expandtabs(et2) + "TO PTS\t".expandtabs(et2) + "AST/TO\t".expandtabs(et2) + "Eff FG%\t".expandtabs(et2) + "TS%\t".expandtabs(et2) + '\n')
             self.file.writelines("Home\t".expandtabs(et1) + f"{llH}\t".expandtabs(et2) + f"{scp_H}\t".expandtabs(et2) + f"{tmto_H}\t".expandtabs(et2) + f"{pot_H}\t".expandtabs(et2) + f"{(att_H):.2f}\t".expandtabs(et2) + f"{(efgp_H):.1f}\t".expandtabs(et2) + f"{(tsp_H):.1f}\t".expandtabs(et2) + '\n')
             self.file.writelines("Away\t".expandtabs(et1) + f"{llA}\t".expandtabs(et2) + f"{scp_A}\t".expandtabs(et2) + f"{tmto_A}\t".expandtabs(et2) + f"{pot_A}\t".expandtabs(et2) + f"{(att_A):.2f}\t".expandtabs(et2) + f"{(efgp_A):.1f}\t".expandtabs(et2) + f"{(tsp_A):.1f}\t".expandtabs(et2) + '\n')
             self.file.writelines("\n")
-            self.file.close()
         
         else:
             llH, llA = self.match.largest_lead(quarters)
@@ -89,19 +81,16 @@ class gamereport():
             tmto_H, tmto_A = self.match.team_turnovers(quarters)      
             pot_H, pot_A = self.match.points_off_turnovers(quarters)      
 
-            self.file = open(self.DIR, "a")
             self.file.writelines("LINESCORES\t".expandtabs(et1) + "Big Ld\t".expandtabs(et2) + "2nd PTS\t".expandtabs(et2) + "TEAM TO\t".expandtabs(et2) + "TO PTS\t".expandtabs(et2) + '\n')
             self.file.writelines("Home\t".expandtabs(et1) + f"{llH}\t".expandtabs(et2) + f"{scp_H}\t".expandtabs(et2) + f"{tmto_H}\t".expandtabs(et2) + f"{pot_H}\t".expandtabs(et2) + '\n')
             self.file.writelines("Away\t".expandtabs(et1) + f"{llA}\t".expandtabs(et2) + f"{scp_A}\t".expandtabs(et2) + f"{tmto_A}\t".expandtabs(et2) + f"{pot_A}\t".expandtabs(et2) + '\n')
             self.file.writelines("\n")
-            self.file.close()
 
     def txt_boxscore(self, quarters:list) -> None:
         boxh = boxscore()
         boxh.create_boxscore(self.match.home)
         boxh.add_gamelogs(self.match.events, quarters)
         boxh.make_boxscore(self.match.events, quarters)
-        self.file = open(self.DIR, "a")
         self.file.writelines(f"{boxh.team.name} ({team_terms_lower[boxh.team.team]})" + '\n')
         self.file.writelines("\t".expandtabs(3) + "\t".expandtabs(24) + "MIN\t\tFG\tFGA\t3P\t3PA\tFT\tFTA\tOR\tDR\tTOT\tAST\tPF\tSTL\tBLK\tTO\t+/-\tPTS".expandtabs(4) + '\n')
         starters = True
@@ -113,13 +102,11 @@ class gamereport():
             self.file.writelines(f"{gamelog.player}\t".expandtabs(3) + f"{player_name}\t".expandtabs(24) + f"{gamelog.sec//60:02d}:{gamelog.sec%60:02d}\t{int(gamelog.fg or 0)}\t{int(gamelog.fga or 0)}\t{int(gamelog.tp or 0)}\t{int(gamelog.tpa or 0)}\t{int(gamelog.ft or 0)}\t{int(gamelog.fta or 0)}\t{int(gamelog.oreb or 0)}\t{int(gamelog.dreb or 0)}\t{int(gamelog.reb or 0)}\t{int(gamelog.ast or 0)}\t{int(gamelog.pf or 0)}\t{int(gamelog.stl or 0)}\t{int(gamelog.blk or 0)}\t{int(gamelog.to or 0)}\t{int(gamelog.pm or 0)}\t{int(gamelog.pts or 0)}".expandtabs(4) + '\n')
         self.file.writelines("\t".expandtabs(3) + "\t".expandtabs(24) + f"{boxh.sec//60:02d}:{boxh.sec%60:02d}\t{boxh.fg}\t{boxh.fga}\t{boxh.tp}\t{boxh.tpa}\t{boxh.ft}\t{boxh.fta}\t{boxh.oreb}\t{boxh.dreb}\t{boxh.reb}\t{boxh.ast}\t{boxh.pf}\t{boxh.stl}\t{boxh.blk}\t{boxh.to}\t{boxh.pm}\t{boxh.pts}".expandtabs(4) + '\n')
         self.file.writelines("\t".expandtabs(3) + "\t".expandtabs(24) + f"\t\t {(boxh.fgpct):.1f}%\t {(boxh.tppct):.1f}%\t {(boxh.ftpct):.1f}%\t TM REB: {boxh.tmreb}".expandtabs(4) + '\n')
-        self.file.close()
         
         boxa = boxscore()
         boxa.create_boxscore(self.match.away)
         boxa.add_gamelogs(self.match.events, quarters)
         boxa.make_boxscore(self.match.events, quarters)
-        self.file = open(self.DIR, "a")
         self.file.writelines(f"{boxa.team.name} ({team_terms_lower[boxa.team.team]})" + '\n')
         self.file.writelines("\t".expandtabs(3) + "\t".expandtabs(24) + "MIN\t\tFG\tFGA\t3P\t3PA\tFT\tFTA\tOR\tDR\tTOT\tAST\tPF\tSTL\tBLK\tTO\t+/-\tPTS".expandtabs(4) + '\n')
         starters = True
@@ -132,7 +119,6 @@ class gamereport():
         self.file.writelines("\t".expandtabs(3) + "\t".expandtabs(24) + f"{boxa.sec//60:02d}:{boxa.sec%60:02d}\t{boxa.fg}\t{boxa.fga}\t{boxa.tp}\t{boxa.tpa}\t{boxa.ft}\t{boxa.fta}\t{boxa.oreb}\t{boxa.dreb}\t{boxa.reb}\t{boxa.ast}\t{boxa.pf}\t{boxa.stl}\t{boxa.blk}\t{boxa.to}\t{boxa.pm}\t{boxa.pts}".expandtabs(4) + '\n')
         self.file.writelines("\t".expandtabs(3) + "\t".expandtabs(24) + f"\t\t {(boxa.fgpct):.1f}%\t {(boxa.tppct):.1f}%\t {(boxa.ftpct):.1f}%\t TM REB: {boxa.tmreb}".expandtabs(4) + '\n')
         self.file.writelines("\n")
-        self.file.close()
         return boxh, boxa
                       
     def txt_add_boxscores(self, quarters:list) -> None:
@@ -154,33 +140,24 @@ class gamereport():
                  [["1","2","3","4","5","6","7"],        "final boxscore"],
                  [["1","2","3","4","5","6","7","8"],    "final boxscore"]]
         
-        self.file = open(self.DIR, "a")
         self.file.writelines(f"BOXSCORE ({boxes[11+i][1]})\n")
-        self.file.close()
         boxh, boxa = self.txt_boxscore(boxes[11+i][0])
         self.txt_period_scores(boxes[11+i][0])
         self.txt_lead_tracker(boxes[11+i][0])
         self.txt_linescores(boxes[11+i][0], boxh, boxa, True)
-        self.file = open(self.DIR, "a")
         self.file.writelines("\n\n")
-        self.file.close()
         
         for box in boxes[:(6+i)]:
-            self.file = open(self.DIR, "a")
             self.file.writelines(f"BOXSCORE ({box[1]})\n")
-            self.file.close()
             boxh, boxa = self.txt_boxscore(box[0])
             self.txt_period_scores(box[0])
             self.txt_lead_tracker(box[0])
             self.txt_linescores(box[0], boxh, boxa, False)
-            self.file = open(self.DIR, "a")
             self.file.writelines("\n\n")
-            self.file.close()
                               
     def txt_eventlogs(self, quarter:str) -> None:
         for event in self.match.events:
             if event.quarter == quarter:
-                self.file = open(self.DIR, "a")
                 if event.actionID == "start":
                     self.file.writelines(f"PLAY-BY-PLAY ({quarter_terms_lower[event.quarter]})".expandtabs(8) + '\n')
                     self.file.writelines(f"{self.match.home.name} starters:\t".expandtabs(26))
@@ -207,20 +184,14 @@ class gamereport():
                         self.file.writelines(f"{event.time[:2]}:{event.time[2:]}\t".expandtabs(8) + f"{event.print_event(actions_terms_lower)[1]}\t".expandtabs(30) + f"\t\t".expandtabs(8) + f"{event.print_event(actions_terms_lower)[0]}" + '\n')
                     else:
                         self.file.writelines(f"{event.time[:2]}:{event.time[2:]}\t".expandtabs(8) + f"\t".expandtabs(30) + f"\t\t".expandtabs(8) + f"{event.print_event(actions_terms_lower)}" + '\n')
-                self.file.close()
 
     def txt_add_eventlogs(self, quarters:list) -> None:
         for quarter in quarters:                
             self.txt_eventlogs(quarter)
-            self.file = open(self.DIR, "a")
             self.file.writelines("\n")
-            self.file.close()
-        self.file = open(self.DIR, "a")
         self.file.writelines("\n\n")
-        self.file.close()
         
     def txt_end(self) -> None:
-        self.file = open(self.DIR, "a")
         self.file.writelines(f"GLOSSARY" + '\n')
         self.file.writelines(f"+/-:\t Plus-Minus".expandtabs(10) + '\n')
         self.file.writelines(f"2nd PTS:\t Second Chance Points".expandtabs(10) + '\n')
@@ -246,7 +217,6 @@ class gamereport():
         self.file.writelines(f"TOT:\t Total Rebounds".expandtabs(10) + '\n')
         self.file.writelines(f"TM REB:\t Team Rebounds".expandtabs(10) + '\n')
         self.file.writelines(f"TS%:\t True Shooting Percentage".expandtabs(10) + '\n')
-        self.file.close()
 
     def footer(self):
         if self.page:
@@ -554,10 +524,11 @@ class gamereport():
         self.pdf.output(f"gamebooks/pdf/{self.match.matchID}_gamebook.pdf")
         
     def make_txt(self, quarters:list) -> None:
-        self.create_txt()
-        self.txt_add_boxscores(quarters)
-        self.txt_add_eventlogs(quarters)
-        self.txt_end()
+        with open(self.DIR, "w") as self.file:
+            self.create_txt()
+            self.txt_add_boxscores(quarters)
+            self.txt_add_eventlogs(quarters)
+            self.txt_end()
     
     def make_pdf(self, quarters:list) -> None:
         self.create_pdf()
