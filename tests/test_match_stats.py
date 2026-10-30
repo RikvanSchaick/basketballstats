@@ -91,10 +91,14 @@ class PointsOffTurnoversTests(unittest.TestCase):
   def test_timeout_and_substitution_do_not_end_the_possession(self):
     self.assertEqual(self.pot("tH4", "toA", "outA4inA9", "2mA9"), [0, 2])
 
-  @unittest.expectedFailure
   def test_and_one_free_throw_is_included(self):
-    # f1 is missing from the "keep the possession going" set, unlike f2/f3.
     self.assertEqual(self.pot("tH4", "2mA5", "f1H6", "1mA5"), [0, 3])
+
+  def test_missed_and_one_free_throw_adds_nothing(self):
+    self.assertEqual(self.pot("tH4", "2mA5", "f1H6", "1A5"), [0, 2])
+
+  def test_and_one_without_a_turnover_is_not_counted(self):
+    self.assertEqual(self.pot("2mA5", "f1H6", "1mA5"), [0, 0])
 
   def test_a_miss_ends_the_possession(self):
     self.assertEqual(self.pot("tH4", "3A5", "rA6", "2mA6"), [0, 0])
