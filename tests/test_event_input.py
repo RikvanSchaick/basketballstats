@@ -103,9 +103,9 @@ def run_prompt(tracker_factory, keystrokes, quarter="1", settle=1.2, timeout=12)
       from app import paths
 
       paths.HISTORY = workdir / "matches/history.txt"
-      from app import cli
+      from app import prompt
 
-      result = cli.event_input(quarter, tracker_factory())
+      result = prompt.event_input(quarter, tracker_factory())
       os.write(write_fd, result.encode())
     except BaseException as exc:  # noqa: BLE001 - surfaced to the parent
       import traceback
@@ -335,14 +335,14 @@ class TaskCleanupTests(unittest.TestCase):
 
   def test_no_background_tasks_remain_registered(self):
     """After prompt() returns, the app has no live background tasks."""
-    from app import cli
+    from app import prompt
 
     workdir = Path(tempfile.mkdtemp(prefix="evt-"))
     (workdir / "matches").mkdir()
     (workdir / "matches/history.txt").write_text("\n".join(HISTORY_LINES) + "\n")
     captured = {}
 
-    real_session_cls = cli.PromptSession
+    real_session_cls = prompt.PromptSession
 
     class SpySession(real_session_cls):
       def prompt(self, *a, **kw):
@@ -357,8 +357,8 @@ class TaskCleanupTests(unittest.TestCase):
         from app import paths
 
         paths.HISTORY = workdir / "matches/history.txt"
-        cli.PromptSession = SpySession
-        cli.event_input("1", _StaticTracker("0941"))
+        prompt.PromptSession = SpySession
+        prompt.event_input("1", _StaticTracker("0941"))
         pending = [t for t in captured["app"]._background_tasks if not t.done()]
         os.write(write_fd, str(len(pending)).encode())
       except BaseException:

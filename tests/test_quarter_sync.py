@@ -12,7 +12,7 @@ import builtins
 import unittest
 from unittest import mock
 
-from app import cli
+from app import prompt
 from app.clock.gameclock import ClockLogError
 
 
@@ -88,8 +88,8 @@ class SyncPromptBase(unittest.TestCase):
       self.printed.append(" ".join(str(a) for a in args))
 
     self.enter(mock.patch.object(builtins, "input", fake_input))
-    # cli.py calls the builtin print; a module-level name shadows it.
-    self.enter(mock.patch.object(cli, "print", fake_print, create=True))
+    # prompt.py calls the builtin print; a module-level name shadows it.
+    self.enter(mock.patch.object(prompt, "print", fake_print, create=True))
     self.set_tty(True)
 
   def enter(self, patcher):
@@ -97,7 +97,7 @@ class SyncPromptBase(unittest.TestCase):
     self.addCleanup(patcher.stop)
 
   def set_tty(self, value):
-    self.enter(mock.patch.object(cli.sys, "stdin", _Stdin(value)))
+    self.enter(mock.patch.object(prompt.sys, "stdin", _Stdin(value)))
 
   def output(self):
     return "\n".join(self.printed)
@@ -116,7 +116,7 @@ class AskSyncTests(SyncPromptBase):
 
   def answer(self, text):
     self.answers = [text]
-    return cli.ask_sync(2)
+    return prompt.ask_sync(2)
 
   def test_y_triggers_a_sync(self):
     self.assertTrue(self.answer("y"))
@@ -139,7 +139,7 @@ class AskSyncTests(SyncPromptBase):
 
   def test_eof_skips(self):
     self.answers = []
-    self.assertFalse(cli.ask_sync(2))
+    self.assertFalse(prompt.ask_sync(2))
 
   def test_prompt_names_the_quarter(self):
     self.answer("n")
@@ -152,14 +152,14 @@ class SyncQuarterTests(SyncPromptBase):
   def test_yes_re_anchors_on_that_quarter(self):
     t = _FakeTracker()
     self.answers = ["y"]
-    self.assertIs(cli.sync_quarter(t, "3", _Options()), t)
+    self.assertIs(prompt.sync_quarter(t, "3", _Options()), t)
     self.assertEqual(t.anchored, ["3"])
     self.assertEqual(t.invalidated, 1)
 
   def test_no_keeps_the_previous_sync(self):
     t = _FakeTracker()
     self.answers = ["n"]
-    self.assertIs(cli.sync_quarter(t, "3", _Options()), t)
+    self.assertIs(prompt.sync_quarter(t, "3", _Options()), t)
     self.assertEqual(t.anchored, [])
     self.assertEqual(t.invalidated, 0)
     self.assertIn("keeping the current sync", self.output())
@@ -169,7 +169,7 @@ class SyncQuarterTests(SyncPromptBase):
       with self.subTest(text=text):
         t = _FakeTracker()
         self.answers = [text]
-        cli.sync_quarter(t, "2", _Options())
+        prompt.sync_quarter(t, "2", _Options())
         self.assertEqual(t.anchored, [])
 
   def test_quarter_is_handed_to_the_tracker_either_way(self):
@@ -177,45 +177,45 @@ class SyncQuarterTests(SyncPromptBase):
       with self.subTest(text=text):
         t = _FakeTracker()
         self.answers = [text]
-        cli.sync_quarter(t, "4", _Options())
+        prompt.sync_quarter(t, "4", _Options())
         self.assertEqual(t.quarters, ["4"])
 
   def test_unanchored_tracker_syncs_without_asking(self):
     t = _FakeTracker(ready=False)
-    cli.sync_quarter(t, "1", _Options())
+    prompt.sync_quarter(t, "1", _Options())
     self.assertEqual(self.asked, [])
     self.assertEqual(t.anchored, ["1"])
 
   def test_changed_video_syncs_without_asking(self):
     t = _FakeTracker(changed=True)
-    cli.sync_quarter(t, "2", _Options())
+    prompt.sync_quarter(t, "2", _Options())
     self.assertEqual(self.asked, [])
     self.assertEqual(t.anchored, ["2"])
     self.assertIn("different video", self.output())
 
   def test_explicit_anchor_option_skips_the_question(self):
     t = _FakeTracker()
-    self.assertIs(cli.sync_quarter(t, "2", _Options(anchor=12.0)), t)
+    self.assertIs(prompt.sync_quarter(t, "2", _Options(anchor=12.0)), t)
     self.assertEqual(self.asked, [])
     self.assertEqual(t.anchored, [])
 
   def test_non_interactive_stdin_skips_the_question(self):
     self.set_tty(False)
     t = _FakeTracker()
-    self.assertIs(cli.sync_quarter(t, "2", _Options()), t)
+    self.assertIs(prompt.sync_quarter(t, "2", _Options()), t)
     self.assertEqual(self.asked, [])
     self.assertEqual(t.anchored, [])
 
   def test_failed_sync_falls_back_to_manual(self):
     t = _FakeTracker(fail=True)
     self.answers = ["y"]
-    self.assertIsNone(cli.sync_quarter(t, "2", _Options()))
+    self.assertIsNone(prompt.sync_quarter(t, "2", _Options()))
     self.assertEqual(t.stopped, 1)
     self.assertIn("type the times yourself", self.output())
 
   def test_failed_forced_sync_does_not_raise(self):
     t = _FakeTracker(ready=False, fail=True)
-    self.assertIsNone(cli.sync_quarter(t, "2", _Options()))
+    self.assertIsNone(prompt.sync_quarter(t, "2", _Options()))
     self.assertEqual(t.stopped, 1)
 
   def test_cancelled_sync_falls_back_to_manual(self):
@@ -225,7 +225,7 @@ class SyncQuarterTests(SyncPromptBase):
 
     t = Cancelling()
     self.answers = ["y"]
-    self.assertIsNone(cli.sync_quarter(t, "2", _Options()))
+    self.assertIsNone(prompt.sync_quarter(t, "2", _Options()))
     self.assertEqual(t.stopped, 1)
 
 
@@ -233,7 +233,7 @@ class SetupTrackerTests(SyncPromptBase):
   """The first quarter of a session anchors without asking anything."""
 
   def test_no_video_clock_returns_none(self):
-    self.assertIsNone(cli.setup_tracker(_Options(no_video_clock=True), "1"))
+    self.assertIsNone(prompt.setup_tracker(_Options(no_video_clock=True), "1"))
     self.assertEqual(self.asked, [])
 
 
