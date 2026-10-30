@@ -11,5 +11,5 @@ six==1.16.0
 tqdm==4.70.1
 tzdata==2024.1
 
-# Only needed for the experimental code/scoreboard.py
+# Only needed for the experimental tools/scoreboard.py
 opencv-python==4.10.0.84

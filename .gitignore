@@ -18,7 +18,6 @@ trash/*
 !/data/matches/
 /data/matches/*
 !/data/matches/matches.md
-!/data/matches/history.txt
 !/data/matches/5617.txt
 !/data/matches/6552.txt
 !/data/matches/7619.txt
