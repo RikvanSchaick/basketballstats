@@ -35,6 +35,9 @@ From the repo root:
 of its commands. While entering events, `help` shows all event codes with examples. An
 unknown command is reported instead of being ignored.
 
+Menus and help texts use colors and italics in a terminal. Set `NO_COLOR=1` for
+plain text; output that is piped or redirected is always plain.
+
 | Flag                   | Meaning                                                                                                                           |
 | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | `--csv PATH`           | Game-clock CSV. Defaults to `data/clock_logs/<gameId>.csv`, else the single `time_*.csv` there; you pick one if there are several. |
@@ -52,7 +55,7 @@ The QuickTime tracker also runs on its own, without the rest of the app:
 | Command  | What it does                                                                         |
 | -------- | ------------------------------------------------------------------------------------ |
 | `create` | Create a new game: game ID, home team, away team, date, time, location and rosters.  |
-| `select` | Load a saved game from `data/matches/<gameId>.txt`.                                  |
+| `open`   | Load a saved game from `data/matches/<gameId>.txt`.                                  |
 | `stats`  | Season stats (see the stats menu). Leaving that menu ends the program.               |
 | `help`   | Explain how the program works and what each command does.                            |
 | `exit`   | Quit.                                                                                |
@@ -61,7 +64,7 @@ With `create` you enter the rosters per team as `number,name;number,name;…`, w
 least 6 players** per team, for example `4,Jan;5,Piet;6,Kees;7,Joost;9,Bas;12,Tim`. The
 name may be empty (`4,;5,;…`).
 
-**Game menu** (after `create` or `select`)
+**Game menu** (after `create` or `open`)
 
 | Command   | What it does                                                                          |
 | --------- | ------------------------------------------------------------------------------------- |
@@ -92,7 +95,8 @@ first re-exports all games to `data/exports/` (`*_data_dump.csv` and `*_data.jso
 2. If the quarter has no starters yet, you are asked for them per team: exactly
    **5 numbers**, comma-separated, for example `4,5,6,7,9`.
 3. Type events one per line (see the grammar below). Invalid lines get
-   `invalid event`; events that don't fit the game (for example a player who isn't on
+   `invalid event` with a pointer to `<N>help` (for example `1help`); events that don't
+   fit the game (for example a player who isn't on
    the court) get a message and are not saved.
 4. `<N>oncourt` (for example `1oncourt`) shows who is on the court.
 5. Close the quarter with `<N>end` (for example `1end`). Typing `edit<N>` again
@@ -170,7 +174,7 @@ the arrow keys and Tab work the same.
 How it works and what you can set:
 
 - The clock is set up when you open the first quarter with `edit<N>`, so you can
-  create or select a game first.
+  create or open a game first.
 - On **every** `edit<N>` the app asks: `Sync video for quarter N? (y/n):`. Only a typed
   `y` starts syncing; `n`, an empty line or anything else keeps the current sync for
   that quarter.
@@ -200,8 +204,9 @@ How it works and what you can set:
 ```
 app/                    the program (python -m app)
   __main__.py           entry point
-  cli.py                menus and commands (create, select, edit<N>, box, export, stats, …)
+  cli.py                menus and commands (create, open, edit<N>, box, export, stats, …)
   manual.py             in-program help texts (what 'help' shows)
+  style.py              colors and italics for menus and help texts
   prompt.py             event input line with the live game clock and per-quarter sync
   history.py            reading and writing the working file data/matches/history.txt
   paths.py              every file and folder the app reads or writes

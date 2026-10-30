@@ -11,7 +11,7 @@ from app.clock.gameclock import (
 )
 from app.history import append_history, read_history, write_history
 from app.prompt import event_input, setup_tracker, sync_quarter
-from app import manual
+from app import manual, style
 import argparse
 import os
 import re
@@ -25,48 +25,67 @@ quick start:
   python -m app                    start; type 'help' in any menu for a guide
   python -m app --no-video-clock   type every event time yourself
 
-  In the program: 'create' a game (or 'select' a saved one), then 'edit1' to
+  In the program: 'create' a game (or 'open' a saved one), then 'edit1' to
   enter quarter 1, one event per line (type 'help' there for the codes),
   '1end' to close the quarter, and 'save' before you 'exit'.
   Full manual: README.md
 """
 
 
+MENUS = {
+  "intro": (
+    "START MENU",
+    [
+      ("create", "create a new game"),
+      ("open", "open a saved game"),
+      ("stats", "season stats of a team or player"),
+      ("help", "how this program works"),
+      ("exit", "exit program"),
+    ],
+  ),
+  "match": (
+    "GAME MENU",
+    [
+      ("edit(n)", "enter events of a quarter (e.g. edit1)"),
+      ("summary", "view summary of match"),
+      ("log", "view gamelog of match"),
+      ("box", "view boxscore of match"),
+      ("save", "save match as txt"),
+      ("export", "export gamebook as txt/pdf"),
+      # ("rawstats", "save rawstats of match in txt (sep=';')"),
+      ("help", "explain these commands"),
+      ("exit", "exit program"),
+    ],
+  ),
+  "stats": (
+    "STATS MENU",
+    [
+      ("team", "view stats of certain team"),
+      ("player", "view stats of certain player"),
+      ("help", "explain these commands"),
+      ("exit", "exit program"),
+    ],
+  ),
+}
+
+
 def prints(type: str):
-  if type == "intro":
-    print("\nSTART MENU")
-    print("- create:\tcreate a new game")
-    print("- select:\topen a saved game")
-    print("- stats:\tseason stats of a team or player")
-    print("- help:\t\thow this program works")
-    print("- exit:\t\texit program")
-
-  if type == "match":
-    print("\nGAME MENU")
-    print("- edit(n):\tenter events of a quarter (e.g. edit1)")
-    print("- summary:\tview summary of match")
-    print("- log:\t\tview gamelog of match")
-    print("- box:\t\tview boxscore of match")
-    print("- save:\t\tsave match as txt")
-    print("- export:\texport gamebook as txt/pdf")
-    # print("- rawstats:\tsave rawstats of match in txt (sep=';')")
-    print("- help:\t\texplain these commands")
-    print("- exit:\t\texit program")
-
-  if type == "stats":
-    print("\nSTATS MENU")
-    print("- team:\t\tview stats of certain team")
-    print("- player:\tview stats of certain player")
-    print("- help:\t\texplain these commands")
-    print("- exit:\t\texit program")
+  heading, items = MENUS[type]
+  print(style.menu(heading, items))
 
 
 def answer_menu(topic: str, command: str) -> None:
   """Show the manual for 'help', or say an unknown command was not understood."""
   if manual.is_help(command):
-    print(manual.TOPICS[topic])
+    print(style.manual(manual.TOPICS[topic]))
   elif command.strip():
     print(manual.unknown_command(command))
+
+
+def event_help(quarter: str) -> str:
+  """The styled event-code list; codes such as 104392mH7 or 1end stand out."""
+  codes = rf"\b{quarter}(?:[0-9]{{4}}[0-9A-Za-z]*|end|oncourt)\b|\bhelp\b"
+  return style.manual(manual.event_help(quarter), codes=codes)
 
 
 def ask_quarters(m: Match) -> list | None:
@@ -96,7 +115,7 @@ def parse_args(argv=None):
     prog="python -m app",
     description="Basketball match event entry, with optional game-clock "
     "autofill from a video open in QuickTime Player.",
-    epilog=QUICK_START,
+    epilog=style.manual(QUICK_START),
     formatter_class=argparse.RawDescriptionHelpFormatter,
   )
   parser.add_argument(
@@ -174,7 +193,7 @@ def cmd_create() -> Match:
   return m
 
 
-def cmd_select() -> Match | None:
+def cmd_open() -> Match | None:
   matches = []
   for file in os.listdir(paths.MATCHES):
     if file.endswith(".txt") and not file == "history.txt":
@@ -215,6 +234,8 @@ def cmd_stats() -> None:
       StatsReport().export_team_stats()
     elif command == "player":
       StatsReport().export_player_stats()
+    elif command != "exit":
+      answer_menu("stats", command)
 
 
 def cmd_edit(m: Match, command: str, options, holder: dict) -> Match:
@@ -239,7 +260,7 @@ def cmd_edit(m: Match, command: str, options, holder: dict) -> Match:
   if m.count_events(quarter) < 2:
     added = False
     while not added:
-      print("ADD STARTERS")
+      print(style.title("ADD STARTERS"))
       homestarters = input("home: ")
       awaystarters = input("away: ")
       added = m.add_starters(quarter, homestarters.split(","), awaystarters.split(","))
@@ -247,7 +268,7 @@ def cmd_edit(m: Match, command: str, options, holder: dict) -> Match:
         append_history(f"H{homestarters}", f"A{awaystarters}")
 
   # Set the tracker up on the first edit quarter, so a match can be
-  # created or selected before anchoring interrupts.
+  # created or opened before anchoring interrupts.
   tracker = holder.get("tracker")
   if tracker is None and not options.no_video_clock:
     tracker = setup_tracker(options, quarter, match_id=m.matchID)
@@ -255,10 +276,13 @@ def cmd_edit(m: Match, command: str, options, holder: dict) -> Match:
     tracker = sync_quarter(tracker, quarter, options)
   holder["tracker"] = tracker
 
-  print("ADD EVENTS (enter 'end' to stop)")
+  print("\n" + style.message("ADD EVENTS", "enter 'end' to stop"))
   eventstring = command
   while not eventstring == quarter + "end":
     eventstring = event_input(quarter, tracker)
+    if manual.is_event_help(eventstring):
+      print(event_help(quarter))
+      continue
     e = Event.parse(eventstring)
     if e is not None:
       result = m.add_event(e)
@@ -269,7 +293,7 @@ def cmd_edit(m: Match, command: str, options, holder: dict) -> Match:
     elif eventstring[1:8] == "oncourt":
       m.print_oncourt()
     else:
-      print("invalid event")
+      print(style.body(manual.invalid_event(quarter)))
 
   m.edit = False
 
@@ -340,14 +364,16 @@ def _run_app(options, holder):
 
     if command == "create":
       m = cmd_create()
-    elif command == "select":
-      m = cmd_select()
+    elif command == "open":
+      m = cmd_open()
     elif command == "stats":
       # Leaving the stats menu ends the program.
       cmd_stats()
       return
     elif command == "exit":
       return
+    else:
+      answer_menu("start", command)
 
   while True:
     prints("match")
@@ -359,6 +385,8 @@ def _run_app(options, holder):
       MATCH_COMMANDS[command](m)
     elif command == "exit":
       return
+    else:
+      answer_menu("match", command)
 
     # if command == "rawstats":
     #     rawstat = rawstats(m)

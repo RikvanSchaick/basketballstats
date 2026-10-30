@@ -162,7 +162,7 @@ class SyncQuarterTests(SyncPromptBase):
     self.assertIs(prompt.sync_quarter(t, "3", _Options()), t)
     self.assertEqual(t.anchored, [])
     self.assertEqual(t.invalidated, 0)
-    self.assertIn("keeping the current sync", self.output())
+    self.assertIn("Keeping the current sync", self.output())
 
   def test_empty_and_arbitrary_answers_keep_the_previous_sync(self):
     for text in ("", "no", "yes", "x"):
@@ -211,7 +211,7 @@ class SyncQuarterTests(SyncPromptBase):
     self.answers = ["y"]
     self.assertIsNone(prompt.sync_quarter(t, "2", _Options()))
     self.assertEqual(t.stopped, 1)
-    self.assertIn("type the times yourself", self.output())
+    self.assertIn("Type the times yourself", self.output())
 
   def test_failed_forced_sync_does_not_raise(self):
     t = _FakeTracker(ready=False, fail=True)

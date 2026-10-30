@@ -20,10 +20,14 @@ def unknown_command(command: str) -> str:
   return f"unknown command '{command}' - type 'help' to see what each command does"
 
 
+def invalid_event(quarter: str) -> str:
+  return f"invalid event - type '{quarter}help' to see the event codes and commands"
+
+
 TOPICS = {
   "start": """
 HOW IT WORKS
-  1. Start a game with 'create' (new game) or 'select' (a saved game).
+  1. Start a game with 'create' (new game) or 'open' (a saved game).
   2. In the game menu, type 'edit1' to enter the events of quarter 1.
   3. Type one event per line, close the quarter with '1end'.
      Repeat for edit2, edit3, edit4 (edit5-edit8 are overtimes).
@@ -34,7 +38,7 @@ START MENU
            (dd-mm-yyyy), time (HH:MM), location and both rosters.
            A roster is number,name;number,name;... with at least 6 players,
            e.g. 4,Jan;5,Piet;6,Kees;7,Joost;9,Bas;12,Tim
-  select   Open a saved game from data/matches/ by its game ID.
+  open     Open a saved game from data/matches/ by its game ID.
   stats    Season stats per team or player, as PDF in data/exports/.
   exit     Quit.
 

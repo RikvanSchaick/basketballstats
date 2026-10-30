@@ -4,11 +4,11 @@ from pathlib import Path
 from unittest import mock
 
 from app import paths
-from app.cli import cmd_select
+from app.cli import cmd_open
 
 
 class SelectTests(unittest.TestCase):
-  def test_select_creates_missing_history_file(self):
+  def test_open_creates_missing_history_file(self):
     with tempfile.TemporaryDirectory() as tmp:
       matches = Path(tmp)
       history = matches / "history.txt"
@@ -26,7 +26,7 @@ class SelectTests(unittest.TestCase):
         mock.patch("builtins.input", return_value="1234"),
       ):
         self.assertFalse(history.exists())
-        selected = cmd_select()
+        selected = cmd_open()
 
       self.assertEqual(selected.matchID, "1234")
       self.assertEqual(history.read_text(), contents + "\n")

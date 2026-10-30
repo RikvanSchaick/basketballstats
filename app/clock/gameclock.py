@@ -14,7 +14,7 @@ import threading
 import time
 from pathlib import Path
 
-from app import paths
+from app import paths, style
 from app.clock import tracker
 
 DEFAULT_ANCHOR_CLOCK = tracker.DEFAULT_ANCHOR_CLOCK
@@ -254,8 +254,9 @@ class GameClockTracker:
       where = "the game clock first shows"
     attempts = 0
     while True:
-      print(f"\nScrub the video to the frame where {where} {anchor_clock},")
-      print("pause there, then press Enter.")
+      print()
+      print(style.body(f"Scrub the video to the frame where {where} {anchor_clock},"))
+      print(style.body("pause there, then press Enter."))
       try:
         input()
       except EOFError as exc:
@@ -269,7 +270,7 @@ class GameClockTracker:
       attempts += 1
       if retries is not None and attempts >= retries:
         raise ClockLogError(status.message)
-      print(f"  {status.message} - try again.")
+      print(style.body(f"  {status.message} - try again."))
 
   @property
   def ready(self):

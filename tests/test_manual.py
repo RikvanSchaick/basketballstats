@@ -24,7 +24,7 @@ class HelpWordTests(unittest.TestCase):
   def test_menu_help_words(self):
     for word in ["help", "HELP", " ? ", "h"]:
       self.assertTrue(manual.is_help(word), word)
-    for word in ["", "hel", "select", "exit"]:
+    for word in ["", "hel", "open", "exit"]:
       self.assertFalse(manual.is_help(word), word)
 
   def test_event_help_ignores_the_prefilled_clock(self):
