@@ -1,7 +1,7 @@
 """Every file and folder the app reads or writes.
 
-Use these as `paths.X` at call time (`import paths`), never
-`from paths import X`: tests replace the attributes.
+Use these as `paths.X` at call time (`from app import paths`), never
+`from app.paths import X`: tests replace the attributes.
 """
 
 from pathlib import Path

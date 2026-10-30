@@ -17,10 +17,10 @@ import time
 from pathlib import Path
 
 # Loaded by path rather than via sys.path: quicktime_timestamp/ contains its own
-# main.py, which would shadow this app's main module if that directory were added
+# main.py, which would shadow other modules if that directory were added
 # to sys.path.
 _TRACKER_PATH = (
-  Path(__file__).resolve().parent.parent / "quicktime_timestamp" / "tracker.py"
+  Path(__file__).resolve().parents[2] / "quicktime_timestamp" / "tracker.py"
 )
 
 

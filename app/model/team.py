@@ -1,4 +1,4 @@
-from players import Players
+from app.model.players import Players
 
 
 class Team:

@@ -8,7 +8,7 @@ Run from the repository root:
 import unittest
 from pathlib import Path
 
-from event import Event
+from app.model.event import Event
 
 ROOT = Path(__file__).resolve().parent.parent
 

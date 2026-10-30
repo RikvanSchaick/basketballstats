@@ -1,6 +1,6 @@
-from match import Match
-from boxscore import BoxScore
-from terminology import (
+from app.model.match import Match
+from app.model.boxscore import BoxScore
+from app.model.terminology import (
   quarter_terms,
   actions_terms,
   team_terms,
@@ -8,11 +8,11 @@ from terminology import (
   actions_terms_lower,
   team_terms_lower,
 )
-from formulas import EFGpct, TSpct, ASTtoTO
+from app.model.formulas import EFGpct, TSpct, ASTtoTO
 from fpdf import FPDF
 from fpdf.fonts import FontFace
 from datetime import datetime, date
-import paths
+from app import paths
 
 
 class GameReport:

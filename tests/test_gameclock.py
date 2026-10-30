@@ -9,8 +9,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from event import Event
-from gameclock import (  # noqa: E402
+from app.model.event import Event
+from app.clock.gameclock import (  # noqa: E402
   ClockLogError,
   GameClockSample,
   GameClockTracker,

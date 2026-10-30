@@ -1,7 +1,7 @@
-from event import Event
-from boxscore import BoxScore
-from team import Team
-from terminology import quarter_terms, team_terms, actions_terms
+from app.model.event import Event
+from app.model.boxscore import BoxScore
+from app.model.team import Team
+from app.model.terminology import quarter_terms, team_terms, actions_terms
 
 
 class Match:

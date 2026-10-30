@@ -1,8 +1,8 @@
-from stats import Stats
+from app.stats.stats import Stats
 from fpdf import FPDF
 from datetime import datetime
 import pandas as pd
-import paths
+from app import paths
 
 
 class StatsReport:

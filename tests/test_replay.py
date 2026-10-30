@@ -10,9 +10,9 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-import paths
-from gamereport import GameReport
-from match import Match
+from app import paths
+from app.reports.gamebook import GameReport
+from app.model.match import Match
 
 ROOT = Path(__file__).resolve().parent.parent
 IGNORED = {"history", "test"}

@@ -1,6 +1,6 @@
-from gamelog import GameLog
-from team import Team
-from terminology import team_terms
+from app.model.gamelog import GameLog
+from app.model.team import Team
+from app.model.terminology import team_terms
 
 
 class BoxScore:

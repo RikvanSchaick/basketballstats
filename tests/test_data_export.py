@@ -3,8 +3,8 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-import paths
-from data_export import Data
+from app import paths
+from app.stats.export import Data
 
 
 class FilesTests(unittest.TestCase):

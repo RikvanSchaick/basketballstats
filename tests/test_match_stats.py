@@ -2,7 +2,7 @@
 
 import unittest
 
-from match import Match
+from app.model.match import Match
 
 HEADER = [
   "T1",

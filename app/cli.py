@@ -1,11 +1,11 @@
-from event import Event
-from match import Match
-from stats_export import StatsReport
-from gamereport import GameReport
+from app.model.event import Event
+from app.model.match import Match
+from app.stats.report import StatsReport
+from app.reports.gamebook import GameReport
 
 # from rawstats import rawstats
-from data_export import Data
-from gameclock import (
+from app.stats.export import Data
+from app.clock.gameclock import (
   ClockLogError,
   GameClockTracker,
   DEFAULT_ANCHOR_CLOCK,
@@ -14,7 +14,7 @@ from gameclock import (
 import argparse
 import asyncio
 import os
-import paths
+from app import paths
 import shutil
 import sys
 from prompt_toolkit import PromptSession
@@ -310,8 +310,9 @@ def event_input(quarter, tracker=None) -> str:
 
 def parse_args(argv=None):
   parser = argparse.ArgumentParser(
+    prog="python -m app",
     description="Basketball match event entry, with optional game-clock "
-    "autofill from a video open in QuickTime Player."
+    "autofill from a video open in QuickTime Player.",
   )
   parser.add_argument(
     "--csv",
@@ -579,7 +580,3 @@ def _run_app(options, holder):
     #     rawstat.create_boxscores()
     #     rawstat.save_teamstats()
     #     rawstat.save_playerstats()
-
-
-if __name__ == "__main__":
-  main()

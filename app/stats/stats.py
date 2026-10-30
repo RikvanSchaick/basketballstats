@@ -1,6 +1,6 @@
 import pandas as pd
-import paths
-from formulas import EFGpct, TSpct, ASTtoTO
+from app import paths
+from app.model.formulas import EFGpct, TSpct, ASTtoTO
 from datetime import datetime
 
 pd.options.mode.chained_assignment = None

@@ -1,12 +1,12 @@
-from match import Match
+from app.model.match import Match
 from datetime import datetime
-from boxscore import BoxScore
-from terminology import actions_code, quarter_code
+from app.model.boxscore import BoxScore
+from app.model.terminology import actions_code, quarter_code
 
 from tqdm import tqdm
 import pandas as pd
 import os
-import paths
+from app import paths
 
 
 class Data:
