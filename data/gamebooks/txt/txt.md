@@ -1,3 +1,3 @@
-# Folder *txt*
+# txt
 
-In deze folder zitten gamebooks opgeslagen als txt-files die informatie bevatten van een individuele wedstrijd aangegeven met de gameId in de naam van het document; `<gameId>_gamebook.txt`.
+Gamebooks as `<gameId>_gamebook.txt`; `tests/test_replay.py` compares against these. See the [README](../../../README.md#folders).

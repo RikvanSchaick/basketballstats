@@ -13,7 +13,7 @@ starting the next.
 | 4    | [04-data-layout.md](04-data-layout.md)     | `matches/`, `gamebooks/`, exports and clock logs under `data/`                | Claude Opus 5.5   |
 | 5    | [05-clock.md](05-clock.md)                 | QuickTime tracker inside `app/clock/`, no more loading by file path           | Claude Opus 5.5   |
 | 6    | [06-cleanups.md](06-cleanups.md)           | `players` merged into `team`, `scoreboard` moved to `tools/`                  | Faster model      |
-| 7    | [07-readme.md](07-readme.md)               | Dutch `README.md`; `code/code.md` and the QuickTime README folded in          | Claude Opus 5.5   |
+| 7    | [07-readme.md](07-readme.md)               | English `README.md`; `code/code.md` and the QuickTime README folded in        | Claude Opus 5.5   |
 
 Each step says why it needs that model. "Faster model" means any quicker, cheaper
 model from the Copilot model picker; that step is small and mechanical.

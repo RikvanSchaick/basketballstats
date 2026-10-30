@@ -1,3 +1,3 @@
-# Folder *pdf*
+# pdf
 
-In deze folder zitten gamebooks opgeslagen als pdf-files die informatie bevatten van een individuele wedstrijd aangegeven met de gameId in de naam van het document; `<gameId>_gamebook.pdf`.
+Gamebooks as `<gameId>_gamebook.pdf`. See the [README](../../../README.md#folders).

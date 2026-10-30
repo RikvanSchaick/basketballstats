@@ -58,7 +58,8 @@ python -m app.clock --interval 0.05                     # poll faster (default 0
 
 ## The game-clock CSV
 
-A CSV in `data/clock_logs/` (at the repo root), named `time_*.csv`:
+A CSV in `data/clock_logs/` (at the repo root). The basketball app uses
+`<gameId>.csv` for the game being edited; the standalone tracker looks for `time_*.csv`:
 
 ```csv
 real_time,game_clock,period
@@ -125,7 +126,7 @@ logged (an overtime that tipped off just before the recording stopped) anchors o
 opening value.
 
 The basketball app uses this to re-line the video up at the start of every quarter —
-see the edit-mode section of `code/code.md`.
+see "Game clock from QuickTime" in the [README](../README.md).
 
 ## macOS permissions
 
@@ -217,23 +218,6 @@ A few details that matter:
 - **Recovery.** Errors are caught inside the AppleScript loop, so a missing document or
   a quit application does not kill the helper. If the helper itself dies or stops
   producing output for 3 seconds, Python restarts it.
-
-### AppleScript properties used
-
-These were read from the installed dictionary
-(`sdef /System/Applications/QuickTime\ Player.app`) rather than assumed. On the
-`document` class:
-
-| Property       | Type    | Access | Meaning                          |
-| -------------- | ------- | ------ | -------------------------------- |
-| `current time` | real    | rw     | Playback position in seconds     |
-| `duration`     | real    | r      | Movie length in seconds          |
-| `playing`      | boolean | r      | Whether the movie is playing     |
-| `name`         | text    | r      | Document name                    |
-
-`current time` reports sub-millisecond precision while playing, freezes when paused,
-and updates immediately when you scrub the timeline.
-
 
 ### AppleScript properties used
 

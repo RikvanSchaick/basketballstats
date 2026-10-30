@@ -1,9 +1,3 @@
-# Folder *data*
+# data
 
-In de subfolder `exports/` zit de opgeslagen data die is verkregen uit de export van de txt-files uit de folder `data/matches/`. Deze data kan worden gebruikt voor het weergeven van de statistieken. De volgende csv-files zitten in `data/exports/`:
-
-1. `match_data_dump.csv`: Data van elke individuele game.
-2. `playbyplay_data_dump.csv`: Data van elk event in een game, voor alle games
-3. `player_data_dump.csv`: Data van elke individuele speler van een game, voor alle games. 
-
-Deze data kan worden aangemaakt door `python3 code/main.py` te runnen en `data` te kiezen. En dit voor alle games te doen die moeten worden geincludeerd in de statistieken.
+Game data: `matches/`, `gamebooks/`, `exports/` and `clock_logs/`. Mostly git-ignored. See the [README](../README.md#folders).
