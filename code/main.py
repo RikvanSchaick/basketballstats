@@ -2,9 +2,15 @@ from event import Event
 from match import Match
 from stats_export import StatsReport
 from gamereport import GameReport
+
 # from rawstats import rawstats
 from data_export import Data
-from gameclock import ClockLogError, GameClockTracker, DEFAULT_ANCHOR_CLOCK, parse_anchor_value
+from gameclock import (
+    ClockLogError,
+    GameClockTracker,
+    DEFAULT_ANCHOR_CLOCK,
+    parse_anchor_value,
+)
 import argparse
 import asyncio
 import os
@@ -18,7 +24,7 @@ from prompt_toolkit.key_binding import KeyBindings
 PREFIX_LEN = 5
 LIVE_CLOCK_INTERVAL = 0.2
 HISTORY = "matches/history.txt"
-VALID_QUARTERS = {"1","2","3","4","5","6","7","8"}
+VALID_QUARTERS = {"1", "2", "3", "4", "5", "6", "7", "8"}
 
 
 def read_history() -> list[str]:
@@ -36,14 +42,14 @@ def append_history(*lines: str) -> None:
         f.writelines(line + "\n" for line in lines)
 
 
-def prints(type:str):
+def prints(type: str):
     if type == "intro":
         print("\nOPTIONS")
         print("- create:\tcreate new match")
         print("- select:\tselect match")
         print("- stats:\tsee all stats of certain team")
         print("- exit:\t\texit program")
-    
+
     if type == "match":
         print("\nOPTIONS")
         print("- edit:\t\tedit match")
@@ -53,14 +59,15 @@ def prints(type:str):
         print("- save:\t\tsave match as txt")
         print("- export:\texport stats as txt/pdf")
         # print("- rawstats:\tsave rawstats of match in txt (sep=';')")
-        print("- exit:\t\texit program")  
-        
+        print("- exit:\t\texit program")
+
     if type == "stats":
         print("\nOPTIONS")
         print("- team:\t\tview stats of certain team")
         print("- player:\tview stats of certain player")
         print("- exit:\t\texit program")
-    
+
+
 def _clock_prefix(tracker, quarter):
     """Event-string prefix (quarter + MMSS) from the video, or None."""
     if tracker is None:
@@ -76,10 +83,12 @@ def setup_tracker(options, quarter=None, match_id=None):
     if options.no_video_clock:
         return None
 
-    tracker = GameClockTracker(csv_path=options.csv,
-                               anchor_clock=options.anchor_clock,
-                               anchor=options.anchor,
-                               match_id=match_id)
+    tracker = GameClockTracker(
+        csv_path=options.csv,
+        anchor_clock=options.anchor_clock,
+        anchor=options.anchor,
+        match_id=match_id,
+    )
     try:
         path = tracker.load_csv()
         print(f"\nGAME CLOCK: using {path.name}")
@@ -102,10 +111,12 @@ def setup_tracker(options, quarter=None, match_id=None):
 
 def print_anchor(info):
     """One-line confirmation of where the video was lined up with the CSV."""
-    where = (f"quarter {info['quarter']} " if info["quarter"] is not None else "")
-    print(f"GAME CLOCK: {info['document']} anchored at {info['video_seconds']:.3f}s "
-          f"= {where}{info['anchor_clock']} ({info['real_time_text']}), "
-          f"offset {info['offset']:+.3f}s")
+    where = f"quarter {info['quarter']} " if info["quarter"] is not None else ""
+    print(
+        f"GAME CLOCK: {info['document']} anchored at {info['video_seconds']:.3f}s "
+        f"= {where}{info['anchor_clock']} ({info['real_time_text']}), "
+        f"offset {info['offset']:+.3f}s"
+    )
 
 
 def ask_sync(quarter):
@@ -122,11 +133,11 @@ def anchor_quarter(tracker, quarter):
     """Re-anchor the video on `quarter`. False means fall back to manual times."""
     tracker.invalidate_anchor()
     try:
-        info = tracker.anchor_to_video(quarter=quarter,
-                                       on_wait=lambda msg: print(f"  {msg}"))
+        info = tracker.anchor_to_video(
+            quarter=quarter, on_wait=lambda msg: print(f"  {msg}")
+        )
     except (ClockLogError, KeyboardInterrupt, EOFError) as exc:
-        print(f"GAME CLOCK: {exc or 'anchoring cancelled'}; "
-              "type the times yourself.")
+        print(f"GAME CLOCK: {exc or 'anchoring cancelled'}; type the times yourself.")
         return False
     print_anchor(info)
     return True
@@ -178,6 +189,7 @@ def event_input(quarter, tracker=None) -> str:
         return _clock_prefix(tracker, quarter) or autofill or f"{quarter}"
 
     bindings = KeyBindings()
+
     def update_defaulta():
         nonlocal default_text
         if counta > 0:
@@ -204,7 +216,7 @@ def event_input(quarter, tracker=None) -> str:
             live["prefix"] = default_text
             live["bare"] = len(default_text) < PREFIX_LEN
 
-    @bindings.add('up')
+    @bindings.add("up")
     def _(event):
         nonlocal counta
         nonlocal countb
@@ -214,7 +226,7 @@ def event_input(quarter, tracker=None) -> str:
             update_defaulta()
             apply_recall(event, at_base=False)
 
-    @bindings.add('down')
+    @bindings.add("down")
     def _(event):
         nonlocal counta
         nonlocal countb
@@ -226,8 +238,8 @@ def event_input(quarter, tracker=None) -> str:
             counta -= 1
             update_defaulta()
             apply_recall(event, at_base=counta == 0 and countb == 0)
-            
-    @bindings.add('tab')
+
+    @bindings.add("tab")
     def _(event):
         nonlocal counta
         nonlocal countb
@@ -263,10 +275,12 @@ def event_input(quarter, tracker=None) -> str:
             if fresh == prefix:
                 return True
             shift = len(fresh) - len(prefix)
-            updated = fresh + text[len(prefix):]
-            cursor = (buffer.cursor_position + shift
-                      if buffer.cursor_position >= len(prefix)
-                      else min(buffer.cursor_position, len(fresh)))
+            updated = fresh + text[len(prefix) :]
+            cursor = (
+                buffer.cursor_position + shift
+                if buffer.cursor_position >= len(prefix)
+                else min(buffer.cursor_position, len(fresh))
+            )
 
         live["prefix"] = fresh
         live["bare"] = False
@@ -292,26 +306,34 @@ def event_input(quarter, tracker=None) -> str:
         pre_run=start_following if tracker is not None else None,
     )
     return eventstring
-    
+
+
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(
         description="Basketball match event entry, with optional game-clock "
-                    "autofill from a video open in QuickTime Player.")
+        "autofill from a video open in QuickTime Player."
+    )
     parser.add_argument(
         "--csv",
         help="Game-clock CSV. Defaults to the single time_*.csv in "
-             "quicktime_timestamp/; you are asked to pick when there are several.")
+        "quicktime_timestamp/; you are asked to pick when there are several.",
+    )
     parser.add_argument(
-        "--anchor-clock", default=DEFAULT_ANCHOR_CLOCK,
+        "--anchor-clock",
+        default=DEFAULT_ANCHOR_CLOCK,
         help="Game clock value used to line the video up with the CSV "
-             "(default: %(default)s).")
+        "(default: %(default)s).",
+    )
     parser.add_argument(
         "--anchor",
         help="Video timestamp showing --anchor-clock, as seconds, MM:SS.mmm or "
-             "HH:MM:SS.mmm. Skips the interactive anchor prompt.")
+        "HH:MM:SS.mmm. Skips the interactive anchor prompt.",
+    )
     parser.add_argument(
-        "--no-video-clock", action="store_true",
-        help="Disable QuickTime clock autofill and type every event time by hand.")
+        "--no-video-clock",
+        action="store_true",
+        help="Disable QuickTime clock autofill and type every event time by hand.",
+    )
     options = parser.parse_args(argv)
 
     if options.anchor is not None:
@@ -335,21 +357,33 @@ def main():
 
 def cmd_create() -> Match:
     m = Match()
-    m.create_match(input("game ID: "), 
-                   input("home team: "), 
-                   input("away team: "), 
-                   input("date: "), 
-                   input("time: "), 
-                   input("location: "),
-                   True)
+    m.create_match(
+        input("game ID: "),
+        input("home team: "),
+        input("away team: "),
+        input("date: "),
+        input("time: "),
+        input("location: "),
+        True,
+    )
     added = False
     while not added:
         homeplayers = input("players (home)\n")
         awayplayers = input("players (away)\n")
         added = m.add_teams(homeplayers.split(";"), awayplayers.split(";"))
 
-    write_history([m.matchID, m.home.name, m.away.name, m.date, m.time,
-                   m.location, homeplayers, awayplayers])
+    write_history(
+        [
+            m.matchID,
+            m.home.name,
+            m.away.name,
+            m.date,
+            m.time,
+            m.location,
+            homeplayers,
+            awayplayers,
+        ]
+    )
     return m
 
 
@@ -357,10 +391,10 @@ def cmd_select() -> Match | None:
     matches = []
     for file in os.listdir("matches"):
         if file.endswith(".txt") and not file == "history.txt":
-            matches.append(file.split('.')[0])
-            print("game " + file.split('.')[0])
+            matches.append(file.split(".")[0])
+            print("game " + file.split(".")[0])
 
-    if len(matches) == 0: 
+    if len(matches) == 0:
         print("no matches found")
         return None
 
@@ -372,7 +406,9 @@ def cmd_select() -> Match | None:
     shutil.copyfile(f"matches/{match_id}.txt", HISTORY)
     lines = read_history()
     m = Match.from_history(lines, prnt=True)
-    print(f"selected match {match_id} with {len(lines)-8} written lines and {len(m.events)} added events")
+    print(
+        f"selected match {match_id} with {len(lines) - 8} written lines and {len(m.events)} added events"
+    )
     return m
 
 
@@ -419,7 +455,9 @@ def cmd_edit(m: Match, command: str, options, holder: dict) -> Match:
             print("ADD STARTERS")
             homestarters = input("home: ")
             awaystarters = input("away: ")
-            added = m.add_starters(quarter, homestarters.split(","), awaystarters.split(","))
+            added = m.add_starters(
+                quarter, homestarters.split(","), awaystarters.split(",")
+            )
             if added:
                 append_history(f"H{homestarters}", f"A{awaystarters}")
 
@@ -452,7 +490,8 @@ def cmd_edit(m: Match, command: str, options, holder: dict) -> Match:
 
     # Rebuild from the file so hand-made fixes in history.txt are checked too.
     m = Match.from_history(read_history())
-    if m.check_boxscore(m.all_quarters())==True: print("exited succesfully")
+    if m.check_boxscore(m.all_quarters()) == True:
+        print("exited succesfully")
     return m
 
 
@@ -478,16 +517,17 @@ def cmd_box(m: Match) -> None:
         print("no events")
     else:
         quarters = input("which quarter(s)? ").split(",")
-        if m.check_boxscore(quarters)==True: m.print_boxscore(quarters)
+        if m.check_boxscore(quarters) == True:
+            m.print_boxscore(quarters)
 
 
 def cmd_save(m: Match) -> None:
     if os.path.isfile(f"matches/{m.matchID}.txt"):
         print(f"match is already saved under {m.matchID}.txt")
         if input("overwrite existing file? (y/n) ") == "y":
-            shutil.copyfile(HISTORY, f"matches/{m.matchID}.txt") 
+            shutil.copyfile(HISTORY, f"matches/{m.matchID}.txt")
     else:
-        shutil.copyfile(HISTORY, f"matches/{m.matchID}.txt") 
+        shutil.copyfile(HISTORY, f"matches/{m.matchID}.txt")
 
 
 def cmd_export(m: Match) -> None:
@@ -543,5 +583,5 @@ def _run_app(options, holder):
         #     rawstat.save_playerstats()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

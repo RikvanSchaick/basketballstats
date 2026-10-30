@@ -86,11 +86,15 @@ QUERY_BODY = """\
 \t\tend try
 """
 
-APPLESCRIPT = "\non run\n\trepeat\n" + QUERY_BODY + """\t\tlog payload
+APPLESCRIPT = (
+    "\non run\n\trepeat\n"
+    + QUERY_BODY
+    + """\t\tlog payload
 \t\tdelay INTERVAL
 \tend repeat
 end run
 """
+)
 
 # Same query, run once, used to capture the anchor timestamp without waiting on
 # (and possibly reading a stale sample from) the streaming poller.
@@ -100,8 +104,16 @@ ONE_SHOT_APPLESCRIPT = "\non run\n" + QUERY_BODY + "\treturn payload\nend run\n"
 class Status:
     """A single parsed sample coming back from QuickTime Player."""
 
-    def __init__(self, kind, seconds=None, playing=False, duration=None, name=None,
-                 message=None, clock=None):
+    def __init__(
+        self,
+        kind,
+        seconds=None,
+        playing=False,
+        duration=None,
+        name=None,
+        message=None,
+        clock=None,
+    ):
         self.kind = kind
         self.seconds = seconds
         self.playing = playing
@@ -136,7 +148,10 @@ def parse_line(line):
             time_ms = int(parts[1])
             duration_ms = int(parts[3])
         except ValueError:
-            return Status("error", message="Received an unreadable timestamp from QuickTime Player")
+            return Status(
+                "error",
+                message="Received an unreadable timestamp from QuickTime Player",
+            )
         return Status(
             "ok",
             seconds=time_ms / 1000.0,
@@ -285,7 +300,9 @@ def load_clock_log(path, with_periods=False):
         previous = seconds
         times.append(seconds)
         clocks.append(clock)
-        periods.append(normalise_period(row.get(PERIOD_COLUMN)) if has_periods else None)
+        periods.append(
+            normalise_period(row.get(PERIOD_COLUMN)) if has_periods else None
+        )
 
     if with_periods:
         return times, clocks, periods
@@ -566,9 +583,11 @@ def format_wall_clock(seconds):
     minutes, secs = divmod(rest, 60)
     return f"{int(hours):02d}:{int(minutes):02d}:{secs:06.3f}"
 
+
 def ensure_osascript():
     if shutil.which("osascript") is None:
-        print("osascript was not found. This program only runs on macOS.", file=sys.stderr)
+        print(
+            "osascript was not found. This program only runs on macOS.", file=sys.stderr
+        )
         return False
     return True
-

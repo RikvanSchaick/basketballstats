@@ -5,7 +5,12 @@ import unittest
 from match import Match
 
 HEADER = [
-    "T1", "Home", "Away", "01-01-2026", "20:00", "Hall",
+    "T1",
+    "Home",
+    "Away",
+    "01-01-2026",
+    "20:00",
+    "Hall",
     "4,H4;5,H5;6,H6;7,H7;8,H8;9,H9",
     "4,A4;5,A5;6,A6;7,A7;8,A8;9,A9",
 ]

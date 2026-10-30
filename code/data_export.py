@@ -7,13 +7,114 @@ from tqdm import tqdm
 import pandas as pd
 import os
 
-class Data():
+
+class Data:
     def __init__(self) -> None:
-        self.df_match = pd.DataFrame(columns=['gameId', 'dateTime', 'homeTeam', 'awayTeam', 'pointsDiff', 'pointsSum', 'quarters', 'status', 'homeScore', 'quarter1home', 'quarter2home', 'quarter3home', 'quarter4home', 'quarter5home', 'homeFieldGoalsMade', 'homeFieldGoalsAttempted', 'homeThreePointersMade', 'homeThreePointersAttempted', 'homeFreeThrowsMade', 'homeFreeThrowsAttempted', 'homeOffRebounds', 'homeDefRebounds', 'homeTeamRebounds', 'homeRebounds', 'homeAssists', 'homePersonalFouls', 'homeSteals', 'homeBlocks', 'homeTurnovers', 'homeLargestLead', 'homeSecondChancePoints', 'homeTeamTurnovers', 'homePointsOfTurnovers', 'awayScore', 'quarter1away', 'quarter2away', 'quarter3away', 'quarter4away', 'quarter5away', 'awayFieldGoalsMade', 'awayFieldGoalsAttempted', 'awayThreePointersMade', 'awayThreePointersAttempted', 'awayFreeThrowsMade', 'awayFreeThrowsAttempted', 'awayOffRebounds', 'awayDefRebounds', 'awayTeamRebounds', 'awayRebounds', 'awayAssists', 'awayPersonalFouls', 'awaySteals', 'awayBlocks', 'awayTurnovers', 'awayLargestLead', 'awaySecondChancePoints', 'awayTeamTurnovers', 'awayPointsOfTurnovers'])
-        self.df_player = pd.DataFrame(columns=['gameId', 'name', 'number', 'team', 'starter', 'seconds', 'points', 'fieldGoalsMade', 'fieldGoalsAttempted', 'threePointersMade', 'threePointersAttempted', 'freeThrowsMade', 'freeThrowsAttempted', 'offRebounds', 'defRebounds', 'rebounds', 'assists', 'personalFouls', 'steals', 'blocks', 'turnovers', 'plusMinus'])
-        self.df_playbyplay = pd.DataFrame(columns=['gameId', 'name', 'number', 'team', 'homeScore', 'awayScore', 'quarter', 'remainingMinutes', 'remainingSeconds', 'play', 'description'])
+        self.df_match = pd.DataFrame(
+            columns=[
+                "gameId",
+                "dateTime",
+                "homeTeam",
+                "awayTeam",
+                "pointsDiff",
+                "pointsSum",
+                "quarters",
+                "status",
+                "homeScore",
+                "quarter1home",
+                "quarter2home",
+                "quarter3home",
+                "quarter4home",
+                "quarter5home",
+                "homeFieldGoalsMade",
+                "homeFieldGoalsAttempted",
+                "homeThreePointersMade",
+                "homeThreePointersAttempted",
+                "homeFreeThrowsMade",
+                "homeFreeThrowsAttempted",
+                "homeOffRebounds",
+                "homeDefRebounds",
+                "homeTeamRebounds",
+                "homeRebounds",
+                "homeAssists",
+                "homePersonalFouls",
+                "homeSteals",
+                "homeBlocks",
+                "homeTurnovers",
+                "homeLargestLead",
+                "homeSecondChancePoints",
+                "homeTeamTurnovers",
+                "homePointsOfTurnovers",
+                "awayScore",
+                "quarter1away",
+                "quarter2away",
+                "quarter3away",
+                "quarter4away",
+                "quarter5away",
+                "awayFieldGoalsMade",
+                "awayFieldGoalsAttempted",
+                "awayThreePointersMade",
+                "awayThreePointersAttempted",
+                "awayFreeThrowsMade",
+                "awayFreeThrowsAttempted",
+                "awayOffRebounds",
+                "awayDefRebounds",
+                "awayTeamRebounds",
+                "awayRebounds",
+                "awayAssists",
+                "awayPersonalFouls",
+                "awaySteals",
+                "awayBlocks",
+                "awayTurnovers",
+                "awayLargestLead",
+                "awaySecondChancePoints",
+                "awayTeamTurnovers",
+                "awayPointsOfTurnovers",
+            ]
+        )
+        self.df_player = pd.DataFrame(
+            columns=[
+                "gameId",
+                "name",
+                "number",
+                "team",
+                "starter",
+                "seconds",
+                "points",
+                "fieldGoalsMade",
+                "fieldGoalsAttempted",
+                "threePointersMade",
+                "threePointersAttempted",
+                "freeThrowsMade",
+                "freeThrowsAttempted",
+                "offRebounds",
+                "defRebounds",
+                "rebounds",
+                "assists",
+                "personalFouls",
+                "steals",
+                "blocks",
+                "turnovers",
+                "plusMinus",
+            ]
+        )
+        self.df_playbyplay = pd.DataFrame(
+            columns=[
+                "gameId",
+                "name",
+                "number",
+                "team",
+                "homeScore",
+                "awayScore",
+                "quarter",
+                "remainingMinutes",
+                "remainingSeconds",
+                "play",
+                "description",
+            ]
+        )
         self.matches = []
-    
+
     def files(self):
         file_list = []
         for filename in os.listdir("matches"):
@@ -21,70 +122,84 @@ class Data():
                 file_list.append(filename)
         file_list.sort(key=lambda x: int(os.path.splitext(x)[0][:6]))
         return file_list
-    
-    def read(self, prnt=True) -> None:   
+
+    def read(self, prnt=True) -> None:
         file_list = self.files()
         for filename in file_list:
             if filename.endswith(".txt") and not filename == "history.txt":
-                with open("matches/"+filename, "r") as f:
+                with open("matches/" + filename, "r") as f:
                     lines = f.read().splitlines()
                 m = Match.from_history(lines)
-                if prnt: print(f"selected match {m.matchID} with {len(lines)-8} written lines and {len(m.events)} added events")
+                if prnt:
+                    print(
+                        f"selected match {m.matchID} with {len(lines) - 8} written lines and {len(m.events)} added events"
+                    )
                 self.matches.append(m)
-        
-        if prnt: print(f"\nadded a total of {len(self.matches)} matches\n")
-                
+
+        if prnt:
+            print(f"\nadded a total of {len(self.matches)} matches\n")
+
     def boxscores(self, match):
         boxHome = BoxScore()
         boxHome.create_boxscore(match.home)
         boxHome.add_gamelogs(match.events, match.all_quarters())
         boxHome.make_boxscore(match.events, match.all_quarters())
-        
+
         boxAway = BoxScore()
         boxAway.create_boxscore(match.away)
         boxAway.add_gamelogs(match.events, match.all_quarters())
         boxAway.make_boxscore(match.events, match.all_quarters())
-        
+
         return boxHome, boxAway
-            
+
     def add_match_data(self, match) -> None:
         match_data = []
-        
+
         match_data.append(match.matchID)
-        match_data.append(datetime.strptime(match.date + match.time, '%d-%m-%Y%H:%M'))
+        match_data.append(datetime.strptime(match.date + match.time, "%d-%m-%Y%H:%M"))
         match_data.append(match.home.name)
         match_data.append(match.away.name)
         match_data.append(match.score[0] - match.score[1])
         match_data.append(match.score[0] + match.score[1])
         match_data.append(len(match.all_quarters()))
-        if all(ele in match.all_quarters() for ele in ['1', '2', '3', '4']):
-            if '5' in match.all_quarters(): 
+        if all(ele in match.all_quarters() for ele in ["1", "2", "3", "4"]):
+            if "5" in match.all_quarters():
                 match_data.append("F/OT")
-            else: 
+            else:
                 match_data.append("Final")
         else:
             match_data.append("DNF")
-        
+
         match_data.append(match.score[0])
         quarter1home = 0
         quarter2home = 0
         quarter3home = 0
         quarter4home = 0
         quarter5home = 0
-        if '1' in match.all_quarters(): quarter1home += match.quarter_score('1')[0]
-        if '2' in match.all_quarters(): quarter2home += match.quarter_score('2')[0]
-        if '3' in match.all_quarters(): quarter3home += match.quarter_score('3')[0]
-        if '4' in match.all_quarters(): quarter4home += match.quarter_score('4')[0]
-        if '5' in match.all_quarters(): quarter5home += match.quarter_score('5')[0]
-        if '6' in match.all_quarters(): quarter5home += match.quarter_score('6')[0]
-        if '7' in match.all_quarters(): quarter5home += match.quarter_score('7')[0]
-        if '8' in match.all_quarters(): quarter5home += match.quarter_score('8')[0]
+        if "1" in match.all_quarters():
+            quarter1home += match.quarter_score("1")[0]
+        if "2" in match.all_quarters():
+            quarter2home += match.quarter_score("2")[0]
+        if "3" in match.all_quarters():
+            quarter3home += match.quarter_score("3")[0]
+        if "4" in match.all_quarters():
+            quarter4home += match.quarter_score("4")[0]
+        if "5" in match.all_quarters():
+            quarter5home += match.quarter_score("5")[0]
+        if "6" in match.all_quarters():
+            quarter5home += match.quarter_score("6")[0]
+        if "7" in match.all_quarters():
+            quarter5home += match.quarter_score("7")[0]
+        if "8" in match.all_quarters():
+            quarter5home += match.quarter_score("8")[0]
         match_data.append(quarter1home)
         match_data.append(quarter2home)
         match_data.append(quarter3home)
         match_data.append(quarter4home)
-        match_data.append(None) if quarter5home == 0 else match_data.append(quarter5home)
-        
+        match_data.append(None) if quarter5home == 0 else match_data.append(
+            quarter5home
+        )
+
         boxHome, boxAway = self.boxscores(match)
         match_data.append(boxHome.fg)
         match_data.append(boxHome.fga)
@@ -92,7 +207,7 @@ class Data():
         match_data.append(boxHome.tpa)
         match_data.append(boxHome.ft)
         match_data.append(boxHome.fta)
-        
+
         match_data.append(boxHome.oreb)
         match_data.append(boxHome.dreb)
         match_data.append(boxHome.tmreb)
@@ -113,27 +228,37 @@ class Data():
         quarter3away = 0
         quarter4away = 0
         quarter5away = 0
-        if '1' in match.all_quarters(): quarter1away += match.quarter_score('1')[1]
-        if '2' in match.all_quarters(): quarter2away += match.quarter_score('2')[1]
-        if '3' in match.all_quarters(): quarter3away += match.quarter_score('3')[1]
-        if '4' in match.all_quarters(): quarter4away += match.quarter_score('4')[1]
-        if '5' in match.all_quarters(): quarter5away += match.quarter_score('5')[1]
-        if '6' in match.all_quarters(): quarter5away += match.quarter_score('6')[1]
-        if '7' in match.all_quarters(): quarter5away += match.quarter_score('7')[1]
-        if '8' in match.all_quarters(): quarter5away += match.quarter_score('8')[1]
+        if "1" in match.all_quarters():
+            quarter1away += match.quarter_score("1")[1]
+        if "2" in match.all_quarters():
+            quarter2away += match.quarter_score("2")[1]
+        if "3" in match.all_quarters():
+            quarter3away += match.quarter_score("3")[1]
+        if "4" in match.all_quarters():
+            quarter4away += match.quarter_score("4")[1]
+        if "5" in match.all_quarters():
+            quarter5away += match.quarter_score("5")[1]
+        if "6" in match.all_quarters():
+            quarter5away += match.quarter_score("6")[1]
+        if "7" in match.all_quarters():
+            quarter5away += match.quarter_score("7")[1]
+        if "8" in match.all_quarters():
+            quarter5away += match.quarter_score("8")[1]
         match_data.append(quarter1away)
         match_data.append(quarter2away)
         match_data.append(quarter3away)
         match_data.append(quarter4away)
-        match_data.append(None) if quarter5away == 0 else match_data.append(quarter5away)
-        
+        match_data.append(None) if quarter5away == 0 else match_data.append(
+            quarter5away
+        )
+
         match_data.append(boxAway.fg)
         match_data.append(boxAway.fga)
         match_data.append(boxAway.tp)
         match_data.append(boxAway.tpa)
         match_data.append(boxAway.ft)
         match_data.append(boxAway.fta)
-        
+
         match_data.append(boxAway.oreb)
         match_data.append(boxAway.dreb)
         match_data.append(boxAway.tmreb)
@@ -149,7 +274,7 @@ class Data():
         match_data.append(match.points_off_turnovers(match.all_quarters())[1])
 
         self.df_match.loc[len(self.df_match.index)] = match_data
-    
+
     def add_player_data(self, match) -> None:
         boxHome, boxAway = self.boxscores(match)
         for gamelog in boxHome.gamelogs.values():
@@ -160,27 +285,59 @@ class Data():
             player_data.append(match.home.name)
             player_data.append(gamelog.starter)
             player_data.append(gamelog.sec)
-            
-            player_data.append(0) if gamelog.pts == None else player_data.append(gamelog.pts)
-            player_data.append(0) if gamelog.fg == None else player_data.append(gamelog.fg)
-            player_data.append(0) if gamelog.fga == None else player_data.append(gamelog.fga)
-            player_data.append(0) if gamelog.tp == None else player_data.append(gamelog.tp)
-            player_data.append(0) if gamelog.tpa == None else player_data.append(gamelog.tpa)
-            player_data.append(0) if gamelog.ft == None else player_data.append(gamelog.ft)
-            player_data.append(0) if gamelog.fta == None else player_data.append(gamelog.fta)
-            player_data.append(0) if gamelog.oreb == None else player_data.append(gamelog.oreb)
-            player_data.append(0) if gamelog.dreb == None else player_data.append(gamelog.dreb)
-            player_data.append(0) if gamelog.reb == None else player_data.append(gamelog.reb)
-            player_data.append(0) if gamelog.ast == None else player_data.append(gamelog.ast)
-            player_data.append(0) if gamelog.pf == None else player_data.append(gamelog.pf)
-            player_data.append(0) if gamelog.stl == None else player_data.append(gamelog.stl)
-            player_data.append(0) if gamelog.blk == None else player_data.append(gamelog.blk)
-            player_data.append(0) if gamelog.to == None else player_data.append(gamelog.to)
-            player_data.append(0) if gamelog.pm == None else player_data.append(gamelog.pm)
+
+            player_data.append(0) if gamelog.pts == None else player_data.append(
+                gamelog.pts
+            )
+            player_data.append(0) if gamelog.fg == None else player_data.append(
+                gamelog.fg
+            )
+            player_data.append(0) if gamelog.fga == None else player_data.append(
+                gamelog.fga
+            )
+            player_data.append(0) if gamelog.tp == None else player_data.append(
+                gamelog.tp
+            )
+            player_data.append(0) if gamelog.tpa == None else player_data.append(
+                gamelog.tpa
+            )
+            player_data.append(0) if gamelog.ft == None else player_data.append(
+                gamelog.ft
+            )
+            player_data.append(0) if gamelog.fta == None else player_data.append(
+                gamelog.fta
+            )
+            player_data.append(0) if gamelog.oreb == None else player_data.append(
+                gamelog.oreb
+            )
+            player_data.append(0) if gamelog.dreb == None else player_data.append(
+                gamelog.dreb
+            )
+            player_data.append(0) if gamelog.reb == None else player_data.append(
+                gamelog.reb
+            )
+            player_data.append(0) if gamelog.ast == None else player_data.append(
+                gamelog.ast
+            )
+            player_data.append(0) if gamelog.pf == None else player_data.append(
+                gamelog.pf
+            )
+            player_data.append(0) if gamelog.stl == None else player_data.append(
+                gamelog.stl
+            )
+            player_data.append(0) if gamelog.blk == None else player_data.append(
+                gamelog.blk
+            )
+            player_data.append(0) if gamelog.to == None else player_data.append(
+                gamelog.to
+            )
+            player_data.append(0) if gamelog.pm == None else player_data.append(
+                gamelog.pm
+            )
 
             if not gamelog.sec == 0:
                 self.df_player.loc[len(self.df_player.index)] = player_data
-        
+
         for gamelog in boxAway.gamelogs.values():
             player_data = []
             player_data.append(match.matchID)
@@ -190,40 +347,82 @@ class Data():
             player_data.append(gamelog.starter)
             player_data.append(gamelog.sec)
 
-            player_data.append(0) if gamelog.pts == None else player_data.append(gamelog.pts)
-            player_data.append(0) if gamelog.fg == None else player_data.append(gamelog.fg)
-            player_data.append(0) if gamelog.fga == None else player_data.append(gamelog.fga)
-            player_data.append(0) if gamelog.tp == None else player_data.append(gamelog.tp)
-            player_data.append(0) if gamelog.tpa == None else player_data.append(gamelog.tpa)
-            player_data.append(0) if gamelog.ft == None else player_data.append(gamelog.ft)
-            player_data.append(0) if gamelog.fta == None else player_data.append(gamelog.fta)
-            player_data.append(0) if gamelog.oreb == None else player_data.append(gamelog.oreb)
-            player_data.append(0) if gamelog.dreb == None else player_data.append(gamelog.dreb)
-            player_data.append(0) if gamelog.reb == None else player_data.append(gamelog.reb)
-            player_data.append(0) if gamelog.ast == None else player_data.append(gamelog.ast)
-            player_data.append(0) if gamelog.pf == None else player_data.append(gamelog.pf)
-            player_data.append(0) if gamelog.stl == None else player_data.append(gamelog.stl)
-            player_data.append(0) if gamelog.blk == None else player_data.append(gamelog.blk)
-            player_data.append(0) if gamelog.to == None else player_data.append(gamelog.to)
-            player_data.append(0) if gamelog.pm == None else player_data.append(gamelog.pm)
-            
+            player_data.append(0) if gamelog.pts == None else player_data.append(
+                gamelog.pts
+            )
+            player_data.append(0) if gamelog.fg == None else player_data.append(
+                gamelog.fg
+            )
+            player_data.append(0) if gamelog.fga == None else player_data.append(
+                gamelog.fga
+            )
+            player_data.append(0) if gamelog.tp == None else player_data.append(
+                gamelog.tp
+            )
+            player_data.append(0) if gamelog.tpa == None else player_data.append(
+                gamelog.tpa
+            )
+            player_data.append(0) if gamelog.ft == None else player_data.append(
+                gamelog.ft
+            )
+            player_data.append(0) if gamelog.fta == None else player_data.append(
+                gamelog.fta
+            )
+            player_data.append(0) if gamelog.oreb == None else player_data.append(
+                gamelog.oreb
+            )
+            player_data.append(0) if gamelog.dreb == None else player_data.append(
+                gamelog.dreb
+            )
+            player_data.append(0) if gamelog.reb == None else player_data.append(
+                gamelog.reb
+            )
+            player_data.append(0) if gamelog.ast == None else player_data.append(
+                gamelog.ast
+            )
+            player_data.append(0) if gamelog.pf == None else player_data.append(
+                gamelog.pf
+            )
+            player_data.append(0) if gamelog.stl == None else player_data.append(
+                gamelog.stl
+            )
+            player_data.append(0) if gamelog.blk == None else player_data.append(
+                gamelog.blk
+            )
+            player_data.append(0) if gamelog.to == None else player_data.append(
+                gamelog.to
+            )
+            player_data.append(0) if gamelog.pm == None else player_data.append(
+                gamelog.pm
+            )
+
             if not gamelog.sec == 0:
                 self.df_player.loc[len(self.df_player.index)] = player_data
-        
-    def add_playbyplay_data(self, match) -> None:        
+
+    def add_playbyplay_data(self, match) -> None:
         for event in match.events:
             play = []
             play.append(match.matchID)
             if event.playerID is not None:
-                if event.team == "H": 
-                    name = self.df_player.loc[(self.df_player['gameId'] == match.matchID) & (self.df_player['team'] == match.home.name) & (self.df_player['number'] == event.playerID), 'name'].iloc[0]
+                if event.team == "H":
+                    name = self.df_player.loc[
+                        (self.df_player["gameId"] == match.matchID)
+                        & (self.df_player["team"] == match.home.name)
+                        & (self.df_player["number"] == event.playerID),
+                        "name",
+                    ].iloc[0]
                 else:
-                    name = self.df_player.loc[(self.df_player['gameId'] == match.matchID) & (self.df_player['team'] == match.away.name) & (self.df_player['number'] == event.playerID), 'name'].iloc[0]
-                play.append(name)          
+                    name = self.df_player.loc[
+                        (self.df_player["gameId"] == match.matchID)
+                        & (self.df_player["team"] == match.away.name)
+                        & (self.df_player["number"] == event.playerID),
+                        "name",
+                    ].iloc[0]
+                play.append(name)
             else:
                 play.append(None)
             play.append(event.playerID)
-            if event.team == "H": 
+            if event.team == "H":
                 play.append(match.home.name)
             else:
                 play.append(match.away.name)
@@ -241,154 +440,242 @@ class Data():
                 play.append("End of " + quarter_code[event.quarter])
             else:
                 play.append(actions_code[event.actionID])
-                if event.team == "H": 
-                    if event.actionID == '1m':
-                        play.append(f"{match.home.players.names[event.playerID]} makes free throw")
-                    if event.actionID == '2m':
+                if event.team == "H":
+                    if event.actionID == "1m":
+                        play.append(
+                            f"{match.home.players.names[event.playerID]} makes free throw"
+                        )
+                    if event.actionID == "2m":
                         if not event.actionID2 == None:
-                            play.append(f"{match.home.players.names[event.playerID]} makes two pointer assisted by {match.home.players.names[event.playerID2]}")
+                            play.append(
+                                f"{match.home.players.names[event.playerID]} makes two pointer assisted by {match.home.players.names[event.playerID2]}"
+                            )
                         else:
-                            play.append(f"{match.home.players.names[event.playerID]} makes two pointer")
-                    if event.actionID == '3m':
+                            play.append(
+                                f"{match.home.players.names[event.playerID]} makes two pointer"
+                            )
+                    if event.actionID == "3m":
                         if not event.actionID2 == None:
-                            play.append(f"{match.home.players.names[event.playerID]} makes three pointer assisted by {match.home.players.names[event.playerID2]}")
+                            play.append(
+                                f"{match.home.players.names[event.playerID]} makes three pointer assisted by {match.home.players.names[event.playerID2]}"
+                            )
                         else:
-                            play.append(f"{match.home.players.names[event.playerID]} makes three pointer")
-                    if event.actionID == '1':
-                        play.append(f"{match.home.players.names[event.playerID]} misses free throw")
-                    if event.actionID == '2':
+                            play.append(
+                                f"{match.home.players.names[event.playerID]} makes three pointer"
+                            )
+                    if event.actionID == "1":
+                        play.append(
+                            f"{match.home.players.names[event.playerID]} misses free throw"
+                        )
+                    if event.actionID == "2":
                         if not event.actionID2 == None:
-                            play.append(f"{match.home.players.names[event.playerID]} misses two pointer blocked by {match.away.players.names[event.playerID2]}")
+                            play.append(
+                                f"{match.home.players.names[event.playerID]} misses two pointer blocked by {match.away.players.names[event.playerID2]}"
+                            )
                         else:
-                            play.append(f"{match.home.players.names[event.playerID]} misses two pointer")
-                    if event.actionID == '3':
+                            play.append(
+                                f"{match.home.players.names[event.playerID]} misses two pointer"
+                            )
+                    if event.actionID == "3":
                         if not event.actionID2 == None:
-                            play.append(f"{match.home.players.names[event.playerID]} misses three pointer blocked by {match.away.players.names[event.playerID2]}")
+                            play.append(
+                                f"{match.home.players.names[event.playerID]} misses three pointer blocked by {match.away.players.names[event.playerID2]}"
+                            )
                         else:
-                            play.append(f"{match.home.players.names[event.playerID]} misses three pointer")
-                    if event.actionID == 'f0':
-                        play.append(f"Personal foul on {match.home.players.names[event.playerID]}")
-                    if event.actionID == 'f1':
-                        play.append(f"Shooting foul on {match.home.players.names[event.playerID]}") 
-                    if event.actionID == 'f2':
-                        play.append(f"Shooting foul on {match.home.players.names[event.playerID]}") 
-                    if event.actionID == 'f3':
-                        play.append(f"Shooting foul on {match.home.players.names[event.playerID]}") 
-                    if event.actionID == 'ft':
+                            play.append(
+                                f"{match.home.players.names[event.playerID]} misses three pointer"
+                            )
+                    if event.actionID == "f0":
+                        play.append(
+                            f"Personal foul on {match.home.players.names[event.playerID]}"
+                        )
+                    if event.actionID == "f1":
+                        play.append(
+                            f"Shooting foul on {match.home.players.names[event.playerID]}"
+                        )
+                    if event.actionID == "f2":
+                        play.append(
+                            f"Shooting foul on {match.home.players.names[event.playerID]}"
+                        )
+                    if event.actionID == "f3":
+                        play.append(
+                            f"Shooting foul on {match.home.players.names[event.playerID]}"
+                        )
+                    if event.actionID == "ft":
                         if not event.playerID == None:
-                            play.append(f"Technical foul on {match.home.players.names[event.playerID]}")
+                            play.append(
+                                f"Technical foul on {match.home.players.names[event.playerID]}"
+                            )
                         else:
                             play.append("Technical foul on coach or bench")
-                    if event.actionID == 'fu':
-                        play.append(f"Unsportsmanlike foul on {match.home.players.names[event.playerID]}")
-                    if event.actionID == 'fd':
-                        play.append(f"{match.home.players.names[event.playerID]} is disqualified")
-                    if event.actionID == 'r':
+                    if event.actionID == "fu":
+                        play.append(
+                            f"Unsportsmanlike foul on {match.home.players.names[event.playerID]}"
+                        )
+                    if event.actionID == "fd":
+                        play.append(
+                            f"{match.home.players.names[event.playerID]} is disqualified"
+                        )
+                    if event.actionID == "r":
                         if not event.playerID == None:
-                            play.append(f"{match.home.players.names[event.playerID]} rebound")
+                            play.append(
+                                f"{match.home.players.names[event.playerID]} rebound"
+                            )
                         else:
                             play.append("Team rebound")
-                    if event.actionID == 't':
+                    if event.actionID == "t":
                         if event.playerID == None:
                             play.append("Team turnover")
-                            
+
                         elif not event.actionID2 == None:
-                            play.append(f"Turnover on {match.home.players.names[event.playerID]} stolen by {match.away.players.names[event.playerID2]}")
+                            play.append(
+                                f"Turnover on {match.home.players.names[event.playerID]} stolen by {match.away.players.names[event.playerID2]}"
+                            )
                         else:
-                            play.append(f"Turnover on {match.home.players.names[event.playerID]}")
-                    if event.actionID == 'j':
-                        play.append(f"Possession obtained by {match.home.name} after jumpball")
-                    if event.actionID == 'to':
+                            play.append(
+                                f"Turnover on {match.home.players.names[event.playerID]}"
+                            )
+                    if event.actionID == "j":
+                        play.append(
+                            f"Possession obtained by {match.home.name} after jumpball"
+                        )
+                    if event.actionID == "to":
                         play.append("Timeout taken by team")
-                    if event.actionID == 'out':
-                        play.append(f"{match.home.players.names[event.playerID2]} enters game for {match.home.players.names[event.playerID]}")
-                        
-                if event.team == "A": 
-                    if event.actionID == '1m':
-                        play.append(f"{match.away.players.names[event.playerID]} makes free throw")
-                    if event.actionID == '2m':
+                    if event.actionID == "out":
+                        play.append(
+                            f"{match.home.players.names[event.playerID2]} enters game for {match.home.players.names[event.playerID]}"
+                        )
+
+                if event.team == "A":
+                    if event.actionID == "1m":
+                        play.append(
+                            f"{match.away.players.names[event.playerID]} makes free throw"
+                        )
+                    if event.actionID == "2m":
                         if not event.actionID2 == None:
-                            play.append(f"{match.away.players.names[event.playerID]} makes two pointer assisted by {match.away.players.names[event.playerID2]}")
+                            play.append(
+                                f"{match.away.players.names[event.playerID]} makes two pointer assisted by {match.away.players.names[event.playerID2]}"
+                            )
                         else:
-                            play.append(f"{match.away.players.names[event.playerID]} makes two pointer")
-                    if event.actionID == '3m':
+                            play.append(
+                                f"{match.away.players.names[event.playerID]} makes two pointer"
+                            )
+                    if event.actionID == "3m":
                         if not event.actionID2 == None:
-                            play.append(f"{match.away.players.names[event.playerID]} makes three pointer assisted by {match.away.players.names[event.playerID2]}")
+                            play.append(
+                                f"{match.away.players.names[event.playerID]} makes three pointer assisted by {match.away.players.names[event.playerID2]}"
+                            )
                         else:
-                            play.append(f"{match.away.players.names[event.playerID]} makes three pointer")
-                    if event.actionID == '1':
-                        play.append(f"{match.away.players.names[event.playerID]} misses free throw")
-                    if event.actionID == '2':
+                            play.append(
+                                f"{match.away.players.names[event.playerID]} makes three pointer"
+                            )
+                    if event.actionID == "1":
+                        play.append(
+                            f"{match.away.players.names[event.playerID]} misses free throw"
+                        )
+                    if event.actionID == "2":
                         if not event.actionID2 == None:
-                            play.append(f"{match.away.players.names[event.playerID]} misses two pointer blocked by {match.home.players.names[event.playerID2]}")
+                            play.append(
+                                f"{match.away.players.names[event.playerID]} misses two pointer blocked by {match.home.players.names[event.playerID2]}"
+                            )
                         else:
-                            play.append(f"{match.away.players.names[event.playerID]} misses two pointer")
-                    if event.actionID == '3':
+                            play.append(
+                                f"{match.away.players.names[event.playerID]} misses two pointer"
+                            )
+                    if event.actionID == "3":
                         if not event.actionID2 == None:
-                            play.append(f"{match.away.players.names[event.playerID]} misses three pointer blocked by {match.home.players.names[event.playerID2]}")
+                            play.append(
+                                f"{match.away.players.names[event.playerID]} misses three pointer blocked by {match.home.players.names[event.playerID2]}"
+                            )
                         else:
-                            play.append(f"{match.away.players.names[event.playerID]} misses three pointer")
-                    if event.actionID == 'f0':
-                        play.append(f"Personal foul on {match.away.players.names[event.playerID]}")
-                    if event.actionID == 'f1':
-                        play.append(f"Shooting foul on {match.away.players.names[event.playerID]}") 
-                    if event.actionID == 'f2':
-                        play.append(f"Shooting foul on {match.away.players.names[event.playerID]}") 
-                    if event.actionID == 'f3':
-                        play.append(f"Shooting foul on {match.away.players.names[event.playerID]}") 
-                    if event.actionID == 'ft':
+                            play.append(
+                                f"{match.away.players.names[event.playerID]} misses three pointer"
+                            )
+                    if event.actionID == "f0":
+                        play.append(
+                            f"Personal foul on {match.away.players.names[event.playerID]}"
+                        )
+                    if event.actionID == "f1":
+                        play.append(
+                            f"Shooting foul on {match.away.players.names[event.playerID]}"
+                        )
+                    if event.actionID == "f2":
+                        play.append(
+                            f"Shooting foul on {match.away.players.names[event.playerID]}"
+                        )
+                    if event.actionID == "f3":
+                        play.append(
+                            f"Shooting foul on {match.away.players.names[event.playerID]}"
+                        )
+                    if event.actionID == "ft":
                         if not event.playerID == None:
-                            play.append(f"Technical foul on {match.away.players.names[event.playerID]}")
+                            play.append(
+                                f"Technical foul on {match.away.players.names[event.playerID]}"
+                            )
                         else:
                             play.append("Technical foul on coach or bench")
-                    if event.actionID == 'fu':
-                        play.append(f"Unsportsmanlike foul on {match.away.players.names[event.playerID]}")
-                    if event.actionID == 'fd':
-                        play.append(f"{match.away.players.names[event.playerID]} is disqualified")
-                    if event.actionID == 'r':
+                    if event.actionID == "fu":
+                        play.append(
+                            f"Unsportsmanlike foul on {match.away.players.names[event.playerID]}"
+                        )
+                    if event.actionID == "fd":
+                        play.append(
+                            f"{match.away.players.names[event.playerID]} is disqualified"
+                        )
+                    if event.actionID == "r":
                         if not event.playerID == None:
-                            play.append(f"{match.away.players.names[event.playerID]} rebound")
+                            play.append(
+                                f"{match.away.players.names[event.playerID]} rebound"
+                            )
                         else:
                             play.append("Team rebound")
-                    if event.actionID == 't':
+                    if event.actionID == "t":
                         if event.playerID == None:
                             play.append("Team turnover")
                         elif not event.actionID2 == None:
-                            play.append(f"Turnover on {match.away.players.names[event.playerID]} stolen by {match.home.players.names[event.playerID2]}")
+                            play.append(
+                                f"Turnover on {match.away.players.names[event.playerID]} stolen by {match.home.players.names[event.playerID2]}"
+                            )
                         else:
-                            play.append(f"Turnover on {match.away.players.names[event.playerID]}")
-                    if event.actionID == 'j':
-                        play.append(f"Possession obtained by {match.away.name} after jumpball")
-                    if event.actionID == 'to':
+                            play.append(
+                                f"Turnover on {match.away.players.names[event.playerID]}"
+                            )
+                    if event.actionID == "j":
+                        play.append(
+                            f"Possession obtained by {match.away.name} after jumpball"
+                        )
+                    if event.actionID == "to":
                         play.append("Timeout taken by team")
-                    if event.actionID == 'out':
-                        play.append(f"{match.away.players.names[event.playerID2]} enters game for {match.away.players.names[event.playerID]}")
-                                  
+                    if event.actionID == "out":
+                        play.append(
+                            f"{match.away.players.names[event.playerID2]} enters game for {match.away.players.names[event.playerID]}"
+                        )
+
             self.df_playbyplay.loc[len(self.df_playbyplay.index)] = play
-        
+
     def n_exports(self) -> int:
-        file_list = self.files()     
+        file_list = self.files()
         exports = pd.read_csv("data/match_data_dump.csv")
-        return (len(exports) == len(file_list))
-        
+        return len(exports) == len(file_list)
+
     def add_data(self) -> None:
         for match in tqdm(self.matches):
             self.add_match_data(match)
             self.add_player_data(match)
             self.add_playbyplay_data(match)
-    
+
     def export(self) -> None:
         self.df_match.to_csv("data/match_data_dump.csv")
         self.df_player.to_csv("data/player_data_dump.csv")
         self.df_playbyplay.to_csv("data/playbyplay_data_dump.csv")
-        
-        
+
         import json
+
         matchdata = self.df_match.copy()
         matchdata["dateTime"] = matchdata["dateTime"].astype(str)
         with open("data/match_data.json", "w") as f:
-            json.dump(matchdata.to_dict(orient="records"), f, indent=2)        
+            json.dump(matchdata.to_dict(orient="records"), f, indent=2)
         with open("data/player_data.json", "w") as f:
-            json.dump(self.df_player.to_dict(orient="records"), f, indent=2)        
+            json.dump(self.df_player.to_dict(orient="records"), f, indent=2)
         with open("data/playbyplay_data.json", "w") as f:
-            json.dump(self.df_playbyplay.to_dict(orient="records"), f, indent=2)        
+            json.dump(self.df_playbyplay.to_dict(orient="records"), f, indent=2)

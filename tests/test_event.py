@@ -40,17 +40,30 @@ VALID = {
 }
 
 INVALID = [
-    "", "edit", "edit9", "edit1x", "9end", "1endx",
-    "00941rH5", "90941rH5",          # quarter outside 1-8
-    "11001rH5", "10970rH5", "1094rH5",  # bad clock
-    "10941toH5", "10941jA12",        # team-only actions take no player
-    "10941f1H", "10941outH5",        # player required / missing "in"
-    "10941rH123", "10941rH5x",       # trailing characters
-    "109412mH5aA6",                  # assist by an opponent
-    "109412H5bH6", "10941tH5sH6",    # block/steal by a teammate
-    "10941outH5inA6",                # substitution across teams
-    "109412H5aH6", "109412mH5bA6",   # second action not allowed for this action
-    "H5,6,7,9,13",                   # starters line, not an event
+    "",
+    "edit",
+    "edit9",
+    "edit1x",
+    "9end",
+    "1endx",
+    "00941rH5",
+    "90941rH5",  # quarter outside 1-8
+    "11001rH5",
+    "10970rH5",
+    "1094rH5",  # bad clock
+    "10941toH5",
+    "10941jA12",  # team-only actions take no player
+    "10941f1H",
+    "10941outH5",  # player required / missing "in"
+    "10941rH123",
+    "10941rH5x",  # trailing characters
+    "109412mH5aA6",  # assist by an opponent
+    "109412H5bH6",
+    "10941tH5sH6",  # block/steal by a teammate
+    "10941outH5inA6",  # substitution across teams
+    "109412H5aH6",
+    "109412mH5bA6",  # second action not allowed for this action
+    "H5,6,7,9,13",  # starters line, not an event
 ]
 
 
@@ -72,7 +85,9 @@ class ParseTests(unittest.TestCase):
         for path in sorted((ROOT / "matches").glob("*.txt")):
             for line in path.read_text().splitlines()[8:]:
                 with self.subTest(match=path.name, line=line):
-                    self.assertTrue(Event.parse(line) is not None or line[:1] in {"H", "A"})
+                    self.assertTrue(
+                        Event.parse(line) is not None or line[:1] in {"H", "A"}
+                    )
 
 
 if __name__ == "__main__":

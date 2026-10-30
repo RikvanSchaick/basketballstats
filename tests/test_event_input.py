@@ -21,8 +21,14 @@ import unittest
 from pathlib import Path
 
 HISTORY_LINES = [
-    "11", "Home", "Away", "2024-01-01", "20:00", "Hall",
-    "1;2;3", "4;5;6",
+    "11",
+    "Home",
+    "Away",
+    "2024-01-01",
+    "20:00",
+    "Hall",
+    "1;2;3",
+    "4;5;6",
     "10955aH5",
     "10950rH7",
 ]
@@ -31,7 +37,9 @@ HISTORY_LINES = [
 class _FakeSample:
     def __init__(self, event_time):
         self.event_time = event_time
-        self.clock = None if event_time is None else f"{event_time[:2]}:{event_time[2:]}"
+        self.clock = (
+            None if event_time is None else f"{event_time[:2]}:{event_time[2:]}"
+        )
         self.video_seconds, self.past_end, self.message = 29.5, False, None
 
     @property
@@ -96,10 +104,12 @@ def run_prompt(tracker_factory, keystrokes, quarter="1", settle=1.2, timeout=12)
             _use_pty_stdio()
             os.chdir(workdir)
             import main as app
+
             result = app.event_input(quarter, tracker_factory())
             os.write(write_fd, result.encode())
         except BaseException as exc:  # noqa: BLE001 - surfaced to the parent
             import traceback
+
             os.write(write_fd, f"ERROR:{exc!r}\n{traceback.format_exc()}".encode())
         finally:
             os._exit(0)
@@ -171,22 +181,23 @@ class LivePrefixTests(unittest.TestCase):
     def test_prefix_updates_while_prompt_is_open(self):
         # Clock walks 09:41 -> 09:40 -> 09:39 while we simply wait.
         result, _ = run_prompt(
-            lambda: _FakeTracker(["0941", "0940", "0939"]),
-            [(b"", 2.0), ENTER])
+            lambda: _FakeTracker(["0941", "0940", "0939"]), [(b"", 2.0), ENTER]
+        )
         self.assertEqual(result, "10939")
 
     def test_typed_suffix_is_preserved_while_prefix_updates(self):
         result, _ = run_prompt(
             lambda: _FakeTracker(["0941", "0940", "0939"]),
-            [(b"rH10", 0.3), (b"", 1.8), ENTER])
+            [(b"rH10", 0.3), (b"", 1.8), ENTER],
+        )
         self.assertTrue(result.endswith("rH10"), result)
         self.assertEqual(len(result), 9, result)
         self.assertNotEqual(result[:5], "10941")
 
     def test_only_the_prefix_changes(self):
         result, _ = run_prompt(
-            lambda: _FakeTracker(["0941", "0940"]),
-            [(b"2H5", 0.3), (b"", 1.2), ENTER])
+            lambda: _FakeTracker(["0941", "0940"]), [(b"2H5", 0.3), (b"", 1.2), ENTER]
+        )
         self.assertEqual(result[5:], "2H5")
         self.assertEqual(result[0], "1")
         self.assertTrue(result[1:5].isdigit(), result)
@@ -196,12 +207,14 @@ class LivePrefixTests(unittest.TestCase):
         # The insert must land inside the suffix, not somewhere shifted.
         result, _ = run_prompt(
             lambda: _FakeTracker(["0941", "0940"]),
-            [(b"rH10", 0.3), (b"\x1b[D\x1b[D", 0.3), (b"", 1.2), (b"X", 0.3), ENTER])
+            [(b"rH10", 0.3), (b"\x1b[D\x1b[D", 0.3), (b"", 1.2), (b"X", 0.3), ENTER],
+        )
         self.assertEqual(result[5:], "rHX10", result)
 
     def test_static_clock_produces_stable_prefix(self):
-        result, _ = run_prompt(lambda: _StaticTracker("0941"),
-                               [(b"2H5", 0.3), (b"", 1.0), ENTER])
+        result, _ = run_prompt(
+            lambda: _StaticTracker("0941"), [(b"2H5", 0.3), (b"", 1.0), ENTER]
+        )
         self.assertEqual(result, "109412H5")
 
 
@@ -214,28 +227,32 @@ class ManualEditTests(unittest.TestCase):
 
     def test_clock_would_otherwise_have_changed(self):
         """Control: without a manual edit the prefix follows the jump."""
-        result, _ = run_prompt(lambda: _PhasedTracker(self.PHASES),
-                               [(b"2H5", 0.3), (b"", 4.5), ENTER])
+        result, _ = run_prompt(
+            lambda: _PhasedTracker(self.PHASES), [(b"2H5", 0.3), (b"", 4.5), ENTER]
+        )
         self.assertEqual(result, "109002H5")
 
     def test_editing_prefix_stops_updates(self):
         # Backspace over the whole 5-char prefix and type a different one.
         result, _ = run_prompt(
             lambda: _PhasedTracker(self.PHASES),
-            [(b"\x7f" * 5, 0.4), (b"10855", 0.4), (b"", 4.0), (b"2H5", 0.3), ENTER])
+            [(b"\x7f" * 5, 0.4), (b"10855", 0.4), (b"", 4.0), (b"2H5", 0.3), ENTER],
+        )
         self.assertEqual(result, "108552H5")
 
     def test_editing_one_prefix_digit_stops_updates(self):
         # Move into the prefix, change its last digit, then wait past the jump.
         result, _ = run_prompt(
             lambda: _PhasedTracker(self.PHASES),
-            [(b"\x1b[D", 0.3), (b"\x7f", 0.3), (b"7", 0.3), (b"", 4.5), ENTER])
+            [(b"\x1b[D", 0.3), (b"\x7f", 0.3), (b"7", 0.3), (b"", 4.5), ENTER],
+        )
         self.assertEqual(result, "10971", result)
 
     def test_suffix_edits_do_not_stop_updates(self):
         result, _ = run_prompt(
             lambda: _PhasedTracker(self.PHASES),
-            [(b"rH1", 0.3), (b"\x7f", 0.3), (b"2", 0.3), (b"", 4.0), ENTER])
+            [(b"rH1", 0.3), (b"\x7f", 0.3), (b"2", 0.3), (b"", 4.0), ENTER],
+        )
         self.assertEqual(result, "10900rH2")
 
 
@@ -245,26 +262,30 @@ class HistoryNavigationTests(unittest.TestCase):
     def test_up_arrow_entry_is_not_overwritten(self):
         result, _ = run_prompt(
             lambda: _FakeTracker(["0941", "0940", "0939"]),
-            [(b"\x1b[A", 0.4), (b"", 1.8), ENTER])
+            [(b"\x1b[A", 0.4), (b"", 1.8), ENTER],
+        )
         self.assertEqual(result, HISTORY_LINES[-1])
 
     def test_tab_prefix_recall_is_not_overwritten(self):
         result, _ = run_prompt(
             lambda: _FakeTracker(["0941", "0940", "0939"]),
-            [(b"\t", 0.4), (b"", 1.8), ENTER])
+            [(b"\t", 0.4), (b"", 1.8), ENTER],
+        )
         self.assertEqual(result, HISTORY_LINES[-1][:5])
 
     def test_tab_full_recall_is_not_overwritten(self):
         result, _ = run_prompt(
             lambda: _FakeTracker(["0941", "0940", "0939"]),
-            [(b"\t\t", 0.5), (b"", 1.6), ENTER])
+            [(b"\t\t", 0.5), (b"", 1.6), ENTER],
+        )
         self.assertEqual(result, HISTORY_LINES[-1])
 
     def test_tab_back_to_new_event_resumes_the_clock(self):
         # Three tabs cycle back to the new-event state, which follows again.
         result, _ = run_prompt(
             lambda: _FakeTracker(["0941", "0940", "0939"]),
-            [(b"\t\t\t", 0.6), (b"", 1.6), ENTER])
+            [(b"\t\t\t", 0.6), (b"", 1.6), ENTER],
+        )
         self.assertEqual(result[0], "1")
         self.assertTrue(result[1:5].isdigit(), result)
         self.assertNotIn("a", result)
@@ -278,14 +299,16 @@ class ManualFallbackTests(unittest.TestCase):
         self.assertEqual(result, "109412H5")
 
     def test_unusable_sample_keeps_quarter_only(self):
-        result, _ = run_prompt(lambda: _StaticTracker(None),
-                               [(b"09412H5", 0.4), (b"", 0.8), ENTER])
+        result, _ = run_prompt(
+            lambda: _StaticTracker(None), [(b"09412H5", 0.4), (b"", 0.8), ENTER]
+        )
         self.assertEqual(result, "109412H5")
 
     def test_late_sample_upgrades_untouched_line(self):
         # No reading at first, then one arrives: an untouched line picks it up.
-        result, _ = run_prompt(lambda: _FakeTracker([None, None, "0941"], tick=0.5),
-                               [(b"", 2.2), ENTER])
+        result, _ = run_prompt(
+            lambda: _FakeTracker([None, None, "0941"], tick=0.5), [(b"", 2.2), ENTER]
+        )
         self.assertEqual(result, "10941")
 
     def test_late_sample_does_not_corrupt_typed_text(self):
@@ -293,8 +316,10 @@ class ManualFallbackTests(unittest.TestCase):
         # updater must leave that line alone rather than splicing a prefix in.
         # The tick has to outlast run_prompt's settle, otherwise the reading
         # lands before the keystrokes and the premise no longer holds.
-        result, _ = run_prompt(lambda: _FakeTracker([None, None, "0941"], tick=1.0),
-                               [(b"09412H5", 0.4), (b"", 2.4), ENTER])
+        result, _ = run_prompt(
+            lambda: _FakeTracker([None, None, "0941"], tick=1.0),
+            [(b"09412H5", 0.4), (b"", 2.4), ENTER],
+        )
         self.assertEqual(result, "109412H5")
 
 
@@ -302,8 +327,9 @@ class TaskCleanupTests(unittest.TestCase):
     """The background task must not keep the prompt or process alive."""
 
     def test_child_exits_cleanly_after_prompt_returns(self):
-        result, status = run_prompt(lambda: _FakeTracker(["0941", "0940"]),
-                                    [(b"2H5", 0.3), (b"", 1.0), ENTER])
+        result, status = run_prompt(
+            lambda: _FakeTracker(["0941", "0940"]), [(b"2H5", 0.3), (b"", 1.0), ENTER]
+        )
         self.assertTrue(result.endswith("2H5"))
         self.assertEqual(os.waitstatus_to_exitcode(status), 0)
 
@@ -332,8 +358,7 @@ class TaskCleanupTests(unittest.TestCase):
                 os.chdir(workdir)
                 app.PromptSession = SpySession
                 app.event_input("1", _StaticTracker("0941"))
-                pending = [t for t in captured["app"]._background_tasks
-                           if not t.done()]
+                pending = [t for t in captured["app"]._background_tasks if not t.done()]
                 os.write(write_fd, str(len(pending)).encode())
             except BaseException:
                 os.write(write_fd, b"99")

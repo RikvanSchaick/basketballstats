@@ -100,7 +100,12 @@ def run(interval, clock_map, source_name):
                 generation, line = poller.queue.get(timeout=0.25)
             except queue.Empty:
                 if time.monotonic() - last_sample > STALE_TIMEOUT:
-                    printer.update(Status("error", message="QuickTime Player is not responding, reconnecting..."))
+                    printer.update(
+                        Status(
+                            "error",
+                            message="QuickTime Player is not responding, reconnecting...",
+                        )
+                    )
                     poller.restart()
                     last_sample = time.monotonic()
                     sample_times.clear()
@@ -110,7 +115,12 @@ def run(interval, clock_map, source_name):
                 continue
 
             if line is None:
-                printer.update(Status("error", message="Lost the connection to QuickTime Player, reconnecting..."))
+                printer.update(
+                    Status(
+                        "error",
+                        message="Lost the connection to QuickTime Player, reconnecting...",
+                    )
+                )
                 poller.restart()
                 last_sample = time.monotonic()
                 sample_times.clear()
@@ -144,7 +154,7 @@ def run(interval, clock_map, source_name):
 def main():
     parser = argparse.ArgumentParser(
         description="Print the current playback timestamp and game clock of the "
-                    "video open in QuickTime Player."
+        "video open in QuickTime Player."
     )
     parser.add_argument(
         "--interval",
@@ -160,12 +170,12 @@ def main():
         "--anchor-clock",
         default=DEFAULT_ANCHOR_CLOCK,
         help="Game clock value used to line the CSV up with the video "
-             "(default: %(default)s).",
+        "(default: %(default)s).",
     )
     parser.add_argument(
         "--anchor",
         help="Video timestamp showing --anchor-clock, as seconds, MM:SS.mmm or "
-             "HH:MM:SS.mmm. Prompts interactively when omitted.",
+        "HH:MM:SS.mmm. Prompts interactively when omitted.",
     )
     args = parser.parse_args()
 

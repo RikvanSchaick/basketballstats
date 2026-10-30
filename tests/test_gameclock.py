@@ -22,7 +22,9 @@ from gameclock import (  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 SAMPLE_CSV = ROOT / "quicktime_timestamp" / "gameclock_logs" / "260926M1.csv"
-needs_sample_csv = unittest.skipUnless(SAMPLE_CSV.exists(), "sample clock log is git-ignored and not present")
+needs_sample_csv = unittest.skipUnless(
+    SAMPLE_CSV.exists(), "sample clock log is git-ignored and not present"
+)
 
 # A miniature log with the same shape as the real one: a quarter that opens on a
 # static value, ticks, is interrupted by a Timeout with its own countdown, then
@@ -144,8 +146,9 @@ class PeriodColumnTests(unittest.TestCase):
             times, clocks, periods = tracker.load_clock_log(path, with_periods=True)
             self.assertEqual(clocks, ["10:00", "09:59", "09:58"])
             self.assertEqual(periods, [None, None, None])
-            self.assertFalse(tracker.ClockMap(times, clocks, 0.0,
-                                              periods=periods).has_periods)
+            self.assertFalse(
+                tracker.ClockMap(times, clocks, 0.0, periods=periods).has_periods
+            )
 
     def test_default_return_is_still_a_pair(self):
         with tempfile.TemporaryDirectory() as d:
@@ -166,7 +169,8 @@ class QuarterAnchorTests(unittest.TestCase):
 
     def setUp(self):
         self.times, self.clocks, self.periods = tracker.load_clock_log(
-            SAMPLE_CSV, with_periods=True)
+            SAMPLE_CSV, with_periods=True
+        )
 
     def anchor(self, quarter):
         return find_quarter_anchor(self.times, self.clocks, self.periods, quarter)
@@ -200,8 +204,7 @@ class QuarterAnchorTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             path = write_csv(d, "time_p.csv", PERIOD_CSV)
             times, clocks, periods = tracker.load_clock_log(path, with_periods=True)
-            self.assertEqual(find_quarter_anchor(times, clocks, periods, 2)[0],
-                             "04:59")
+            self.assertEqual(find_quarter_anchor(times, clocks, periods, 2)[0], "04:59")
 
     def test_string_quarter_accepted(self):
         self.assertEqual(self.anchor("3")[0], self.anchor(3)[0])
@@ -239,8 +242,20 @@ class EventTimeConversionTests(unittest.TestCase):
                 self.assertIsNone(clock_to_event_time(value))
 
     def test_malformed_values_rejected(self):
-        for value in ("", "941", "09:4", "09:60", "ab:cd", "09:41:00", None, 941,
-                      "-1:00", "09;41", "  ", "09:-1"):
+        for value in (
+            "",
+            "941",
+            "09:4",
+            "09:60",
+            "ab:cd",
+            "09:41:00",
+            None,
+            941,
+            "-1:00",
+            "09;41",
+            "  ",
+            "09:-1",
+        ):
             with self.subTest(value=value):
                 self.assertIsNone(clock_to_event_time(value))
 
@@ -401,14 +416,16 @@ class QuarterMappingTests(unittest.TestCase):
         self.t = GameClockTracker(csv_path=path)
         self.t.load_csv()
         # Anchor so a video timestamp equals its wall-clock second in the log.
-        self.t.clock_map = tracker.ClockMap(self.t.times, self.t.clocks, 0.0,
-                                            periods=self.t.periods)
+        self.t.clock_map = tracker.ClockMap(
+            self.t.times, self.t.clocks, 0.0, periods=self.t.periods
+        )
         self.t.anchor_document = "a.mov"
 
     def sample_at(self, wall_clock, quarter):
         self.t.set_quarter(quarter)
         self.t._latest = tracker.Status(
-            "ok", seconds=tracker.parse_wall_clock(wall_clock), name="a.mov")
+            "ok", seconds=tracker.parse_wall_clock(wall_clock), name="a.mov"
+        )
         return self.t.sample()
 
     def test_row_in_the_edited_quarter_is_used(self):
@@ -458,7 +475,8 @@ class QuarterMappingTests(unittest.TestCase):
         t.anchor_document = "a.mov"
         t.set_quarter(3)
         t._latest = tracker.Status(
-            "ok", seconds=tracker.parse_wall_clock("19:00:11.500"), name="a.mov")
+            "ok", seconds=tracker.parse_wall_clock("19:00:11.500"), name="a.mov"
+        )
         s = t.sample()
         self.assertTrue(s.usable)
         self.assertEqual(s.clock, "09:59")
@@ -523,10 +541,12 @@ class CsvDiscoveryTests(unittest.TestCase):
     def test_midnight_wrap_stays_monotonic(self):
         with tempfile.TemporaryDirectory() as d:
             path = Path(d) / "time_wrap.csv"
-            path.write_text("real_time,game_clock\n"
-                            "23:59:58.000,10:00\n"
-                            "23:59:59.500,09:59\n"
-                            "00:00:01.250,09:58\n")
+            path.write_text(
+                "real_time,game_clock\n"
+                "23:59:58.000,10:00\n"
+                "23:59:59.500,09:59\n"
+                "00:00:01.250,09:58\n"
+            )
             t = GameClockTracker(csv_path=path)
             t.load_csv()
             self.assertEqual(t.times, sorted(t.times))

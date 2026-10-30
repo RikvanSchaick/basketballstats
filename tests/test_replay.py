@@ -18,7 +18,9 @@ GAMEBOOKS = sorted((ROOT / "gamebooks" / "txt").glob("*_gamebook.txt"))
 
 
 def load(match_id):
-    return Match.from_history((ROOT / "matches" / f"{match_id}.txt").read_text().splitlines())
+    return Match.from_history(
+        (ROOT / "matches" / f"{match_id}.txt").read_text().splitlines()
+    )
 
 
 def gamebook_final_score(text):
@@ -65,7 +67,9 @@ class GamebookTests(unittest.TestCase):
         for path in GAMEBOOKS:
             match_id = path.name.split("_")[0]
             with self.subTest(match=match_id):
-                self.assertEqual(load(match_id).score, gamebook_final_score(path.read_text()))
+                self.assertEqual(
+                    load(match_id).score, gamebook_final_score(path.read_text())
+                )
 
     def test_regenerated_gamebook_is_identical(self):
         for path in GAMEBOOKS:
@@ -73,7 +77,9 @@ class GamebookTests(unittest.TestCase):
             with self.subTest(match=match_id):
                 m = load(match_id)
                 GameReport(m).make_txt(m.all_quarters())
-                self.assertEqual(Path(f"gamebooks/txt/{path.name}").read_text(), path.read_text())
+                self.assertEqual(
+                    Path(f"gamebooks/txt/{path.name}").read_text(), path.read_text()
+                )
 
 
 if __name__ == "__main__":

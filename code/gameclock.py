@@ -19,8 +19,9 @@ from pathlib import Path
 # Loaded by path rather than via sys.path: quicktime_timestamp/ contains its own
 # main.py, which would shadow this app's main module if that directory were added
 # to sys.path.
-_TRACKER_PATH = (Path(__file__).resolve().parent.parent
-                 / "quicktime_timestamp" / "tracker.py")
+_TRACKER_PATH = (
+    Path(__file__).resolve().parent.parent / "quicktime_timestamp" / "tracker.py"
+)
 
 
 def _load_tracker():
@@ -99,8 +100,15 @@ def clock_to_event_time(clock):
 class GameClockSample:
     """One reading of the video, already mapped onto the game clock."""
 
-    def __init__(self, video_seconds, clock=None, event_time=None,
-                 past_end=False, document=None, message=None):
+    def __init__(
+        self,
+        video_seconds,
+        clock=None,
+        event_time=None,
+        past_end=False,
+        document=None,
+        message=None,
+    ):
         self.video_seconds = video_seconds
         self.clock = clock
         self.event_time = event_time
@@ -119,20 +127,31 @@ class GameClockSample:
         if self.video_seconds is None:
             return "no reading from QuickTime Player"
         if self.clock is None:
-            return (f"video {self.video_seconds:.1f}s - before the clock log "
-                    "(type the time yourself)")
+            return (
+                f"video {self.video_seconds:.1f}s - before the clock log "
+                "(type the time yourself)"
+            )
         suffix = " (end of log)" if self.past_end else ""
         if self.event_time is None:
-            return (f"video {self.video_seconds:.1f}s - clock {self.clock}{suffix} "
-                    "is not a valid event time")
+            return (
+                f"video {self.video_seconds:.1f}s - clock {self.clock}{suffix} "
+                "is not a valid event time"
+            )
         return f"video {self.video_seconds:.1f}s - game clock {self.clock}{suffix}"
 
 
 class GameClockTracker:
     """Background QuickTime poller that hands out game-clock event times."""
 
-    def __init__(self, csv_path=None, anchor_clock=DEFAULT_ANCHOR_CLOCK,
-                 anchor=None, interval=DEFAULT_INTERVAL, base_dir=None, match_id=None):
+    def __init__(
+        self,
+        csv_path=None,
+        anchor_clock=DEFAULT_ANCHOR_CLOCK,
+        anchor=None,
+        interval=DEFAULT_INTERVAL,
+        base_dir=None,
+        match_id=None,
+    ):
         self.csv_path = csv_path
         self.match_id = match_id
         self.anchor_clock = anchor_clock
@@ -187,13 +206,17 @@ class GameClockTracker:
         otherwise the historical first-occurrence-of ``anchor_clock`` behaviour.
         """
         if self.edit_quarter is not None and self.has_periods:
-            return find_quarter_anchor(self.times, self.clocks, self.periods,
-                                       self.edit_quarter)
-        return (self.anchor_clock,
-                find_anchor_real_time(self.times, self.clocks, self.anchor_clock))
+            return find_quarter_anchor(
+                self.times, self.clocks, self.periods, self.edit_quarter
+            )
+        return (
+            self.anchor_clock,
+            find_anchor_real_time(self.times, self.clocks, self.anchor_clock),
+        )
 
-    def anchor_to_video(self, on_wait=None, retries=None, wait_seconds=2.0,
-                        quarter=None):
+    def anchor_to_video(
+        self, on_wait=None, retries=None, wait_seconds=2.0, quarter=None
+    ):
         """Ask QuickTime for the anchor frame and build the :class:`ClockMap`.
 
         Waits for QuickTime to have a document open, reporting progress through
@@ -213,8 +236,9 @@ class GameClockTracker:
         else:
             video_seconds, document = self._prompt_for_anchor(retries, anchor_clock)
 
-        self.clock_map = ClockMap(self.times, self.clocks, real_time - video_seconds,
-                                  periods=self.periods)
+        self.clock_map = ClockMap(
+            self.times, self.clocks, real_time - video_seconds, periods=self.periods
+        )
         self.anchor_document = document
         return {
             "document": document,
@@ -330,13 +354,18 @@ class GameClockTracker:
         if status.kind != "ok":
             return GameClockSample(None, message=status.message)
         if not self.ready:
-            return GameClockSample(status.seconds, document=status.name,
-                                   message="game clock is not anchored yet")
+            return GameClockSample(
+                status.seconds,
+                document=status.name,
+                message="game clock is not anchored yet",
+            )
         # A different document means the offset we computed no longer applies.
         if self.anchor_document is not None and status.name != self.anchor_document:
             return GameClockSample(
-                status.seconds, document=status.name,
-                message=f"video changed to {status.name} - re-anchor needed")
+                status.seconds,
+                document=status.name,
+                message=f"video changed to {status.name} - re-anchor needed",
+            )
 
         reading = self.clock_map.lookup(status.seconds)
         if reading is None:
@@ -345,9 +374,13 @@ class GameClockTracker:
 
         clock, message = self._clock_for_quarter(reading)
         if clock is None:
-            return GameClockSample(status.seconds, clock=reading.text,
-                                   past_end=reading.past_end,
-                                   document=status.name, message=message)
+            return GameClockSample(
+                status.seconds,
+                clock=reading.text,
+                past_end=reading.past_end,
+                document=status.name,
+                message=message,
+            )
         return GameClockSample(
             status.seconds,
             clock=clock,
@@ -368,17 +401,23 @@ class GameClockTracker:
 
         if not reading.in_stoppage:
             if reading.period != self.edit_quarter:
-                return None, (f"video is in quarter {reading.period}, not quarter "
-                              f"{self.edit_quarter} - re-sync needed")
+                return None, (
+                    f"video is in quarter {reading.period}, not quarter "
+                    f"{self.edit_quarter} - re-sync needed"
+                )
             return reading.text, None
 
         if reading.quarter is None:
-            return None, (f"video is in {reading.period}, before quarter "
-                          f"{self.edit_quarter} starts")
+            return None, (
+                f"video is in {reading.period}, before quarter "
+                f"{self.edit_quarter} starts"
+            )
         if reading.quarter != self.edit_quarter:
-            return None, (f"video is in {reading.period} after quarter "
-                          f"{reading.quarter}, not quarter {self.edit_quarter} "
-                          "- re-sync needed")
+            return None, (
+                f"video is in {reading.period} after quarter "
+                f"{reading.quarter}, not quarter {self.edit_quarter} "
+                "- re-sync needed"
+            )
         # The CSV logs the stoppage's own countdown here, so the game clock is
         # the last value this quarter showed before the stoppage began.
         return reading.held, None
