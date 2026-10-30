@@ -28,7 +28,7 @@ class match():
         
         if prnt: print(f"created match {self.matchID}\n{self.away.name} at {self.home.name}\n{self.date}, {self.time}, {self.location}")
 
-    def add_teams(self, homeplayers:list, awayplayers:list) -> None:
+    def add_teams(self, homeplayers:list, awayplayers:list) -> bool:
         if len(homeplayers) < 6 or len(awayplayers) < 6: return False
         self.home.add_team(homeplayers)
         self.away.add_team(awayplayers)
@@ -105,7 +105,7 @@ class match():
         event.score = deepcopy(self.score)
         event.lead = self.score[0] - self.score[1]
         
-    def print_score(self) -> None:
+    def print_score(self) -> str:
         return f"{self.score[0]}-{self.score[1]}"
     
     def add_event(self, event:event) -> bool:
@@ -135,15 +135,22 @@ class match():
                 count += 1
         return count
         
-    def quarter_score(self, quarter:int) -> int:
+    def quarter_score(self, quarter:str) -> tuple[int, int]:
+        # Works for unfinished quarters too, which have no "end" event yet.
+        previous_score = [0, 0]
+        start_score = None
+        end_score = None
         for event in self.events:
-            if event.actionID == "start" and event.quarter == quarter:
-                start_score = deepcopy(event.score)
-            if event.actionID == "end" and event.quarter == quarter:
-                end_score = deepcopy(event.score)
+            if event.quarter == quarter:
+                if start_score is None:
+                    start_score = previous_score
+                end_score = event.score
+            previous_score = event.score
+        if start_score is None:
+            return 0, 0
         return (end_score[0]-start_score[0]), (end_score[1]-start_score[1]) 
 
-    def score_by_period(self, quarters:list) -> {list,list,list}:
+    def score_by_period(self, quarters:list) -> tuple[list, list, list]:
         quartersprint = []
         totalpointshome = []
         totalpointsaway = []
@@ -203,7 +210,7 @@ class match():
                     to = [False, None]
         return points_off_turnovers
                     
-    def largest_lead(self, quarters:list) -> {int,int}:
+    def largest_lead(self, quarters:list) -> tuple[int, int]:
         llH = 0
         llA = 0
         for event in self.events:
@@ -308,7 +315,7 @@ class match():
         boxscore_away.create_boxscore(self.away)
         boxscore_away.print_boxscore(self.events, quarters)
         
-    def check_boxscore(self, quarters:list) -> None:
+    def check_boxscore(self, quarters:list) -> bool | None:
         boxscore_home = boxscore()
         boxscore_away = boxscore()
         home_check = boxscore_home.check_boxscore(self.home, self.events, quarters)

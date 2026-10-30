@@ -449,7 +449,9 @@ def _run_app(options, holder):
                 m.start_match()
             
             quarter = eventstring[4]
-            if not quarter in {"1","2","3","4","5","6","7","8","9"}: print("invalid quarter")
+            if not quarter in {"1","2","3","4","5","6","7","8"}:
+                print("invalid quarter")
+                continue
                
             # check of laatste line het einde was van hetzelfde kwart 
             f = open(f"matches/history.txt", "r")

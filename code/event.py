@@ -38,7 +38,7 @@ class event():
         else:
             return False
         
-    def get_action(self, eventstring:str) -> {bool, int}:
+    def get_action(self, eventstring:str) -> int | bool:
         if len(eventstring) < 7: return False
         if eventstring[5:8] == "out":
             self.actionID = eventstring[5:8]
@@ -52,7 +52,7 @@ class event():
         else:
             return False
 
-    def get_team(self,eventstring:str, i:int) -> {bool, int}:
+    def get_team(self,eventstring:str, i:int) -> bool:
         if len(eventstring) < 6+i: return False
         if eventstring[5+i] in {'H','A'}:
             self.team = eventstring[5+i]
@@ -60,7 +60,7 @@ class event():
         else:
             return False
 
-    def get_player(self, eventstring:str, i:int) -> {bool, int}:
+    def get_player(self, eventstring:str, i:int) -> int | bool:
         if len(eventstring) < 7+i: return False
         if eventstring[5+i] in {'H','A'} and eventstring[6+i].isnumeric():
             self.team = eventstring[5+i]
@@ -76,7 +76,7 @@ class event():
         else: 
             return False
         
-    def get_action2(self, eventstring:str, i:int) -> {bool}:
+    def get_action2(self, eventstring:str, i:int) -> bool | None:
         if len(eventstring) < 8+i: return True        
         if eventstring[5+i] in {"a", "s", "b"}:
             self.actionID2 = eventstring[5+i]
@@ -161,7 +161,7 @@ class event():
             if not self.get_substitute(eventstring, i+j): return False
         return True
     
-    def print_score(self, lead:bool) -> {str, str}:
+    def print_score(self, lead:bool) -> str | tuple[str, str]:
         if lead: 
             if self.lead == 0: return f"{self.score[0]}-{self.score[1]}", f"TIE"
             if self.lead > 0: return f"{self.score[0]}-{self.score[1]}", f"+{self.lead}"

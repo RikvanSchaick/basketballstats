@@ -423,13 +423,9 @@ class data():
         import json
         matchdata = self.df_match.copy()
         matchdata["dateTime"] = matchdata["dateTime"].astype(str)
-        with open("/Users/rikvanschaick/Downloads/match_data.json", "w") as f:
+        with open("data/match_data.json", "w") as f:
             json.dump(matchdata.to_dict(orient="records"), f, indent=2)        
-        with open("/Users/rikvanschaick/Downloads/player_data.json", "w") as f:
+        with open("data/player_data.json", "w") as f:
             json.dump(self.df_player.to_dict(orient="records"), f, indent=2)        
-        with open("/Users/rikvanschaick/Downloads/playbyplay_data.json", "w") as f:
+        with open("data/playbyplay_data.json", "w") as f:
             json.dump(self.df_playbyplay.to_dict(orient="records"), f, indent=2)        
-            
-        # self.df_match.to_json("/Users/rikvanschaick/Downloads/match_data_dump.json")
-        # self.df_player.to_json("/Users/rikvanschaick/Downloads/player_data_dump.json")
-        # self.df_playbyplay.to_json("/Users/rikvanschaick/Downloads/playbyplay_data_dump.json")

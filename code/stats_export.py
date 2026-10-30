@@ -149,7 +149,7 @@ class statsreport():
         self.footer()
         self.pdf.output(f"data/{name}.pdf")
 
-    def seasons_range(self, mindate:datetime, maxdate:datetime) -> {int, int}:
+    def seasons_range(self, mindate:datetime, maxdate:datetime) -> tuple[int, int]:
         firstseason = mindate.year-1 if mindate.month < 8 else mindate.year
         lastseason = maxdate.year if maxdate.month >= 8 else maxdate.year-1
         return firstseason, lastseason
