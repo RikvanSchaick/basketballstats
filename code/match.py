@@ -28,6 +28,29 @@ class match():
         
         if prnt: print(f"created match {self.matchID}\n{self.away.name} at {self.home.name}\n{self.date}, {self.time}, {self.location}")
 
+    @classmethod
+    def from_history(cls, lines:list, prnt:bool = False) -> "match":
+        """Rebuild a match from history lines: 6 info lines, 2 roster lines, then events."""
+        m = cls()
+        m.create_match(*lines[:6], prnt)
+        m.add_teams(lines[6].split(";"), lines[7].split(";"))
+        m.start_match()
+        quarter = None
+        homestarters = None
+        for eventstring in lines[8:]:
+            e = event()
+            valid = e.extract_eventstring(eventstring)
+            if eventstring[:4] == "edit":
+                m.add_event(e)
+                quarter = eventstring[4]
+            elif eventstring[0] == "H":
+                homestarters = eventstring[1:].split(",")
+            elif eventstring[0] == "A":
+                m.add_starters(quarter, homestarters, eventstring[1:].split(","))
+            elif valid:
+                m.add_event(e)
+        return m
+
     def add_teams(self, homeplayers:list, awayplayers:list) -> bool:
         if len(homeplayers) < 6 or len(awayplayers) < 6: return False
         self.home.add_team(homeplayers)
