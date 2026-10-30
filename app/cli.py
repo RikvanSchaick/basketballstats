@@ -10,7 +10,7 @@ from app.clock.gameclock import (
   parse_anchor_value,
 )
 from app.history import append_history, read_history, write_history
-from app.prompt import event_input, setup_tracker, sync_quarter
+from app.prompt import event_input, read_menu_choice, setup_tracker, sync_quarter
 from app import manual, style
 import argparse
 import os
@@ -22,56 +22,77 @@ VALID_QUARTERS = {"1", "2", "3", "4", "5", "6", "7", "8"}
 
 QUICK_START = """\
 quick start:
-  python -m app                    start; type 'help' in any menu for a guide
+  python -m app                    start; press 'h' in any menu for a guide
   python -m app --no-video-clock   type every event time yourself
 
-  In the program: 'create' a game (or 'open' a saved one), then 'edit1' to
-  enter quarter 1, one event per line (type 'help' there for the codes),
-  '1end' to close the quarter, and 'save' before you 'exit'.
+  In the program, press the key in [ ] to pick a menu option (no Enter needed):
+  'c' creates a game (or 'o' opens a saved one), then '1' enters quarter 1, one
+  event per line (type '1help' there for the codes). Type '1end' to close the
+  quarter, then press 's' to save before 'e' to exit.
   Full manual: README.md
 """
 
+# The game menu's "[1-8] edit(n)" item: pressing a quarter number opens edit<n>.
+EDIT_KEYS = "1-8"
 
 MENUS = {
   "intro": (
     "START MENU",
     [
-      ("create", "create a new game"),
-      ("open", "open a saved game"),
-      ("stats", "season stats of a team or player"),
-      ("help", "how this program works"),
-      ("exit", "exit program"),
+      ("c", "create", "create a new game"),
+      ("o", "open", "open a saved game"),
+      ("s", "stats", "season stats of a team or player"),
+      ("h", "help", "how this program works"),
+      ("e", "exit", "exit program"),
     ],
   ),
   "match": (
     "GAME MENU",
     [
-      ("edit(n)", "enter events of a quarter (e.g. edit1)"),
-      ("summary", "view summary of match"),
-      ("log", "view gamelog of match"),
-      ("box", "view boxscore of match"),
-      ("save", "save match as txt"),
-      ("export", "export gamebook as txt/pdf"),
-      # ("rawstats", "save rawstats of match in txt (sep=';')"),
-      ("help", "explain these commands"),
-      ("exit", "exit program"),
+      (EDIT_KEYS, "edit(n)", "enter events of quarter n (e.g. 1)"),
+      ("o", "overview", "view overview of match"),
+      ("g", "gamelog", "view gamelog of match"),
+      ("x", "boxscore", "view boxscore of match"),
+      ("r", "report", "make gamebook as txt/pdf"),
+      ("s", "save", "save match as txt"),
+      ("b", "back", "back to start menu"),
+      ("h", "help", "explain these commands"),
+      ("e", "exit", "exit program"),
     ],
   ),
   "stats": (
     "STATS MENU",
     [
-      ("team", "view stats of certain team"),
-      ("player", "view stats of certain player"),
-      ("help", "explain these commands"),
-      ("exit", "exit program"),
+      ("t", "team", "view stats of certain team"),
+      ("p", "player", "view stats of certain player"),
+      ("b", "back", "back to start menu"),
+      ("h", "help", "explain these commands"),
+      ("e", "exit", "exit program"),
     ],
   ),
 }
 
 
+def menu_choices(type: str) -> dict[str, str]:
+  """Key -> command for a menu, e.g. {'o': 'open'} or {'1': 'edit1'}."""
+  choices = {}
+  for key, name, _ in MENUS[type][1]:
+    if key == EDIT_KEYS:
+      choices.update({quarter: f"edit{quarter}" for quarter in sorted(VALID_QUARTERS)})
+    else:
+      choices[key] = name
+  return choices
+
+
 def prints(type: str):
   heading, items = MENUS[type]
   print(style.menu(heading, items))
+
+
+def choose(type: str) -> str:
+  """Show a menu and return the picked command."""
+  prints(type)
+  return read_menu_choice(menu_choices(type))
 
 
 def answer_menu(topic: str, command: str) -> None:
@@ -218,23 +239,23 @@ def cmd_open() -> Match | None:
   return m
 
 
-def cmd_stats() -> None:
+def cmd_stats() -> str:
   d = Data()
   if not d.n_exports():
     d.read(prnt=False)
     d.add_data()
     d.export()
 
-  command = None
-  while not command == "exit":
-    prints("stats")
-    command = input()
+  while True:
+    command = choose("stats")
 
-    if command == "team":
+    if command in {"back", "exit"}:
+      return command
+    elif command == "team":
       StatsReport().export_team_stats()
     elif command == "player":
       StatsReport().export_player_stats()
-    elif command != "exit":
+    else:
       answer_menu("stats", command)
 
 
@@ -304,7 +325,7 @@ def cmd_edit(m: Match, command: str, options, holder: dict) -> Match:
   return m
 
 
-def cmd_summary(m: Match) -> None:
+def cmd_overview(m: Match) -> None:
   if m.events == None or len(m.events) == 0:
     print("no events")
   else:
@@ -313,7 +334,7 @@ def cmd_summary(m: Match) -> None:
       m.print_summary(quarters)
 
 
-def cmd_log(m: Match) -> None:
+def cmd_gamelog(m: Match) -> None:
   quarters = input("which quarter(s)? ").split(",")
   if m.events == None or len(m.events) == 0:
     print("no events")
@@ -321,7 +342,7 @@ def cmd_log(m: Match) -> None:
     m.print_events(quarters)
 
 
-def cmd_box(m: Match) -> None:
+def cmd_boxscore(m: Match) -> None:
   if m.events == None or len(m.events) == 0:
     print("no events")
   else:
@@ -339,7 +360,7 @@ def cmd_save(m: Match) -> None:
     shutil.copyfile(paths.HISTORY, paths.match_file(m.matchID))
 
 
-def cmd_export(m: Match) -> None:
+def cmd_report(m: Match) -> None:
   if input(f"want to make a game report of match {m.matchID}? (y/n) ") == "y":
     gamebook = GameReport(m)
     quarters = m.all_quarters()
@@ -348,41 +369,44 @@ def cmd_export(m: Match) -> None:
 
 
 MATCH_COMMANDS = {
-  "summary": cmd_summary,
-  "log": cmd_log,
-  "box": cmd_box,
+  "overview": cmd_overview,
+  "gamelog": cmd_gamelog,
+  "boxscore": cmd_boxscore,
   "save": cmd_save,
-  "export": cmd_export,
+  "report": cmd_report,
 }
 
 
 def _run_app(options, holder):
   m = None
-  while m is None:
-    prints("intro")
-    command = input()
-
-    if command == "create":
-      m = cmd_create()
-    elif command == "open":
-      m = cmd_open()
-    elif command == "stats":
-      # Leaving the stats menu ends the program.
-      cmd_stats()
-      return
-    elif command == "exit":
-      return
-    else:
-      answer_menu("start", command)
-
   while True:
-    prints("match")
-    command = input()
+    if m is None:
+      command = choose("intro")
+
+      if command == "create":
+        m = cmd_create()
+      elif command == "open":
+        m = cmd_open()
+      elif command == "stats":
+        if cmd_stats() == "exit":
+          return
+      elif command == "exit":
+        return
+      else:
+        answer_menu("start", command)
+      continue
+
+    command = choose("match")
 
     if command[:4] == "edit" and len(command) == 5:
       m = cmd_edit(m, command, options, holder)
     elif command in MATCH_COMMANDS:
       MATCH_COMMANDS[command](m)
+    elif command == "back":
+      tracker = holder.pop("tracker", None)
+      if tracker is not None:
+        tracker.stop()
+      m = None
     elif command == "exit":
       return
     else:

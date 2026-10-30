@@ -23,6 +23,8 @@ _KEY_LINE = re.compile(
 )
 # Commands quoted in running text, e.g. 'create' or '1end'.
 _QUOTED = re.compile(r"(?<!\w)'[^'\s]+'(?!\w)")
+# A menu key and the command it picks, e.g. "[c] create" or "[1-8] edit(n)".
+_PRESS = re.compile(r"\[(?P<key>[^\]\s]+)\] (?P<name>\S+)")
 
 
 def enabled() -> bool:
@@ -66,6 +68,11 @@ def command(text: str) -> str:
   return _paint(text, color_code(COMMAND_COLOR))
 
 
+def menu_key(key: str) -> str:
+  """The key to press for a menu option, shown as [c]."""
+  return _paint(f"[{key}]", "1", color_code(TITLE_COLOR))
+
+
 def message(heading: str, *lines: str) -> str:
   """A title on its own line, then each line below it in italics."""
   return "\n".join([title(heading)] + [body(line) for line in lines])
@@ -89,11 +96,14 @@ def _line(line: str, highlight: re.Pattern, key_column: bool) -> str:
   if heading := _HEADING.fullmatch(line):
     return title(heading["title"]) + _body_with_commands(heading["rest"], highlight)
   if key_column and (row := _KEY_LINE.fullmatch(line)):
+    key = row["key"]
+    # "[c] create": the key to press in brackets, then the command it picks.
+    if pressed := _PRESS.fullmatch(key):
+      key = menu_key(pressed["key"]) + " " + command(pressed["name"])
+    else:
+      key = command(key)
     return (
-      row["indent"]
-      + command(row["key"])
-      + row["gap"]
-      + _body_with_commands(row["rest"], highlight)
+      row["indent"] + key + row["gap"] + _body_with_commands(row["rest"], highlight)
     )
   indent = line[: len(line) - len(line.lstrip())]
   return indent + _body_with_commands(line.lstrip(), highlight)
@@ -115,11 +125,12 @@ def manual(text: str, codes: str | None = None) -> str:
   )
 
 
-def menu(heading: str, items: list[tuple[str, str]]) -> str:
-  """A menu: a title, then '- command:<tab>description' per item."""
+def menu(heading: str, items: list[tuple[str, str, str]]) -> str:
+  """A menu: a title, then '- [key] command:   description' per item."""
+  labels = [f"- [{key}] {name}:" for key, name, _ in items]
+  width = max(len(label) for label in labels) + 2
   lines = ["", title(heading)]
-  for key, description in items:
-    # Tabs line the descriptions up at column 16; "- key:" shorter than 8 needs two.
-    tabs = "\t" if len(f"- {key}:") >= 8 else "\t\t"
-    lines.append(f"- {command(key)}:{tabs}{body(description)}")
+  for label, (key, name, description) in zip(labels, items):
+    padding = " " * (width - len(label))
+    lines.append(f"- {menu_key(key)} {command(name)}:{padding}{body(description)}")
   return "\n".join(lines)

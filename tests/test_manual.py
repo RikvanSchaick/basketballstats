@@ -14,6 +14,7 @@ def run_app(*inputs):
   out = io.StringIO()
   with (
     contextlib.redirect_stdout(out),
+    mock.patch("sys.stdin", io.StringIO()),
     mock.patch("builtins.input", side_effect=list(inputs)),
   ):
     cli._run_app(parse_args([]), {})

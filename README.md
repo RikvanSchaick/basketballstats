@@ -31,7 +31,11 @@ From the repo root:
 .venv/bin/python -m app --help                # flags and a quick start
 ```
 
-**Getting help inside the program:** type `help` (or `?`) in any menu for an explanation
+**Menus:** press the key shown in `[ ]` to pick an option, without Enter (for example `o`
+for open). When input is piped instead of typed, the key or the full command plus Enter
+also works.
+
+**Getting help inside the program:** press `h` (or `?`) in any menu for an explanation
 of its commands. While entering events, `help` shows all event codes with examples. An
 unknown command is reported instead of being ignored.
 
@@ -52,13 +56,13 @@ The QuickTime tracker also runs on its own, without the rest of the app:
 
 **Start menu**
 
-| Command  | What it does                                                                         |
-| -------- | ------------------------------------------------------------------------------------ |
-| `create` | Create a new game: game ID, home team, away team, date, time, location and rosters.  |
-| `open`   | Load a saved game from `data/matches/<gameId>.txt`.                                  |
-| `stats`  | Season stats (see the stats menu). Leaving that menu ends the program.               |
-| `help`   | Explain how the program works and what each command does.                            |
-| `exit`   | Quit.                                                                                |
+| Key | Command  | What it does                                                                         |
+| --- | -------- | ------------------------------------------------------------------------------------ |
+| `c` | `create` | Create a new game: game ID, home team, away team, date, time, location and rosters.  |
+| `o` | `open`   | Load a saved game from `data/matches/<gameId>.txt`.                                  |
+| `s` | `stats`  | Season stats (see the stats menu).                                                    |
+| `h` | `help`   | Explain how the program works and what each command does.                            |
+| `e` | `exit`   | Quit.                                                                                |
 
 With `create` you enter the rosters per team as `number,name;number,name;…`, with **at
 least 6 players** per team, for example `4,Jan;5,Piet;6,Kees;7,Joost;9,Bas;12,Tim`. The
@@ -66,32 +70,34 @@ name may be empty (`4,;5,;…`).
 
 **Game menu** (after `create` or `open`)
 
-| Command   | What it does                                                                          |
-| --------- | ------------------------------------------------------------------------------------- |
-| `edit<N>` | Enter events for quarter `N` (`1`–`4`, `5`–`8` for overtime). See below.              |
-| `summary` | Summary of the chosen quarters (`1,2,3,4`, or Enter for all).                        |
-| `log`     | Game log (all events) of the chosen quarters.                                         |
-| `box`     | Boxscore of the chosen quarters.                                                      |
-| `save`    | Save the game as `data/matches/<gameId>.txt` (asks before overwriting).               |
-| `export`  | Make a gamebook in `data/gamebooks/txt/` and `data/gamebooks/pdf/`.                   |
-| `help`    | Explain the game-menu commands.                                                       |
-| `exit`    | Quit.                                                                                 |
+| Key     | Command    | What it does                                                             |
+| ------- | ---------- | ------------------------------------------------------------------------ |
+| `1`–`8` | `edit<N>`  | Enter events for quarter `N` (`1`–`4`, `5`–`8` for overtime). See below. |
+| `o`     | `overview` | Overview of the chosen quarters (`1,2,3,4`, or Enter for all).           |
+| `g`     | `gamelog`  | Game log (all events) of the chosen quarters.                            |
+| `x`     | `boxscore` | Boxscore of the chosen quarters.                                         |
+| `s`     | `save`     | Save the game as `data/matches/<gameId>.txt` (asks before overwriting).  |
+| `r`     | `report`   | Make a gamebook in `data/gamebooks/txt/` and `data/gamebooks/pdf/`.      |
+| `b`     | `back`     | Return to START MENU. Save first to keep this game by its ID.            |
+| `h`     | `help`     | Explain the game-menu commands.                                          |
+| `e`     | `exit`     | Quit.                                                                    |
 
 **Stats menu**
 
-| Command  | What it does                                           |
-| -------- | ------------------------------------------------------ |
-| `team`   | Stats of a chosen team, as a PDF in `data/exports/`.   |
-| `player` | Stats of a chosen player, as a PDF in `data/exports/`. |
-| `help`   | Explain the stats-menu commands.                       |
-| `exit`   | Quit.                                                  |
+| Key | Command  | What it does                                           |
+| --- | -------- | ------------------------------------------------------ |
+| `t` | `team`   | Stats of a chosen team, as a PDF in `data/exports/`.   |
+| `p` | `player` | Stats of a chosen player, as a PDF in `data/exports/`. |
+| `b` | `back`   | Return to START MENU.                                  |
+| `h` | `help`   | Explain the stats-menu commands.                       |
+| `e` | `exit`   | Quit.                                                  |
 
 When the number of saved games in `data/matches/` doesn't match the export, `stats`
 first re-exports all games to `data/exports/` (`*_data_dump.csv` and `*_data.json`).
 
 ## Entering events
 
-1. Type `edit<N>`, for example `edit1`.
+1. In the game menu, press the quarter number `N`, for example `1` (= `edit1`).
 2. If the quarter has no starters yet, you are asked for them per team: exactly
    **5 numbers**, comma-separated, for example `4,5,6,7,9`.
 3. Type events one per line (see the grammar below). Invalid lines get
@@ -99,7 +105,7 @@ first re-exports all games to `data/exports/` (`*_data_dump.csv` and `*_data.jso
    fit the game (for example a player who isn't on
    the court) get a message and are not saved.
 4. `<N>oncourt` (for example `1oncourt`) shows who is on the court.
-5. Close the quarter with `<N>end` (for example `1end`). Typing `edit<N>` again
+5. Close the quarter with `<N>end` (for example `1end`). Pressing `N` in the game menu again
    reopens a closed quarter.
 6. `help` shows the event codes with examples.
 
@@ -107,7 +113,7 @@ first re-exports all games to `data/exports/` (`*_data_dump.csv` and `*_data.jso
 `10839end`).
 
 Each entered line is added straight away to the working file
-`data/matches/history.txt`. Use `save` to store it under the game ID.
+`data/matches/history.txt`. Use `save` (`s` in the game menu) to store it under the game ID.
 
 Keys on the input line:
 
@@ -204,7 +210,7 @@ How it works and what you can set:
 ```
 app/                    the program (python -m app)
   __main__.py           entry point
-  cli.py                menus and commands (create, open, edit<N>, box, export, stats, …)
+  cli.py                menus and commands (create, open, edit<N>, boxscore, report, stats, …)
   manual.py             in-program help texts (what 'help' shows)
   style.py              colors and italics for menus and help texts
   prompt.py             event input line with the live game clock and per-quarter sync

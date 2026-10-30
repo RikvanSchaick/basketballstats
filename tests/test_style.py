@@ -67,13 +67,20 @@ class StyledTextTests(unittest.TestCase):
     output = capture(cli.prints, "intro")
     self.assertIn(f"{TITLE}START MENU", output)
     self.assertIn(f"{BODY}create a new game", output)
-    self.assertIn(f"{COMMAND}create\033[0m", output)
+    self.assertIn(f"{TITLE}[c]\033[0m {COMMAND}create\033[0m:", output)
 
-  def test_help_headings_commands_and_quoted_commands(self):
+  def test_menu_lines_up_the_descriptions(self):
+    plain = capture(cli.prints, "match", terminal=False).splitlines()[2:]
+    self.assertEqual(plain[0], "- [1-8] edit(n):  enter events of quarter n (e.g. 1)")
+    self.assertEqual(plain[1], "- [o] overview:   view overview of match")
+
+  def test_help_headings_keys_and_quoted_commands(self):
     output = capture(lambda: print(style.manual(manual.TOPICS["start"])))
     self.assertIn(f"{TITLE}HOW IT WORKS", output)
-    self.assertIn(f"{COMMAND}open\033[0m     ", output)
-    self.assertIn(f"{COMMAND}'create'\033[0m", output)
+    self.assertIn(f"{TITLE}[o]\033[0m {COMMAND}open\033[0m     ", output)
+    self.assertIn(f"{COMMAND}'c'\033[0m", output)
+    match_help = capture(lambda: print(style.manual(manual.TOPICS["match"])))
+    self.assertIn(f"{TITLE}[1-8]\033[0m {COMMAND}edit(n)\033[0m  ", match_help)
 
   def test_event_codes_stand_out(self):
     output = capture(lambda: print(cli.event_help("2")))

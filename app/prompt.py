@@ -1,4 +1,5 @@
 import asyncio
+import os
 import sys
 
 from prompt_toolkit import PromptSession
@@ -21,6 +22,51 @@ def clock_message(*lines: str) -> None:
 
 def _print_wait(msg: str) -> None:
   print(style.body(f"  {msg}"))
+
+
+def _read_raw() -> str:
+  """Whatever one key press sends, read without waiting for Enter."""
+  try:
+    import termios
+    import tty
+  except ImportError:  # Windows
+    import msvcrt
+
+    return msvcrt.getwch()
+  fd = sys.stdin.fileno()
+  saved = termios.tcgetattr(fd)
+  try:
+    # cbreak, not raw: Ctrl+C still interrupts the program.
+    tty.setcbreak(fd)
+    # Read every byte of the key at once so arrow keys (ESC [ A) don't leak
+    # into the next input().
+    return os.read(fd, 32).decode(errors="ignore")
+  finally:
+    termios.tcsetattr(fd, termios.TCSADRAIN, saved)
+
+
+def read_key() -> str:
+  """The next letter or digit pressed; Enter, arrows and the like are skipped."""
+  while True:
+    key = _read_raw()[:1]
+    if key.isprintable() and key.strip():
+      return key.lower()
+
+
+def read_menu_choice(choices: dict[str, str]) -> str:
+  """One key press picks a menu option; returns its command, e.g. 'o' -> 'open'.
+
+  Without a terminal (piped input, tests) a whole line is read instead, and
+  both the key and the full command are accepted.
+  """
+  if not sys.stdin.isatty():
+    line = input().strip()
+    return choices.get(line.lower(), line)
+  print(style.body("press a key: "), end="", flush=True)
+  key = read_key()
+  choice = choices.get(key, key)
+  print(style.command(choice) if key in choices else key)
+  return choice
 
 
 def _clock_prefix(tracker, quarter):
