@@ -28,6 +28,7 @@ trash/*
 video/*
 !video/video.md
 venv/
+.venv/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
