@@ -36,6 +36,10 @@ class HelpWordTests(unittest.TestCase):
 
 
 class EventHelpTests(unittest.TestCase):
+  def test_heading_is_on_its_own_line(self):
+    lines = manual.event_help("1").strip().splitlines()
+    self.assertEqual(lines[:2], ["EVENT CODES", "type one event per line, without spaces:"])
+
   def test_every_example_is_a_valid_event(self):
     for quarter in "12345678":
       text = manual.event_help(quarter)

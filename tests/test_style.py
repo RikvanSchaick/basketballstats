@@ -11,6 +11,8 @@ from app import cli, manual, prompt, style
 TITLE = f"\033[1;{style.color_code(style.TITLE_COLOR)}m"
 BODY = f"\033[3;{style.color_code(style.BODY_COLOR)}m"
 COMMAND = f"\033[{style.color_code(style.COMMAND_COLOR)}m"
+# Menu keys such as [c] and [1-8]: bold, in their own color.
+KEY = f"\033[1;{style.color_code('#8B639B')}m"
 
 
 class _Terminal(io.StringIO):
@@ -67,7 +69,7 @@ class StyledTextTests(unittest.TestCase):
     output = capture(cli.prints, "intro")
     self.assertIn(f"{TITLE}START MENU", output)
     self.assertIn(f"{BODY}create a new game", output)
-    self.assertIn(f"{TITLE}[c]\033[0m {COMMAND}create\033[0m:", output)
+    self.assertIn(f"{KEY}[c]\033[0m {COMMAND}create\033[0m:", output)
 
   def test_menu_lines_up_the_descriptions(self):
     plain = capture(cli.prints, "match", terminal=False).splitlines()[2:]
@@ -77,10 +79,10 @@ class StyledTextTests(unittest.TestCase):
   def test_help_headings_keys_and_quoted_commands(self):
     output = capture(lambda: print(style.manual(manual.TOPICS["start"])))
     self.assertIn(f"{TITLE}HOW IT WORKS", output)
-    self.assertIn(f"{TITLE}[o]\033[0m {COMMAND}open\033[0m     ", output)
+    self.assertIn(f"{KEY}[o]\033[0m {COMMAND}open\033[0m     ", output)
     self.assertIn(f"{COMMAND}'c'\033[0m", output)
     match_help = capture(lambda: print(style.manual(manual.TOPICS["match"])))
-    self.assertIn(f"{TITLE}[1-8]\033[0m {COMMAND}edit(n)\033[0m  ", match_help)
+    self.assertIn(f"{KEY}[1-8]\033[0m {COMMAND}edit(n)\033[0m  ", match_help)
 
   def test_event_codes_stand_out(self):
     output = capture(lambda: print(cli.event_help("2")))

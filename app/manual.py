@@ -77,7 +77,8 @@ def event_help(quarter: str) -> str:
   q = quarter
   start = "1000" if quarter in {"1", "2", "3", "4"} else "0500"
   return f"""
-EVENT CODES - type one event per line, without spaces:
+EVENT CODES
+type one event per line, without spaces:
   quarter + clock (MMSS) + action + team (H/A) + shirt number [+ extra player]
   e.g. {q}04392mA12aA4 = quarter {q}, 04:39, made 2 by away #12, assist by away #4
 

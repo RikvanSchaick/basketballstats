@@ -8,14 +8,15 @@ import os
 import re
 import sys
 
-TITLE_COLOR = "#CE2939"
-BODY_COLOR = "#F3EEE7"
-COMMAND_COLOR = "#F8D5B8"
+TITLE_COLOR = "#FF7E7E"
+BODY_COLOR = "#FFEDB9"
+COMMAND_COLOR = "#FFCB56"
+KEY_COLOR = "#FFA259"
 
 _RESET = "\033[0m"
 _ANSI = re.compile(r"\033\[[0-9;]*m")
 
-# Column-0 headings such as "START MENU", "EVENT CODES - ..." or "quick start:".
+# Column-0 headings such as "START MENU", "EVENT CODES" or "quick start:".
 _HEADING = re.compile(r"(?P<title>[A-Z][A-Z ]*[A-Z]|[a-z][a-z ]*:$)(?P<rest>.*)")
 # "  command   description": a key, then two or more spaces, then the text.
 _KEY_LINE = re.compile(
@@ -70,7 +71,7 @@ def command(text: str) -> str:
 
 def menu_key(key: str) -> str:
   """The key to press for a menu option, shown as [c]."""
-  return _paint(f"[{key}]", "1", color_code(TITLE_COLOR))
+  return _paint(f"[{key}]", "1", color_code(KEY_COLOR))
 
 
 def message(heading: str, *lines: str) -> str:
