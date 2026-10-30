@@ -12,13 +12,14 @@ from formulas import EFGpct, TSpct, ASTtoTO
 from fpdf import FPDF
 from fpdf.fonts import FontFace
 from datetime import datetime, date
+import paths
 
 
 class GameReport:
   def __init__(self, match: Match) -> None:
     self.txt = None
     self.match = match
-    self.DIR = f"gamebooks/txt/{self.match.matchID}_gamebook.txt"
+    self.DIR = paths.GAMEBOOKS_TXT / f"{self.match.matchID}_gamebook.txt"
     self.titlesize = 11
     self.bigtextsize = 10
     self.textsize = 9
@@ -1118,7 +1119,7 @@ class GameReport:
 
   def pdf_export(self) -> None:
     self.footer()
-    self.pdf.output(f"gamebooks/pdf/{self.match.matchID}_gamebook.pdf")
+    self.pdf.output(paths.GAMEBOOKS_PDF / f"{self.match.matchID}_gamebook.pdf")
 
   def make_txt(self, quarters: list) -> None:
     with open(self.DIR, "w") as self.file:

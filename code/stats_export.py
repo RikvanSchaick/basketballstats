@@ -2,6 +2,7 @@ from stats import Stats
 from fpdf import FPDF
 from datetime import datetime
 import pandas as pd
+import paths
 
 
 class StatsReport:
@@ -367,7 +368,7 @@ class StatsReport:
 
   def pdf_export(self, name: str) -> None:
     self.footer()
-    self.pdf.output(f"data/{name}.pdf")
+    self.pdf.output(paths.EXPORTS / f"{name}.pdf")
 
   def seasons_range(self, mindate: datetime, maxdate: datetime) -> tuple[int, int]:
     firstseason = mindate.year - 1 if mindate.month < 8 else mindate.year

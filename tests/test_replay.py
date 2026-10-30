@@ -1,20 +1,27 @@
 """Replay saved matches and compare against the saved gamebooks.
 
 matches/*.txt and gamebooks/txt/ are mostly git-ignored, so these tests cover
-whatever is present locally and skip when nothing is.
+whatever is present locally and skip when nothing is. The `test` match is a
+scratch file for manual testing and is left out.
 """
 
-import os
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
+import paths
 from gamereport import GameReport
 from match import Match
 
 ROOT = Path(__file__).resolve().parent.parent
-MATCHES = sorted(p for p in (ROOT / "matches").glob("*.txt") if p.name != "history.txt")
-GAMEBOOKS = sorted((ROOT / "gamebooks" / "txt").glob("*_gamebook.txt"))
+IGNORED = {"history", "test"}
+MATCHES = sorted(p for p in (ROOT / "matches").glob("*.txt") if p.stem not in IGNORED)
+GAMEBOOKS = sorted(
+  p
+  for p in (ROOT / "gamebooks" / "txt").glob("*_gamebook.txt")
+  if p.name.split("_")[0] not in IGNORED
+)
 
 
 def load(match_id):
@@ -54,14 +61,12 @@ class GamebookTests(unittest.TestCase):
   def setUp(self):
     if not GAMEBOOKS:
       self.skipTest("no saved gamebooks in gamebooks/txt/")
-    self.cwd = os.getcwd()
     self.tmp = tempfile.TemporaryDirectory()
-    os.chdir(self.tmp.name)
-    os.makedirs("gamebooks/txt")
-
-  def tearDown(self):
-    os.chdir(self.cwd)
-    self.tmp.cleanup()
+    self.addCleanup(self.tmp.cleanup)
+    self.out = Path(self.tmp.name)
+    patcher = mock.patch.object(paths, "GAMEBOOKS_TXT", self.out)
+    patcher.start()
+    self.addCleanup(patcher.stop)
 
   def test_final_score_matches_gamebook(self):
     for path in GAMEBOOKS:
@@ -75,9 +80,7 @@ class GamebookTests(unittest.TestCase):
       with self.subTest(match=match_id):
         m = load(match_id)
         GameReport(m).make_txt(m.all_quarters())
-        self.assertEqual(
-          Path(f"gamebooks/txt/{path.name}").read_text(), path.read_text()
-        )
+        self.assertEqual((self.out / path.name).read_text(), path.read_text())
 
 
 if __name__ == "__main__":

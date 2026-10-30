@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import paths
 
 
 class Scoreboard:
@@ -7,7 +8,7 @@ class Scoreboard:
     self.capture = None
 
   def open_video(self, name: str) -> tuple[bool, cv2.VideoCapture | None]:
-    self.capture = cv2.VideoCapture(f"video/{name}.mov")
+    self.capture = cv2.VideoCapture(str(paths.VIDEO / f"{name}.mov"))
     if self.capture.isOpened() == False:
       return False, None
     if self.capture.isOpened():

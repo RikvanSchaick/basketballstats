@@ -14,6 +14,7 @@ from gameclock import (
 import argparse
 import asyncio
 import os
+import paths
 import shutil
 import sys
 from prompt_toolkit import PromptSession
@@ -23,22 +24,21 @@ from prompt_toolkit.key_binding import KeyBindings
 # Event strings start with the period digit plus MMSS.
 PREFIX_LEN = 5
 LIVE_CLOCK_INTERVAL = 0.2
-HISTORY = "matches/history.txt"
 VALID_QUARTERS = {"1", "2", "3", "4", "5", "6", "7", "8"}
 
 
 def read_history() -> list[str]:
-  with open(HISTORY, "r") as f:
+  with open(paths.HISTORY, "r") as f:
     return f.read().splitlines()
 
 
 def write_history(lines: list[str]) -> None:
-  with open(HISTORY, "w") as f:
+  with open(paths.HISTORY, "w") as f:
     f.writelines(line + "\n" for line in lines)
 
 
 def append_history(*lines: str) -> None:
-  with open(HISTORY, "a") as f:
+  with open(paths.HISTORY, "a") as f:
     f.writelines(line + "\n" for line in lines)
 
 
@@ -389,7 +389,7 @@ def cmd_create() -> Match:
 
 def cmd_select() -> Match | None:
   matches = []
-  for file in os.listdir("matches"):
+  for file in os.listdir(paths.MATCHES):
     if file.endswith(".txt") and not file == "history.txt":
       matches.append(file.split(".")[0])
       print("game " + file.split(".")[0])
@@ -403,7 +403,7 @@ def cmd_select() -> Match | None:
     print("invalid matchID")
     return None
 
-  shutil.copyfile(f"matches/{match_id}.txt", HISTORY)
+  shutil.copyfile(paths.match_file(match_id), paths.HISTORY)
   lines = read_history()
   m = Match.from_history(lines, prnt=True)
   print(
@@ -520,12 +520,12 @@ def cmd_box(m: Match) -> None:
 
 
 def cmd_save(m: Match) -> None:
-  if os.path.isfile(f"matches/{m.matchID}.txt"):
+  if os.path.isfile(paths.match_file(m.matchID)):
     print(f"match is already saved under {m.matchID}.txt")
     if input("overwrite existing file? (y/n) ") == "y":
-      shutil.copyfile(HISTORY, f"matches/{m.matchID}.txt")
+      shutil.copyfile(paths.HISTORY, paths.match_file(m.matchID))
   else:
-    shutil.copyfile(HISTORY, f"matches/{m.matchID}.txt")
+    shutil.copyfile(paths.HISTORY, paths.match_file(m.matchID))
 
 
 def cmd_export(m: Match) -> None:

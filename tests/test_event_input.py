@@ -100,7 +100,9 @@ def run_prompt(tracker_factory, keystrokes, quarter="1", settle=1.2, timeout=12)
     os.close(read_fd)
     try:
       _use_pty_stdio()
-      os.chdir(workdir)
+      import paths
+
+      paths.HISTORY = workdir / "matches/history.txt"
       import main as app
 
       result = app.event_input(quarter, tracker_factory())
@@ -338,7 +340,6 @@ class TaskCleanupTests(unittest.TestCase):
     workdir = Path(tempfile.mkdtemp(prefix="evt-"))
     (workdir / "matches").mkdir()
     (workdir / "matches/history.txt").write_text("\n".join(HISTORY_LINES) + "\n")
-    cwd = os.getcwd()
     captured = {}
 
     real_session_cls = app.PromptSession
@@ -353,7 +354,9 @@ class TaskCleanupTests(unittest.TestCase):
     if pid == 0:
       try:
         _use_pty_stdio()
-        os.chdir(workdir)
+        import paths
+
+        paths.HISTORY = workdir / "matches/history.txt"
         app.PromptSession = SpySession
         app.event_input("1", _StaticTracker("0941"))
         pending = [t for t in captured["app"]._background_tasks if not t.done()]
@@ -382,7 +385,6 @@ class TaskCleanupTests(unittest.TestCase):
         os.close(fd)
       except OSError:
         pass
-    os.chdir(cwd)
     shutil.rmtree(workdir, ignore_errors=True)
     self.assertEqual(out.decode(), "0", "background task still pending")
 

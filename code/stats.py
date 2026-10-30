@@ -1,4 +1,5 @@
 import pandas as pd
+import paths
 from formulas import EFGpct, TSpct, ASTtoTO
 from datetime import datetime
 
@@ -22,9 +23,15 @@ class Stats:
     self.playerCounts = None
 
   def load(self) -> None:
-    self.matchDataFrame = pd.read_csv("data/match_data_dump.csv", index_col=0)
-    self.playerDataFrame = pd.read_csv("data/player_data_dump.csv", index_col=0)
-    self.playbyplayDataFrame = pd.read_csv("data/playbyplay_data_dump.csv", index_col=0)
+    self.matchDataFrame = pd.read_csv(
+      paths.EXPORTS / "match_data_dump.csv", index_col=0
+    )
+    self.playerDataFrame = pd.read_csv(
+      paths.EXPORTS / "player_data_dump.csv", index_col=0
+    )
+    self.playbyplayDataFrame = pd.read_csv(
+      paths.EXPORTS / "playbyplay_data_dump.csv", index_col=0
+    )
     self.matchDataFrame["dateTime"] = pd.to_datetime(
       self.matchDataFrame["dateTime"], format="%Y-%m-%d %H:%M:%S"
     )

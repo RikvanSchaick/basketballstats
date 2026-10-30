@@ -6,6 +6,7 @@ from terminology import actions_code, quarter_code
 from tqdm import tqdm
 import pandas as pd
 import os
+import paths
 
 
 class Data:
@@ -117,8 +118,8 @@ class Data:
 
   def files(self):
     file_list = []
-    for filename in os.listdir("matches"):
-      if filename.endswith(".txt") and not filename == "history.txt":
+    for filename in os.listdir(paths.MATCHES):
+      if filename.endswith(".txt") and filename not in ("history.txt", "test.txt"):
         file_list.append(filename)
     file_list.sort(key=lambda x: int(os.path.splitext(x)[0][:6]))
     return file_list
@@ -127,7 +128,7 @@ class Data:
     file_list = self.files()
     for filename in file_list:
       if filename.endswith(".txt") and not filename == "history.txt":
-        with open("matches/" + filename, "r") as f:
+        with open(paths.MATCHES / filename, "r") as f:
           lines = f.read().splitlines()
         m = Match.from_history(lines)
         if prnt:
@@ -555,7 +556,7 @@ class Data:
 
   def n_exports(self) -> int:
     file_list = self.files()
-    exports = pd.read_csv("data/match_data_dump.csv")
+    exports = pd.read_csv(paths.EXPORTS / "match_data_dump.csv")
     return len(exports) == len(file_list)
 
   def add_data(self) -> None:
@@ -565,17 +566,17 @@ class Data:
       self.add_playbyplay_data(match)
 
   def export(self) -> None:
-    self.df_match.to_csv("data/match_data_dump.csv")
-    self.df_player.to_csv("data/player_data_dump.csv")
-    self.df_playbyplay.to_csv("data/playbyplay_data_dump.csv")
+    self.df_match.to_csv(paths.EXPORTS / "match_data_dump.csv")
+    self.df_player.to_csv(paths.EXPORTS / "player_data_dump.csv")
+    self.df_playbyplay.to_csv(paths.EXPORTS / "playbyplay_data_dump.csv")
 
     import json
 
     matchdata = self.df_match.copy()
     matchdata["dateTime"] = matchdata["dateTime"].astype(str)
-    with open("data/match_data.json", "w") as f:
+    with open(paths.EXPORTS / "match_data.json", "w") as f:
       json.dump(matchdata.to_dict(orient="records"), f, indent=2)
-    with open("data/player_data.json", "w") as f:
+    with open(paths.EXPORTS / "player_data.json", "w") as f:
       json.dump(self.df_player.to_dict(orient="records"), f, indent=2)
-    with open("data/playbyplay_data.json", "w") as f:
+    with open(paths.EXPORTS / "playbyplay_data.json", "w") as f:
       json.dump(self.df_playbyplay.to_dict(orient="records"), f, indent=2)
