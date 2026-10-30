@@ -5,9 +5,9 @@ The video is never opened or decoded in Python. A long-lived ``osascript`` helpe
 process polls QuickTime Player over Apple events and streams the result back.
 
 This module holds everything reusable: the AppleScript queries, the CSV clock log
-parsing, :class:`ClockMap` and the background :class:`Poller`. ``main.py`` builds
-the standalone terminal tracker on top of it, and ``code/gameclock.py`` reuses it
-for the basketball event-entry workflow.
+parsing, :class:`ClockMap` and the background :class:`Poller`. ``__main__.py``
+builds the standalone terminal tracker on top of it, and ``gameclock.py`` reuses
+it for the basketball event-entry workflow.
 """
 
 from __future__ import annotations

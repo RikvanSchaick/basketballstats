@@ -22,10 +22,10 @@ currently showing, via AppleScript.
 ## Running it
 
 1. Open a `.MOV` file in QuickTime Player (Finder → double-click, or `open -a "QuickTime Player" yourfile.mov`).
-2. From this directory, run:
+2. From the repo root, run:
 
 ```bash
-python3 main.py
+python -m app.clock
 ```
 
 3. You will be asked to line the video up with the game clock:
@@ -44,16 +44,16 @@ To skip the prompt, pass the anchor directly. Seconds, `MM:SS.mmm` and
 `HH:MM:SS.mmm` are all accepted:
 
 ```bash
-python3 main.py --anchor 132.4
-python3 main.py --anchor 02:12.400
+python -m app.clock --anchor 132.4
+python -m app.clock --anchor 02:12.400
 ```
 
 Other options:
 
 ```bash
-python3 main.py --csv time_B.O.B.VSE-1.csv   # pick the game-clock log explicitly
-python3 main.py --anchor-clock 09:59         # which clock value to anchor on
-python3 main.py --interval 0.05              # poll faster (default 0.1 = ~10 Hz)
+python -m app.clock --csv data/clock_logs/<id>.csv  # pick the game-clock log explicitly
+python -m app.clock --anchor-clock 09:59                # which clock value to anchor on
+python -m app.clock --interval 0.05                     # poll faster (default 0.1 = ~10 Hz)
 ```
 
 ## The game-clock CSV
@@ -156,7 +156,7 @@ Accessibility, Screen Recording or Full Disk Access.
 ## Testing it
 
 1. Open a `.MOV` file in QuickTime Player.
-2. Run `python3 main.py` and complete the anchor prompt.
+2. Run `python -m app.clock` and complete the anchor prompt.
 3. Press play in QuickTime — the timestamp climbs and the game clock counts down.
 4. Press pause — both freeze and the line flips to `[paused]`.
 5. Drag the QuickTime timeline somewhere else — both values jump within about a tenth
@@ -174,12 +174,12 @@ Also worth trying, to see the error handling:
 ## How it works
 
 ```
-QuickTime Player  <--Apple events-->  osascript helper  --stdout lines-->  main.py
+QuickTime Player  <--Apple events-->  osascript helper  --stdout lines-->  app.clock
                                                                               |
                                               time_*.csv --> ClockMap --------+
 ```
 
-`main.py` spawns a single long-lived `osascript` process running an AppleScript
+`python -m app.clock` spawns a single long-lived `osascript` process running an AppleScript
 `repeat` loop. Each pass reads `current time`, `duration`, `playing` and `name` from
 `document 1` of QuickTime Player, writes one tab-separated line, then delays. Python
 reads those lines on a background thread, maps the timestamp through `ClockMap`, and
@@ -189,13 +189,11 @@ renders the result.
 
 | File | Contains |
 | ---- | -------- |
-| `tracker.py` | Everything reusable: AppleScript queries, `Status`, CSV loading, `ClockMap`, anchoring and the background `Poller`. |
-| `main.py` | Only the terminal front end: `Printer`, the polling loop and the CLI. |
+| `app/clock/tracker.py` | Everything reusable: AppleScript queries, `Status`, CSV loading, `ClockMap`, anchoring and the background `Poller`. |
+| `app/clock/__main__.py` | Only the terminal front end: `Printer`, the polling loop and the CLI. |
 
-`code/gameclock.py` imports `tracker.py` to autofill event times in the basketball
-app, so the AppleScript, CSV parsing, anchoring and mapping logic exist once. It
-loads the module by file path rather than via `sys.path`, because this directory
-also contains a `main.py` that would otherwise shadow the app's own module.
+`app/clock/gameclock.py` imports `app.clock.tracker` to autofill event times in the
+basketball app, so the AppleScript, CSV parsing, anchoring and mapping logic exist once.
 
 A few details that matter:
 

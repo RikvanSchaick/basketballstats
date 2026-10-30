@@ -11,6 +11,7 @@ from pathlib import Path
 
 from app import paths
 from app.model.event import Event
+from app.clock import tracker
 from app.clock.gameclock import (  # noqa: E402
   ClockLogError,
   GameClockSample,
@@ -18,7 +19,6 @@ from app.clock.gameclock import (  # noqa: E402
   clock_to_event_time,
   find_quarter_anchor,
   normalise_period,
-  tracker,  # the shared tracker module, loaded by gameclock
 )
 
 SAMPLE_CSV = paths.CLOCK_LOGS / "260926M1.csv"

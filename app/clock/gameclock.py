@@ -1,6 +1,6 @@
 """Supplies event times to the basketball app from a video open in QuickTime Player.
 
-Wraps the reusable tracker in ``quicktime_timestamp/tracker.py``: a background
+Wraps the reusable tracker in :mod:`app.clock.tracker`: a background
 thread keeps the latest QuickTime sample, and :meth:`GameClockTracker.sample`
 converts it into the four-digit MMSS value ``Event.parse()`` expects.
 
@@ -9,34 +9,13 @@ Nothing here prints continuously; the caller decides what to show and when.
 
 from __future__ import annotations
 
-import importlib.util
 import queue
-import sys
 import threading
 import time
 from pathlib import Path
 
 from app import paths
-
-# Loaded by path rather than via sys.path: quicktime_timestamp/ contains its own
-# main.py, which would shadow other modules if that directory were added
-# to sys.path.
-_TRACKER_PATH = (
-  Path(__file__).resolve().parents[2] / "quicktime_timestamp" / "tracker.py"
-)
-
-
-def _load_tracker():
-  spec = importlib.util.spec_from_file_location("qt_tracker", _TRACKER_PATH)
-  if spec is None or spec.loader is None:
-    raise ImportError(f"cannot load the QuickTime tracker from {_TRACKER_PATH}")
-  module = importlib.util.module_from_spec(spec)
-  sys.modules["qt_tracker"] = module
-  spec.loader.exec_module(module)
-  return module
-
-
-tracker = _load_tracker()
+from app.clock import tracker
 
 DEFAULT_ANCHOR_CLOCK = tracker.DEFAULT_ANCHOR_CLOCK
 DEFAULT_INTERVAL = tracker.DEFAULT_INTERVAL

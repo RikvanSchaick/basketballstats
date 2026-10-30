@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Standalone terminal tracker: prints QuickTime's timestamp and the game clock.
 
-All of the QuickTime, CSV and mapping logic lives in :mod:`tracker`; this module
-is only the command line front end.
+All of the QuickTime, CSV and mapping logic lives in :mod:`app.clock.tracker`;
+this module is only the command line front end. Run it with ``python -m app.clock``.
 """
 
 from __future__ import annotations
@@ -11,9 +11,9 @@ import argparse
 import queue
 import sys
 import time
-from pathlib import Path
 
-from tracker import (
+from app import paths
+from app.clock.tracker import (
   CALIBRATION_SAMPLES,
   CALIBRATION_WARMUP,
   DEFAULT_ANCHOR_CLOCK,
@@ -29,10 +29,6 @@ from tracker import (
   parse_line,
   resolve_anchor,
 )
-
-# This script runs standalone and does not import `app`, so it locates the
-# repo's clock-log folder relative to its own file.
-CLOCK_LOGS = Path(__file__).resolve().parent.parent / "data" / "clock_logs"
 
 
 class Printer:
@@ -199,7 +195,7 @@ def main():
     return 1
 
   try:
-    csv_path = discover_csv(args.csv, CLOCK_LOGS)
+    csv_path = discover_csv(args.csv, paths.CLOCK_LOGS)
     times, clocks = load_clock_log(csv_path)
     clock_map = resolve_anchor(anchor, args.anchor_clock, times, clocks)
   except ClockLogError as exc:
