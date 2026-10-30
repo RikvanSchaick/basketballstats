@@ -75,6 +75,7 @@ class Stats:
     bindings = KeyBindings()
     rowidx = 0
     col = "Team" if Team else "Player"
+    print(f"choose a {col.lower()} with the up/down arrow keys, then press Enter")
     default_text = (
       f"{Counts[col].iloc[rowidx]} [{Counts['Number of matches'].iloc[rowidx]}]"
     )
@@ -134,7 +135,7 @@ class Stats:
       return self.player
 
     while True:
-      player_name = input("select player by name: ")
+      player_name = input("select player by name (part of the name is enough): ")
       nameDataFrame = self.playerDataFrame[
         self.playerDataFrame["name"].str.contains(player_name, case=False, na=False)
       ]

@@ -28,7 +28,12 @@ From the repo root:
 ```sh
 .venv/bin/python -m app                       # start the program
 .venv/bin/python -m app --no-video-clock      # type every event time yourself
+.venv/bin/python -m app --help                # flags and a quick start
 ```
+
+**Getting help inside the program:** type `help` (or `?`) in any menu for an explanation
+of its commands. While entering events, `help` shows all event codes with examples. An
+unknown command is reported instead of being ignored.
 
 | Flag                   | Meaning                                                                                                                           |
 | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
@@ -49,6 +54,7 @@ The QuickTime tracker also runs on its own, without the rest of the app:
 | `create` | Create a new game: game ID, home team, away team, date, time, location and rosters.  |
 | `select` | Load a saved game from `data/matches/<gameId>.txt`.                                  |
 | `stats`  | Season stats (see the stats menu). Leaving that menu ends the program.               |
+| `help`   | Explain how the program works and what each command does.                            |
 | `exit`   | Quit.                                                                                |
 
 With `create` you enter the rosters per team as `number,name;number,name;…`, with **at
@@ -60,11 +66,12 @@ name may be empty (`4,;5,;…`).
 | Command   | What it does                                                                          |
 | --------- | ------------------------------------------------------------------------------------- |
 | `edit<N>` | Enter events for quarter `N` (`1`–`4`, `5`–`8` for overtime). See below.              |
-| `summary` | Summary of the chosen quarters (`1,2,3,4`).                                           |
+| `summary` | Summary of the chosen quarters (`1,2,3,4`, or Enter for all).                        |
 | `log`     | Game log (all events) of the chosen quarters.                                         |
 | `box`     | Boxscore of the chosen quarters.                                                      |
 | `save`    | Save the game as `data/matches/<gameId>.txt` (asks before overwriting).               |
 | `export`  | Make a gamebook in `data/gamebooks/txt/` and `data/gamebooks/pdf/`.                   |
+| `help`    | Explain the game-menu commands.                                                       |
 | `exit`    | Quit.                                                                                 |
 
 **Stats menu**
@@ -73,6 +80,7 @@ name may be empty (`4,;5,;…`).
 | -------- | ------------------------------------------------------ |
 | `team`   | Stats of a chosen team, as a PDF in `data/exports/`.   |
 | `player` | Stats of a chosen player, as a PDF in `data/exports/`. |
+| `help`   | Explain the stats-menu commands.                       |
 | `exit`   | Quit.                                                  |
 
 When the number of saved games in `data/matches/` doesn't match the export, `stats`
@@ -89,6 +97,10 @@ first re-exports all games to `data/exports/` (`*_data_dump.csv` and `*_data.jso
 4. `<N>oncourt` (for example `1oncourt`) shows who is on the court.
 5. Close the quarter with `<N>end` (for example `1end`). Typing `edit<N>` again
    reopens a closed quarter.
+6. `help` shows the event codes with examples.
+
+`help`, `end` and `oncourt` also work when typed after the pre-filled clock (for example
+`10839end`).
 
 Each entered line is added straight away to the working file
 `data/matches/history.txt`. Use `save` to store it under the game ID.
@@ -189,6 +201,7 @@ How it works and what you can set:
 app/                    the program (python -m app)
   __main__.py           entry point
   cli.py                menus and commands (create, select, edit<N>, box, export, stats, …)
+  manual.py             in-program help texts (what 'help' shows)
   prompt.py             event input line with the live game clock and per-quarter sync
   history.py            reading and writing the working file data/matches/history.txt
   paths.py              every file and folder the app reads or writes

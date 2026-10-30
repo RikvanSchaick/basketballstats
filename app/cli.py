@@ -11,38 +11,84 @@ from app.clock.gameclock import (
 )
 from app.history import append_history, read_history, write_history
 from app.prompt import event_input, setup_tracker, sync_quarter
+from app import manual
 import argparse
 import os
+import re
 from app import paths
 import shutil
 
 VALID_QUARTERS = {"1", "2", "3", "4", "5", "6", "7", "8"}
 
+QUICK_START = """\
+quick start:
+  python -m app                    start; type 'help' in any menu for a guide
+  python -m app --no-video-clock   type every event time yourself
+
+  In the program: 'create' a game (or 'select' a saved one), then 'edit1' to
+  enter quarter 1, one event per line (type 'help' there for the codes),
+  '1end' to close the quarter, and 'save' before you 'exit'.
+  Full manual: README.md
+"""
+
 
 def prints(type: str):
   if type == "intro":
-    print("\nOPTIONS")
-    print("- create:\tcreate new match")
-    print("- select:\tselect match")
-    print("- stats:\tsee all stats of certain team")
+    print("\nSTART MENU")
+    print("- create:\tcreate a new game")
+    print("- select:\topen a saved game")
+    print("- stats:\tseason stats of a team or player")
+    print("- help:\t\thow this program works")
     print("- exit:\t\texit program")
 
   if type == "match":
-    print("\nOPTIONS")
-    print("- edit:\t\tedit match")
+    print("\nGAME MENU")
+    print("- edit(n):\tenter events of a quarter (e.g. edit1)")
     print("- summary:\tview summary of match")
     print("- log:\t\tview gamelog of match")
     print("- box:\t\tview boxscore of match")
     print("- save:\t\tsave match as txt")
-    print("- export:\texport stats as txt/pdf")
+    print("- export:\texport gamebook as txt/pdf")
     # print("- rawstats:\tsave rawstats of match in txt (sep=';')")
+    print("- help:\t\texplain these commands")
     print("- exit:\t\texit program")
 
   if type == "stats":
-    print("\nOPTIONS")
+    print("\nSTATS MENU")
     print("- team:\t\tview stats of certain team")
     print("- player:\tview stats of certain player")
+    print("- help:\t\texplain these commands")
     print("- exit:\t\texit program")
+
+
+def answer_menu(topic: str, command: str) -> None:
+  """Show the manual for 'help', or say an unknown command was not understood."""
+  if manual.is_help(command):
+    print(manual.TOPICS[topic])
+  elif command.strip():
+    print(manual.unknown_command(command))
+
+
+def ask_quarters(m: Match) -> list | None:
+  """Ask which quarters to show; Enter means all. None if any is unknown."""
+  played = m.all_quarters()
+  reply = input(f"which quarter(s)? (e.g. 1 or 1,2 - Enter for all {','.join(played)}): ")
+  if not reply.strip():
+    return played
+  quarters = [quarter.strip() for quarter in reply.split(",")]
+  unknown = [quarter for quarter in quarters if quarter not in played]
+  if unknown:
+    print(f"no events for quarter(s) {','.join(unknown)}; choose from {','.join(played)}")
+    return None
+  return quarters
+
+
+def normalize_event_line(line: str, quarter: str) -> str:
+  """Accept '<N>end' and '<N>oncourt' even when typed after the pre-filled clock."""
+  line = line.strip()
+  if m := re.fullmatch(rf"{quarter}[0-9]{{4}}(end|oncourt)", line):
+    return quarter + m[1]
+  return line
 
 
 def parse_args(argv=None):
@@ -50,6 +96,8 @@ def parse_args(argv=None):
     prog="python -m app",
     description="Basketball match event entry, with optional game-clock "
     "autofill from a video open in QuickTime Player.",
+    epilog=QUICK_START,
+    formatter_class=argparse.RawDescriptionHelpFormatter,
   )
   parser.add_argument(
     "--csv",
