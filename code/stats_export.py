@@ -87,7 +87,7 @@ class StatsReport():
         self.footer()
         self.pdf.add_page()
         self.pdf.set_font("Helvetica", style="b", size = self.titlesize)
-        self.pdf.cell(w = 0, h = 4, txt = f"GLOSSARY", ln = 1, align = 'L')
+        self.pdf.cell(w = 0, h = 4, txt = "GLOSSARY", ln = 1, align = 'L')
         self.pdf.write(text='\n')
 
         self.pdf.set_font("Helvetica", style="b", size = self.smalltextsize)        
@@ -123,7 +123,7 @@ class StatsReport():
         self.footer()
         self.pdf.add_page()
         self.pdf.set_font("Helvetica", style="b", size = self.titlesize)
-        self.pdf.cell(w = 0, h = 4, txt = f"GLOSSARY", ln = 1, align = 'L')
+        self.pdf.cell(w = 0, h = 4, txt = "GLOSSARY", ln = 1, align = 'L')
         self.pdf.write(text='\n')
 
         self.pdf.set_font("Helvetica", style="b", size = self.smalltextsize)        
@@ -157,7 +157,7 @@ class StatsReport():
     def team_stats_page(self, stats:Stats) -> None:
         teamstats = stats.team_stats()
         self.pdf.set_font("Helvetica", style="b", size = 7)
-        self.pdf.cell(w = 0, h = 4, txt = f"Team and Opponent Statistics", ln = 1, align = 'L')     
+        self.pdf.cell(w = 0, h = 4, txt = "Team and Opponent Statistics", ln = 1, align = 'L')     
         self.pdf.set_font("Helvetica", style="b", size = 5)        
         data = [['', 'DIF', 'PTS', 'Q1', 'Q2', 'Q3', 'Q4', 'OT', 'FG', 'FGA', '3P', '3PA', 'FT', 'FTA', 'ORB', 'DRB', 'TRB', 'TMRB', 'AST', 'PF', 'STL', 'BLK', 'TOV', 'LEA', '2PTS', 'TMTO', 'PTO']]
         
@@ -207,7 +207,7 @@ class StatsReport():
         self.pdf.write(text='\n')        
         pergame = stats.per_game()
         self.pdf.set_font("Helvetica", style="b", size = 7)
-        self.pdf.cell(w = 0, h = 4, txt = f"Player Statistics per Game", ln = 1, align = 'L')     
+        self.pdf.cell(w = 0, h = 4, txt = "Player Statistics per Game", ln = 1, align = 'L')     
         self.pdf.set_font("Helvetica", style="b", size = 5.5)        
         data = [['Player', 'G', 'GS', 'MP', 'PTS', 'FG', 'FGA', 'FG%', '3P', '3PA', '3P%', '2P', '2PA', '2P%', 'FT', 'FTA', 'FT%', 'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF']]
         for idx, row in pergame.iterrows():
@@ -254,7 +254,7 @@ class StatsReport():
         totals = stats.totals()
         advanced = stats.advanced()
         self.pdf.set_font("Helvetica", style="b", size = 7)
-        self.pdf.cell(w = 0, h = 4, txt = f"Total + Advanced Player Statistics", ln = 1, align = 'L')
+        self.pdf.cell(w = 0, h = 4, txt = "Total + Advanced Player Statistics", ln = 1, align = 'L')
         self.pdf.set_font("Helvetica", style="b", size = 5.5)
         data = [['Player', 'G', 'GS', 'MP', 'PTS', 'FG', 'FGA', '3P', '3PA', '2P', '2PA', 'FT', 'FTA', 'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF', 'EF%', 'TS%', 'A/TO', '+/-']]
         for idx, row in totals.iterrows():
@@ -324,7 +324,7 @@ class StatsReport():
     def player_career_page(self, stats:Stats) -> None:    
         highs = stats.careerhighs()
         self.pdf.set_font("Helvetica", style="b", size = 9)
-        self.pdf.cell(w = 0, h = 4, txt = f"Career Highs", ln = 1, align = 'L')     
+        self.pdf.cell(w = 0, h = 4, txt = "Career Highs", ln = 1, align = 'L')     
         self.pdf.set_font("Helvetica", style="b", size = 7)                
         data = [['Statistic', 'Career High']]
         data.append(['Points', str(int(highs['pts'])) if pd.notna(highs['pts']) else ""])
@@ -349,7 +349,7 @@ class StatsReport():
         self.pdf.write(text='\n')
         averages = stats.player_career_averages()
         self.pdf.set_font("Helvetica", style="b", size = 9)
-        self.pdf.cell(w = 0, h = 4, txt = f"Career Averages", ln = 1, align = 'L')
+        self.pdf.cell(w = 0, h = 4, txt = "Career Averages", ln = 1, align = 'L')
         self.pdf.set_font("Helvetica", style="b", size = 7)
         data = [['Season', 'G', 'GS', 'MP', 'PTS', 'FG', 'FGA', 'FG%', '3P', '3PA', '3P%', '2P', '2PA', '2P%', 'FT', 'FTA', 'FT%', 'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF']]
         for idx, row in averages.iterrows():
@@ -407,7 +407,7 @@ class StatsReport():
         self.pdf.write(text='\n')
         totals = stats.player_career_totals()
         self.pdf.set_font("Helvetica", style="b", size = 9)
-        self.pdf.cell(w = 0, h = 4, txt = f"Career Totals", ln = 1, align = 'L')
+        self.pdf.cell(w = 0, h = 4, txt = "Career Totals", ln = 1, align = 'L')
         self.pdf.set_font("Helvetica", style="b", size = 7)
         data = [['Season', 'G', 'GS', 'MP', 'PTS', 'FG', 'FGA', 'FG%', '3P', '3PA', '3P%', '2P', '2PA', '2P%', 'FT', 'FTA', 'FT%', 'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF']]
         for idx, row in totals.iterrows():
@@ -465,7 +465,7 @@ class StatsReport():
         self.pdf.write(text='\n')
         summary = stats.gamelog_summary()
         self.pdf.set_font("Helvetica", style="b", size = 9)
-        self.pdf.cell(w = 0, h = 4, txt = f"Game Log Summary", ln = 1, align = 'L')
+        self.pdf.cell(w = 0, h = 4, txt = "Game Log Summary", ln = 1, align = 'L')
         self.pdf.set_font("Helvetica", style="b", size = 7)
         with self.pdf.table(align="L",
                     width=115,
@@ -493,7 +493,7 @@ class StatsReport():
     def player_season_page(self, stats:Stats) -> None:
         averages = stats.player_career_averages(teamsplit=True)
         self.pdf.set_font("Helvetica", style="b", size = 9)
-        self.pdf.cell(w = 0, h = 4, txt = f"Seasonal Statistics", ln = 1, align = 'L')
+        self.pdf.cell(w = 0, h = 4, txt = "Seasonal Statistics", ln = 1, align = 'L')
         self.pdf.set_font("Helvetica", style="b", size = 7)
         data_averages = [['Summary', 'Team', 'G', 'PTS', 'TRB', 'AST', 'STL', 'BLK', 'FG%', '3P%', 'FT%']]
         averages['Team2'] = (averages['Team'].str.extract(r'\(([^()]*)\)', expand=False).fillna(averages['Team']))
@@ -539,7 +539,7 @@ class StatsReport():
         self.pdf.write(text='\n')
         summary = stats.gamelog_summary()
         self.pdf.set_font("Helvetica", style="b", size = 9)
-        self.pdf.cell(w = 0, h = 4, txt = f"Game Log Summary", ln = 1, align = 'L')
+        self.pdf.cell(w = 0, h = 4, txt = "Game Log Summary", ln = 1, align = 'L')
         self.pdf.set_font("Helvetica", style="b", size = 7)
         with self.pdf.table(align="L",
                     width=115,
@@ -567,7 +567,7 @@ class StatsReport():
             self.pdf.write(text='\n')
             games = stats.gamelog(team = team)
             self.pdf.set_font("Helvetica", style="b", size = 9)
-            self.pdf.cell(w = 0, h = 4, txt = f"Game Log", ln = 1, align = 'L')
+            self.pdf.cell(w = 0, h = 4, txt = "Game Log", ln = 1, align = 'L')
             self.pdf.set_font("Helvetica", style="bi", size = 6)
             if len(averages['Team'].dropna().unique()) > 1:
                 self.pdf.cell(w = 0, h = 4, txt = f"When playing for {team}", ln = 1, align = 'L')
@@ -622,7 +622,7 @@ class StatsReport():
                         else:
                             row.cell(datum)
             self.pdf.set_font("Helvetica", style="bi", size = 4.5)
-            self.pdf.cell(w = 0, h = 4, txt = f"* Games not annotated, are not shown in the game log", ln = 1, align = 'R')
+            self.pdf.cell(w = 0, h = 4, txt = "* Games not annotated, are not shown in the game log", ln = 1, align = 'R')
                 
     def export_player_stats(self) -> None:
         total = Stats() 

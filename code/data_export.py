@@ -1,7 +1,7 @@
 from match import Match
 from datetime import datetime
 from boxscore import BoxScore
-from terminology import actions_code, actions_terms, quarter_code
+from terminology import actions_code, quarter_code
 
 from tqdm import tqdm
 import pandas as pd

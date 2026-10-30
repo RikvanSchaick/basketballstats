@@ -6,7 +6,7 @@ prompt finally returns.
 
 Run from the repository root:
 
-    venv/bin/python -m unittest discover -s tests -v
+    .venv/bin/python -m pytest tests/test_event_input.py
 """
 
 import os
@@ -19,9 +19,6 @@ import threading
 import time
 import unittest
 from pathlib import Path
-
-ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT / "code"))
 
 HISTORY_LINES = [
     "11", "Home", "Away", "2024-01-01", "20:00", "Hall",
@@ -80,6 +77,11 @@ class _PhasedTracker:
         return _FakeSample(value)
 
 
+def _use_pty_stdio():
+    """In a pty child, point sys streams back at fds 0-2, which pytest may have swapped out."""
+    sys.stdin, sys.stdout, sys.stderr = sys.__stdin__, sys.__stdout__, sys.__stderr__
+
+
 def run_prompt(tracker_factory, keystrokes, quarter="1", settle=1.2, timeout=12):
     """Run event_input() in a pty child; return (result, child_exit_code)."""
     workdir = Path(tempfile.mkdtemp(prefix="evt-"))
@@ -91,6 +93,7 @@ def run_prompt(tracker_factory, keystrokes, quarter="1", settle=1.2, timeout=12)
     if pid == 0:
         os.close(read_fd)
         try:
+            _use_pty_stdio()
             os.chdir(workdir)
             import main as app
             result = app.event_input(quarter, tracker_factory())
@@ -325,6 +328,7 @@ class TaskCleanupTests(unittest.TestCase):
         pid, master = pty.fork()
         if pid == 0:
             try:
+                _use_pty_stdio()
                 os.chdir(workdir)
                 app.PromptSession = SpySession
                 app.event_input("1", _StaticTracker("0941"))

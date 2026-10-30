@@ -95,7 +95,7 @@ class GameReport():
         self.file.writelines("\t".expandtabs(3) + "\t".expandtabs(24) + "MIN\t\tFG\tFGA\t3P\t3PA\tFT\tFTA\tOR\tDR\tTOT\tAST\tPF\tSTL\tBLK\tTO\t+/-\tPTS".expandtabs(4) + '\n')
         starters = True
         for gamelog in boxh.gamelogs.values():
-            if not gamelog.player in boxh.starters:
+            if gamelog.player not in boxh.starters:
                 if starters: self.file.writelines('\n')
                 starters = False
             player_name = gamelog.team.players.names[gamelog.player]
@@ -111,7 +111,7 @@ class GameReport():
         self.file.writelines("\t".expandtabs(3) + "\t".expandtabs(24) + "MIN\t\tFG\tFGA\t3P\t3PA\tFT\tFTA\tOR\tDR\tTOT\tAST\tPF\tSTL\tBLK\tTO\t+/-\tPTS".expandtabs(4) + '\n')
         starters = True
         for gamelog in boxa.gamelogs.values():
-            if not gamelog.player in boxa.starters:
+            if gamelog.player not in boxa.starters:
                 if starters: self.file.writelines('\n')
                 starters = False
             player_name = gamelog.team.players.names[gamelog.player]
@@ -167,23 +167,23 @@ class GameReport():
                     for starter in self.match.away.starters[int(quarter)-1]:
                         self.file.writelines(f"{starter}\t".expandtabs(3))
                     self.file.writelines("\n")
-                    self.file.writelines(f"Time\t".expandtabs(8) + f"{self.match.home.name}\t".expandtabs(30) + f"Score\tLead\t{self.match.away.name}".expandtabs(8) + '\n')
+                    self.file.writelines("Time\t".expandtabs(8) + f"{self.match.home.name}\t".expandtabs(30) + f"Score\tLead\t{self.match.away.name}".expandtabs(8) + '\n')
                 elif event.actionID == "end":
                     self.file.writelines(f"End of {quarter_terms_lower[event.quarter]} ({event.print_score(False)})".expandtabs(8) + '\n')
                 if event.team == "H":
                     if event.actionID in {"2m","3m","1m"}:
                         self.file.writelines(f"{event.time[:2]}:{event.time[2:]}\t".expandtabs(8) + f"{event.print_event(actions_terms_lower)}\t".expandtabs(30) + f"{event.print_score(True)[0]}\t".expandtabs(8) + f"{event.print_score(True)[1]}" + '\n')
                     elif event.actionID in {"2", "3", "t"} and not event.actionID2 == None:
-                        self.file.writelines(f"{event.time[:2]}:{event.time[2:]}\t".expandtabs(8) + f"{event.print_event(actions_terms_lower)[0]}\t".expandtabs(30) + f"\t\t".expandtabs(8) + f"{event.print_event(actions_terms_lower)[1]}" + '\n')
+                        self.file.writelines(f"{event.time[:2]}:{event.time[2:]}\t".expandtabs(8) + f"{event.print_event(actions_terms_lower)[0]}\t".expandtabs(30) + "\t\t".expandtabs(8) + f"{event.print_event(actions_terms_lower)[1]}" + '\n')
                     else:
                         self.file.writelines(f"{event.time[:2]}:{event.time[2:]}\t".expandtabs(8) + f"{event.print_event(actions_terms_lower)}\t".expandtabs(30) + '\n')
                 if event.team == "A":
                     if event.actionID in {"2m","3m","1m"}:
-                        self.file.writelines(f"{event.time[:2]}:{event.time[2:]}\t".expandtabs(8) + f"\t".expandtabs(30) + f"{event.print_score(True)[0]}\t".expandtabs(8) + f"{event.print_score(True)[1]}\t".expandtabs(8) + f"{event.print_event(actions_terms_lower)}" + '\n')
+                        self.file.writelines(f"{event.time[:2]}:{event.time[2:]}\t".expandtabs(8) + "\t".expandtabs(30) + f"{event.print_score(True)[0]}\t".expandtabs(8) + f"{event.print_score(True)[1]}\t".expandtabs(8) + f"{event.print_event(actions_terms_lower)}" + '\n')
                     elif event.actionID in {"2", "3", "t"} and not event.actionID2 == None:
-                        self.file.writelines(f"{event.time[:2]}:{event.time[2:]}\t".expandtabs(8) + f"{event.print_event(actions_terms_lower)[1]}\t".expandtabs(30) + f"\t\t".expandtabs(8) + f"{event.print_event(actions_terms_lower)[0]}" + '\n')
+                        self.file.writelines(f"{event.time[:2]}:{event.time[2:]}\t".expandtabs(8) + f"{event.print_event(actions_terms_lower)[1]}\t".expandtabs(30) + "\t\t".expandtabs(8) + f"{event.print_event(actions_terms_lower)[0]}" + '\n')
                     else:
-                        self.file.writelines(f"{event.time[:2]}:{event.time[2:]}\t".expandtabs(8) + f"\t".expandtabs(30) + f"\t\t".expandtabs(8) + f"{event.print_event(actions_terms_lower)}" + '\n')
+                        self.file.writelines(f"{event.time[:2]}:{event.time[2:]}\t".expandtabs(8) + "\t".expandtabs(30) + "\t\t".expandtabs(8) + f"{event.print_event(actions_terms_lower)}" + '\n')
 
     def txt_add_eventlogs(self, quarters:list) -> None:
         for quarter in quarters:                
@@ -192,31 +192,31 @@ class GameReport():
         self.file.writelines("\n\n")
         
     def txt_end(self) -> None:
-        self.file.writelines(f"GLOSSARY" + '\n')
-        self.file.writelines(f"+/-:\t Plus-Minus".expandtabs(10) + '\n')
-        self.file.writelines(f"2nd PTS:\t Second Chance Points".expandtabs(10) + '\n')
-        self.file.writelines(f"3P:\t Three Pointers Made".expandtabs(10) + '\n')
-        self.file.writelines(f"3PA:\t Three Pointers Attempted".expandtabs(10) + '\n')
-        self.file.writelines(f"AST:\t Assists".expandtabs(10) + '\n')
-        self.file.writelines(f"AST/TO:\t Assist to Turnover Ratio".expandtabs(10) + '\n')
-        self.file.writelines(f"Big Ld:\t Biggest Lead".expandtabs(10) + '\n')
-        self.file.writelines(f"BLK:\t Blocks".expandtabs(10) + '\n')
-        self.file.writelines(f"DR:\t Defensive Rebounds".expandtabs(10) + '\n')
-        self.file.writelines(f"Eff FG%:\t Effective Field Goal Percentage".expandtabs(10) + '\n')
-        self.file.writelines(f"FG:\t Field Goals Made".expandtabs(10) + '\n')
-        self.file.writelines(f"FGA:\t Field Goals Attempted".expandtabs(10) + '\n')
-        self.file.writelines(f"FT:\t Free Throws Made".expandtabs(10) + '\n')
-        self.file.writelines(f"FTA:\t Free Throws Attempted".expandtabs(10) + '\n')
-        self.file.writelines(f"MIN:\t Minutes Played".expandtabs(10) + '\n')
-        self.file.writelines(f"OR:\t Offensive Rebounds".expandtabs(10) + '\n')
-        self.file.writelines(f"PF:\t Personal Fouls".expandtabs(10) + '\n')
-        self.file.writelines(f"PTS:\t Points Scored".expandtabs(10) + '\n')
-        self.file.writelines(f"STL:\t Steals".expandtabs(10) + '\n')
-        self.file.writelines(f"TO:\t Turnovers".expandtabs(10) + '\n')
-        self.file.writelines(f"TO PTS:\t Points from Turnovers".expandtabs(10) + '\n')
-        self.file.writelines(f"TOT:\t Total Rebounds".expandtabs(10) + '\n')
-        self.file.writelines(f"TM REB:\t Team Rebounds".expandtabs(10) + '\n')
-        self.file.writelines(f"TS%:\t True Shooting Percentage".expandtabs(10) + '\n')
+        self.file.writelines("GLOSSARY" + '\n')
+        self.file.writelines("+/-:\t Plus-Minus".expandtabs(10) + '\n')
+        self.file.writelines("2nd PTS:\t Second Chance Points".expandtabs(10) + '\n')
+        self.file.writelines("3P:\t Three Pointers Made".expandtabs(10) + '\n')
+        self.file.writelines("3PA:\t Three Pointers Attempted".expandtabs(10) + '\n')
+        self.file.writelines("AST:\t Assists".expandtabs(10) + '\n')
+        self.file.writelines("AST/TO:\t Assist to Turnover Ratio".expandtabs(10) + '\n')
+        self.file.writelines("Big Ld:\t Biggest Lead".expandtabs(10) + '\n')
+        self.file.writelines("BLK:\t Blocks".expandtabs(10) + '\n')
+        self.file.writelines("DR:\t Defensive Rebounds".expandtabs(10) + '\n')
+        self.file.writelines("Eff FG%:\t Effective Field Goal Percentage".expandtabs(10) + '\n')
+        self.file.writelines("FG:\t Field Goals Made".expandtabs(10) + '\n')
+        self.file.writelines("FGA:\t Field Goals Attempted".expandtabs(10) + '\n')
+        self.file.writelines("FT:\t Free Throws Made".expandtabs(10) + '\n')
+        self.file.writelines("FTA:\t Free Throws Attempted".expandtabs(10) + '\n')
+        self.file.writelines("MIN:\t Minutes Played".expandtabs(10) + '\n')
+        self.file.writelines("OR:\t Offensive Rebounds".expandtabs(10) + '\n')
+        self.file.writelines("PF:\t Personal Fouls".expandtabs(10) + '\n')
+        self.file.writelines("PTS:\t Points Scored".expandtabs(10) + '\n')
+        self.file.writelines("STL:\t Steals".expandtabs(10) + '\n')
+        self.file.writelines("TO:\t Turnovers".expandtabs(10) + '\n')
+        self.file.writelines("TO PTS:\t Points from Turnovers".expandtabs(10) + '\n')
+        self.file.writelines("TOT:\t Total Rebounds".expandtabs(10) + '\n')
+        self.file.writelines("TM REB:\t Team Rebounds".expandtabs(10) + '\n')
+        self.file.writelines("TS%:\t True Shooting Percentage".expandtabs(10) + '\n')
 
     def footer(self):
         if self.page:
@@ -326,7 +326,7 @@ class GameReport():
         data = [[f"{team_terms[boxscore.team.team]}: {boxscore.team.name}","MIN","FG","FGA","3P","3PA","FT","FTA","OR","DR","TOT","A","PF","ST","BS","TO","+/-","PTS"]]
         starters = True
         for gamelog in boxscore.gamelogs.values():
-            if not gamelog.player in boxscore.starters:
+            if gamelog.player not in boxscore.starters:
                 if starters: data.append([])
                 starters = False
             data.append([f"{gamelog.player}",f"{gamelog.team.players.names[gamelog.player]}",f"{gamelog.sec//60:02d}:{gamelog.sec%60:02d}",f"{int(gamelog.fg or 0)}",f"{int(gamelog.fga or 0)}",f"{int(gamelog.tp or 0)}",f"{int(gamelog.tpa or 0)}",f"{int(gamelog.ft or 0)}",f"{int(gamelog.fta or 0)}",f"{int(gamelog.oreb or 0)}",f"{int(gamelog.dreb or 0)}",f"{int(gamelog.reb or 0)}",f"{int(gamelog.ast or 0)}",f"{int(gamelog.pf or 0)}",f"{int(gamelog.stl or 0)}",f"{int(gamelog.blk or 0)}",f"{int(gamelog.to or 0)}",f"{int(gamelog.pm or 0)}",f"{int(gamelog.pts or 0)}"])
@@ -426,7 +426,7 @@ class GameReport():
         self.pdf.cell(w = 0, h = 3, txt = f"AWAY Starters: {', '.join([str(self.match.away.players.names[starter]) for starter in self.match.away.starters[int(quarter)-1]])}", ln = 1, align = 'L')
         self.pdf.write(text='\n')
         
-        data = [[f"Time", f"{self.match.home.name}", f"Score", f"Lead", f"{self.match.away.name}"]]
+        data = [["Time", f"{self.match.home.name}", "Score", "Lead", f"{self.match.away.name}"]]
         for event in self.match.events:
             if event.quarter == quarter:
                 if event.actionID == "start":
@@ -465,7 +465,7 @@ class GameReport():
     def pdf_add_eventlogs(self, quarters:list) -> None:
 
         for quarter in quarters:
-            self.new_page(f"PLAY-BY-PLAY", quarter_terms[quarter])
+            self.new_page("PLAY-BY-PLAY", quarter_terms[quarter])
             self.pdf_eventlogs(quarter)
             
     def print_term(self, table:object, term:str, meaning:str, description:str, formula:str = None) -> None:
@@ -486,7 +486,7 @@ class GameReport():
         self.footer()
         self.pdf.add_page()
         self.pdf.set_font("Helvetica", style="b", size = self.titlesize)
-        self.pdf.cell(w = 0, h = 4, txt = f"GLOSSARY", ln = 1, align = 'L')
+        self.pdf.cell(w = 0, h = 4, txt = "GLOSSARY", ln = 1, align = 'L')
         self.pdf.write(text='\n')
         
         with self.pdf.table(align="L",

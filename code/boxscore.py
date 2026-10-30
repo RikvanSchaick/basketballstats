@@ -128,7 +128,7 @@ class BoxScore():
         print("\t".expandtabs(3) + "\t".expandtabs(32) + "MIN\t\tFG\tFGA\t3P\t3PA\tFT\tFTA\tOR\tDR\tTOT\tAST\tPF\tSTL\tBLK\tTO\t+/-\tPTS".expandtabs(5))
         starters = True
         for gamelog in self.gamelogs.values():
-            if not gamelog.player in self.starters:
+            if gamelog.player not in self.starters:
                 if starters: print()
                 starters = False
             player_name = gamelog.team.players.names[gamelog.player]

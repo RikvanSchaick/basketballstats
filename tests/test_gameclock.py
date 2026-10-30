@@ -2,18 +2,14 @@
 
 Run from the repository root:
 
-    venv/bin/python -m unittest discover -s tests -v
+    .venv/bin/python -m pytest tests/test_gameclock.py
 """
 
-import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT / "code"))
-
-from event import Event  # noqa: E402
+from event import Event
 from gameclock import (  # noqa: E402
     ClockLogError,
     GameClockSample,
@@ -24,7 +20,9 @@ from gameclock import (  # noqa: E402
     tracker,  # the shared tracker module, loaded by gameclock
 )
 
-SAMPLE_CSV = ROOT / "quicktime_timestamp" / "260926M1.csv"
+ROOT = Path(__file__).resolve().parent.parent
+SAMPLE_CSV = ROOT / "quicktime_timestamp" / "gameclock_logs" / "260926M1.csv"
+needs_sample_csv = unittest.skipUnless(SAMPLE_CSV.exists(), "sample clock log is git-ignored and not present")
 
 # A miniature log with the same shape as the real one: a quarter that opens on a
 # static value, ticks, is interrupted by a Timeout with its own countdown, then
@@ -67,6 +65,7 @@ def build_map(anchor_video_seconds, anchor_clock="09:59"):
     return tracker.ClockMap(times, clocks, real - anchor_video_seconds)
 
 
+@needs_sample_csv
 class ClockLookupTests(unittest.TestCase):
     """CSV -> game clock, including the stoppage the acceptance check calls out."""
 
@@ -153,6 +152,7 @@ class PeriodColumnTests(unittest.TestCase):
             path = write_csv(d, "time_p.csv", PERIOD_CSV)
             self.assertEqual(len(tracker.load_clock_log(path)), 2)
 
+    @needs_sample_csv
     def test_real_csv_carries_periods(self):
         _, _, periods = tracker.load_clock_log(SAMPLE_CSV, with_periods=True)
         self.assertIn(1, periods)
@@ -160,6 +160,7 @@ class PeriodColumnTests(unittest.TestCase):
         self.assertIn("Half Time", periods)
 
 
+@needs_sample_csv
 class QuarterAnchorTests(unittest.TestCase):
     """Anchoring uses the first tick after a quarter starts, not its opener."""
 
@@ -277,6 +278,7 @@ class EventStringPrefixTests(unittest.TestCase):
         self.assertIsNotNone(e)
         self.assertEqual(e.time, "1000")
 
+    @needs_sample_csv
     def test_every_csv_clock_value_is_a_valid_event_time(self):
         """No CSV value may produce an event string the parser would reject.
 
@@ -326,6 +328,7 @@ class SampleFallbackTests(unittest.TestCase):
         self.assertIn("not a valid event time", s.describe())
 
 
+@needs_sample_csv
 class TrackerFallbackTests(unittest.TestCase):
     """Tracker behaviour when QuickTime or the anchor is unavailable."""
 
@@ -477,6 +480,7 @@ class QuarterMappingTests(unittest.TestCase):
 class CsvDiscoveryTests(unittest.TestCase):
     """Discovery and malformed-file handling surface clear errors."""
 
+    @needs_sample_csv
     def test_explicit_path(self):
         t = GameClockTracker(csv_path=SAMPLE_CSV)
         self.assertEqual(t.load_csv().name, SAMPLE_CSV.name)
@@ -491,6 +495,7 @@ class CsvDiscoveryTests(unittest.TestCase):
                 GameClockTracker(base_dir=d).load_csv()
             self.assertIn("No time_*.csv", str(ctx.exception))
 
+    @needs_sample_csv
     def test_several_files_listed_when_non_interactive(self):
         with tempfile.TemporaryDirectory() as d:
             for name in ("time_a.csv", "time_b.csv"):

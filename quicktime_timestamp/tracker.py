@@ -12,7 +12,6 @@ for the basketball event-entry workflow.
 
 from __future__ import annotations
 
-import argparse
 import bisect
 import csv
 import math

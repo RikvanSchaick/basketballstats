@@ -5,20 +5,15 @@ explicit "y" re-anchors; anything else keeps the offset that was already in use.
 
 Run from the repository root:
 
-    venv/bin/python -m unittest discover -s tests -v
+    .venv/bin/python -m pytest tests/test_quarter_sync.py
 """
 
 import builtins
-import sys
 import unittest
-from pathlib import Path
 from unittest import mock
 
-ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT / "code"))
-
-import main as app  # noqa: E402
-from gameclock import ClockLogError  # noqa: E402
+import main as app
+from gameclock import ClockLogError
 
 
 class _Options:

@@ -2,17 +2,15 @@
 
 Run from the repository root:
 
-    .venv/bin/python -m unittest tests.test_event -v
+    .venv/bin/python -m pytest tests/test_event.py
 """
 
-import sys
 import unittest
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT / "code"))
+from event import Event
 
-from event import Event  # noqa: E402
+ROOT = Path(__file__).resolve().parent.parent
 
 FIELDS = ("quarter", "time", "actionID", "actionID2", "team", "playerID", "playerID2")
 

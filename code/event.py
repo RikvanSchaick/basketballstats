@@ -79,7 +79,7 @@ class Event:
 
     def print_score(self, lead:bool) -> str | tuple[str, str]:
         if lead: 
-            if self.lead == 0: return f"{self.score[0]}-{self.score[1]}", f"TIE"
+            if self.lead == 0: return f"{self.score[0]}-{self.score[1]}", "TIE"
             if self.lead > 0: return f"{self.score[0]}-{self.score[1]}", f"+{self.lead}"
             return f"{self.score[0]}-{self.score[1]}", f"{self.lead}"
         return f"{self.score[0]}-{self.score[1]}"

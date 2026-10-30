@@ -277,7 +277,7 @@ class Stats:
             DF9.columns = ['Season', 'Team', 'G', 'GS', 'MP', 'PTS', 'FG', 'FGA', 'FG%', '3P', '3PA', '3P%', '2P', '2PA', '2P%', 'FT', 'FTA', 'FT%', 'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF']
             
             DF10 = DF3.drop(['season', 'team'], axis=1, errors='ignore').mean(skipna=True)    
-            DF10['Season'] = f"Career"
+            DF10['Season'] = "Career"
             DF10['Team'] = None
             DF10['twoPointersMade'] = (DF10['fieldGoalsMade'] - DF10['threePointersMade'])
             DF10['twoPointersAttempted'] = (DF10['fieldGoalsAttempted'] - DF10['threePointersAttempted'])

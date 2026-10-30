@@ -105,11 +105,11 @@ class Match():
     def substition_check(self, event:Event) -> bool | str:
         if not event.actionID == "out": return True
         if event.team == "H":
-            if not event.playerID in self.oncourt["_home"][-1]: return f"{event.playerID} not on court"
+            if event.playerID not in self.oncourt["_home"][-1]: return f"{event.playerID} not on court"
             if event.playerID2 in self.oncourt["_home"][-1]: return f"{event.playerID2} already on court"
             if event.playerID2 not in self.home.players.names.keys(): return f"{event.playerID2} not on team"
         elif event.team == "A":
-            if not event.playerID in self.oncourt["_away"][-1]: return f"{event.playerID} not on court"
+            if event.playerID not in self.oncourt["_away"][-1]: return f"{event.playerID} not on court"
             if event.playerID2 in self.oncourt["_away"][-1]: return f"{event.playerID2} already on court"
             if event.playerID2 not in self.away.players.names.keys(): return f"{event.playerID2} not on team"
         return True
@@ -141,7 +141,7 @@ class Match():
     def all_quarters(self) -> list:
         all_quarters = []
         for event in self.events:
-            if not event.quarter in all_quarters: all_quarters.append(event.quarter)
+            if event.quarter not in all_quarters: all_quarters.append(event.quarter)
         return all_quarters
     
     def count_events(self, quarter:str) -> int:
@@ -197,7 +197,7 @@ class Match():
                     oreb = [False, None]
                 elif event.actionID == "end":
                     oreb = [False, None]
-                if last_shot and not event.actionID in {"1m","f1"}:
+                if last_shot and event.actionID not in {"1m","f1"}:
                     last_shot = False
                     oreb = [False, None]
                 elif oreb[0] and event.team == oreb[1] and event.actionID in {"2m","3m","1m"}:
@@ -215,14 +215,14 @@ class Match():
                 if event.actionID == "t":
                     last_shot = False
                     to = [True, event.team]
-                elif last_shot and not event.actionID in {"1m","f1"}:
+                elif last_shot and event.actionID not in {"1m","f1"}:
                     last_shot = False
                     to = [False, None]
                 elif to[0] and not event.team == to[1] and event.actionID in {"2m","3m","1m"}:
                     if event.team == "H": points_off_turnovers[0] += int(event.actionID[0])
                     if event.team == "A": points_off_turnovers[1] += int(event.actionID[0])
                     last_shot = True
-                elif to[0] and not event.actionID in {"2m","3m","s","to","out","in","f2","f3","fu","fd"}:
+                elif to[0] and event.actionID not in {"2m","3m","s","to","out","in","f2","f3","fu","fd"}:
                     to = [False, None]
         return points_off_turnovers
                     

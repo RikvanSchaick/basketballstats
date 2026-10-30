@@ -399,7 +399,7 @@ def cmd_edit(m: Match, command: str, options, holder: dict) -> Match:
         m.start_match()
 
     quarter = command[4]
-    if not quarter in VALID_QUARTERS:
+    if quarter not in VALID_QUARTERS:
         print("invalid quarter")
         return m
 
