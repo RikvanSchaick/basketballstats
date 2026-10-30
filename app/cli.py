@@ -53,8 +53,8 @@ def parse_args(argv=None):
   )
   parser.add_argument(
     "--csv",
-    help="Game-clock CSV. Defaults to the single time_*.csv in "
-    "quicktime_timestamp/; you are asked to pick when there are several.",
+    help="Game-clock CSV. Defaults to data/clock_logs/<match id>.csv, else "
+    "the single time_*.csv there; you are asked to pick when there are several.",
   )
   parser.add_argument(
     "--anchor-clock",

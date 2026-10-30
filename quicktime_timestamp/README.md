@@ -58,7 +58,7 @@ python3 main.py --interval 0.05              # poll faster (default 0.1 = ~10 Hz
 
 ## The game-clock CSV
 
-A CSV sitting next to `main.py`, named `time_*.csv`:
+A CSV in `data/clock_logs/` (at the repo root), named `time_*.csv`:
 
 ```csv
 real_time,game_clock,period

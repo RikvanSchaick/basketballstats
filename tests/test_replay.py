@@ -1,6 +1,6 @@
 """Replay saved matches and compare against the saved gamebooks.
 
-matches/*.txt and gamebooks/txt/ are mostly git-ignored, so these tests cover
+data/matches/*.txt and data/gamebooks/txt/ are mostly git-ignored, so these tests cover
 whatever is present locally and skip when nothing is. The `test` match is a
 scratch file for manual testing and is left out.
 """
@@ -14,20 +14,17 @@ from app import paths
 from app.reports.gamebook import GameReport
 from app.model.match import Match
 
-ROOT = Path(__file__).resolve().parent.parent
 IGNORED = {"history", "test"}
-MATCHES = sorted(p for p in (ROOT / "matches").glob("*.txt") if p.stem not in IGNORED)
+MATCHES = sorted(p for p in paths.MATCHES.glob("*.txt") if p.stem not in IGNORED)
 GAMEBOOKS = sorted(
   p
-  for p in (ROOT / "gamebooks" / "txt").glob("*_gamebook.txt")
+  for p in paths.GAMEBOOKS_TXT.glob("*_gamebook.txt")
   if p.name.split("_")[0] not in IGNORED
 )
 
 
 def load(match_id):
-  return Match.from_history(
-    (ROOT / "matches" / f"{match_id}.txt").read_text().splitlines()
-  )
+  return Match.from_history(paths.match_file(match_id).read_text().splitlines())
 
 
 def gamebook_final_score(text):

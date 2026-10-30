@@ -307,7 +307,7 @@ def load_clock_log(path, with_periods=False):
 
 
 def discover_csv(explicit, directory, match_id=None):
-  """Resolve --csv, a match log, or a time_*.csv sitting next to main.py."""
+  """Resolve --csv, a match log, or a time_*.csv in the clock-log directory."""
   if explicit:
     path = Path(explicit).expanduser()
     if not path.is_file():
@@ -315,7 +315,7 @@ def discover_csv(explicit, directory, match_id=None):
     return path
 
   if match_id is not None:
-    path = directory / "gameclock_logs" / f"{match_id}.csv"
+    path = directory / f"{match_id}.csv"
     if path.is_file():
       return path
 

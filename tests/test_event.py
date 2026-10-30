@@ -6,11 +6,9 @@ Run from the repository root:
 """
 
 import unittest
-from pathlib import Path
 
+from app import paths
 from app.model.event import Event
-
-ROOT = Path(__file__).resolve().parent.parent
 
 FIELDS = ("quarter", "time", "actionID", "actionID2", "team", "playerID", "playerID2")
 
@@ -82,7 +80,7 @@ class ParseTests(unittest.TestCase):
         self.assertIsNone(Event.parse(line))
 
   def test_every_saved_match_line_is_an_event_or_a_starters_line(self):
-    for path in sorted((ROOT / "matches").glob("*.txt")):
+    for path in sorted(paths.MATCHES.glob("*.txt")):
       for line in path.read_text().splitlines()[8:]:
         with self.subTest(match=path.name, line=line):
           self.assertTrue(Event.parse(line) is not None or line[:1] in {"H", "A"})

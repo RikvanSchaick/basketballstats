@@ -30,6 +30,10 @@ from tracker import (
   resolve_anchor,
 )
 
+# This script runs standalone and does not import `app`, so it locates the
+# repo's clock-log folder relative to its own file.
+CLOCK_LOGS = Path(__file__).resolve().parent.parent / "data" / "clock_logs"
+
 
 class Printer:
   """Writes updates to the terminal, reusing one line when attached to a TTY."""
@@ -164,7 +168,7 @@ def main():
   )
   parser.add_argument(
     "--csv",
-    help="Game-clock CSV. Defaults to the single time_*.csv next to main.py.",
+    help="Game-clock CSV. Defaults to the single time_*.csv in data/clock_logs/.",
   )
   parser.add_argument(
     "--anchor-clock",
@@ -195,7 +199,7 @@ def main():
     return 1
 
   try:
-    csv_path = discover_csv(args.csv, Path(__file__).resolve().parent)
+    csv_path = discover_csv(args.csv, CLOCK_LOGS)
     times, clocks = load_clock_log(csv_path)
     clock_map = resolve_anchor(anchor, args.anchor_clock, times, clocks)
   except ClockLogError as exc:

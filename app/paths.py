@@ -7,11 +7,13 @@ Use these as `paths.X` at call time (`from app import paths`), never
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-MATCHES = ROOT / "matches"
+DATA = ROOT / "data"
+MATCHES = DATA / "matches"
 HISTORY = MATCHES / "history.txt"
-GAMEBOOKS_TXT = ROOT / "gamebooks" / "txt"
-GAMEBOOKS_PDF = ROOT / "gamebooks" / "pdf"
-EXPORTS = ROOT / "data"
+GAMEBOOKS_TXT = DATA / "gamebooks" / "txt"
+GAMEBOOKS_PDF = DATA / "gamebooks" / "pdf"
+EXPORTS = DATA / "exports"
+CLOCK_LOGS = DATA / "clock_logs"
 VIDEO = ROOT / "video"
 
 

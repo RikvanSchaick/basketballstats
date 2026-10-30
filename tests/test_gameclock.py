@@ -9,6 +9,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from app import paths
 from app.model.event import Event
 from app.clock.gameclock import (  # noqa: E402
   ClockLogError,
@@ -20,8 +21,7 @@ from app.clock.gameclock import (  # noqa: E402
   tracker,  # the shared tracker module, loaded by gameclock
 )
 
-ROOT = Path(__file__).resolve().parent.parent
-SAMPLE_CSV = ROOT / "quicktime_timestamp" / "gameclock_logs" / "260926M1.csv"
+SAMPLE_CSV = paths.CLOCK_LOGS / "260926M1.csv"
 needs_sample_csv = unittest.skipUnless(
   SAMPLE_CSV.exists(), "sample clock log is git-ignored and not present"
 )
@@ -506,6 +506,15 @@ class CsvDiscoveryTests(unittest.TestCase):
   def test_missing_file(self):
     with self.assertRaises(ClockLogError):
       GameClockTracker(csv_path="/nope/missing.csv").load_csv()
+
+  def test_match_log_found_by_match_id(self):
+    with tempfile.TemporaryDirectory() as d:
+      (Path(d) / "260926M1.csv").write_text(PERIOD_CSV)
+      path = GameClockTracker(base_dir=d, match_id="260926M1").load_csv()
+      self.assertEqual(path, Path(d) / "260926M1.csv")
+
+  def test_default_base_dir_is_clock_logs(self):
+    self.assertEqual(GameClockTracker().base_dir, paths.CLOCK_LOGS)
 
   def test_no_csv_in_directory(self):
     with tempfile.TemporaryDirectory() as d:

@@ -16,6 +16,8 @@ import threading
 import time
 from pathlib import Path
 
+from app import paths
+
 # Loaded by path rather than via sys.path: quicktime_timestamp/ contains its own
 # main.py, which would shadow other modules if that directory were added
 # to sys.path.
@@ -157,7 +159,7 @@ class GameClockTracker:
     self.anchor_clock = anchor_clock
     self.anchor = anchor
     self.interval = interval
-    self.base_dir = Path(base_dir) if base_dir else _TRACKER_PATH.parent
+    self.base_dir = Path(base_dir) if base_dir else paths.CLOCK_LOGS
 
     self.times = None
     self.clocks = None
