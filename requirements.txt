@@ -1,12 +1,15 @@
 defusedxml==0.7.1
 fonttools==4.53.0
 fpdf2==2.7.9
-install==1.3.5
 numpy==2.0.0
-opencv-python==4.10.0.84
 pandas==2.2.2
 pillow==10.4.0
+prompt_toolkit==3.0.53
 python-dateutil==2.9.0.post0
 pytz==2024.1
 six==1.16.0
+tqdm==4.70.1
 tzdata==2024.1
+
+# Only needed for the experimental tools/scoreboard.py
+opencv-python==4.10.0.84
