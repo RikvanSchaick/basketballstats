@@ -209,7 +209,7 @@ app/                    the program (python -m app)
     tracker.py          AppleScript queries, CSV loading, ClockMap, anchoring, background poller
     gameclock.py        GameClockTracker: game clock → event time for the app
     __main__.py         standalone tracker: python -m app.clock
-data/                   mostly git-ignored
+data/                   mostly git-ignored; missing folders are created when the app starts
   matches/              <gameId>.txt per game + history.txt (working file)
   gamebooks/txt/        <gameId>_gamebook.txt
   gamebooks/pdf/        <gameId>_gamebook.pdf
@@ -218,7 +218,7 @@ data/                   mostly git-ignored
 video/                  game videos (git-ignored)
 tools/scoreboard.py     experimental scoreboard automation; not part of the app (needs opencv-python)
 tests/                  unittest/pytest tests
-docs/                   quicktime.md (QuickTime tracker) and the migration steps 00–07
+docs/                   quicktime.md (QuickTime tracker)
 ```
 
 ## Development

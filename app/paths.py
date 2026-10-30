@@ -17,5 +17,10 @@ CLOCK_LOGS = DATA / "clock_logs"
 VIDEO = ROOT / "video"
 
 
+def ensure_dirs() -> None:
+  for d in (MATCHES, GAMEBOOKS_TXT, GAMEBOOKS_PDF, EXPORTS, CLOCK_LOGS, VIDEO):
+    d.mkdir(parents=True, exist_ok=True)
+
+
 def match_file(match_id: str) -> Path:
   return MATCHES / f"{match_id}.txt"

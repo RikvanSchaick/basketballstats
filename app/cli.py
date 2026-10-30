@@ -84,6 +84,7 @@ def parse_args(argv=None):
 
 def main():
   options = parse_args()
+  paths.ensure_dirs()
   holder = {}
   try:
     _run_app(options, holder)

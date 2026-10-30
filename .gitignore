@@ -14,19 +14,13 @@
 *.sln.docstates
 trash/*
 /data/*
-!/data/data.md
 !/data/matches/
 /data/matches/*
-!/data/matches/matches.md
 !/data/matches/5617.txt
 !/data/matches/6552.txt
 !/data/matches/7619.txt
 !/data/matches/11179.txt
-!/data/gamebooks/
-/data/gamebooks/*/*
-!/data/gamebooks/*/*.md
-video/*
-!video/video.md
+video/
 venv/
 .venv/
 
