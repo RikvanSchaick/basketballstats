@@ -1,15 +1,13 @@
-from match import match
-from event import event
-from copy import deepcopy
+from match import Match
 from datetime import datetime
-from boxscore import boxscore
-from terminoligy import actions_code, actions_terms, quarter_code
+from boxscore import BoxScore
+from terminology import actions_code, actions_terms, quarter_code
 
 from tqdm import tqdm
 import pandas as pd
 import os
 
-class data():
+class Data():
     def __init__(self) -> None:
         self.df_match = pd.DataFrame(columns=['gameId', 'dateTime', 'homeTeam', 'awayTeam', 'pointsDiff', 'pointsSum', 'quarters', 'status', 'homeScore', 'quarter1home', 'quarter2home', 'quarter3home', 'quarter4home', 'quarter5home', 'homeFieldGoalsMade', 'homeFieldGoalsAttempted', 'homeThreePointersMade', 'homeThreePointersAttempted', 'homeFreeThrowsMade', 'homeFreeThrowsAttempted', 'homeOffRebounds', 'homeDefRebounds', 'homeTeamRebounds', 'homeRebounds', 'homeAssists', 'homePersonalFouls', 'homeSteals', 'homeBlocks', 'homeTurnovers', 'homeLargestLead', 'homeSecondChancePoints', 'homeTeamTurnovers', 'homePointsOfTurnovers', 'awayScore', 'quarter1away', 'quarter2away', 'quarter3away', 'quarter4away', 'quarter5away', 'awayFieldGoalsMade', 'awayFieldGoalsAttempted', 'awayThreePointersMade', 'awayThreePointersAttempted', 'awayFreeThrowsMade', 'awayFreeThrowsAttempted', 'awayOffRebounds', 'awayDefRebounds', 'awayTeamRebounds', 'awayRebounds', 'awayAssists', 'awayPersonalFouls', 'awaySteals', 'awayBlocks', 'awayTurnovers', 'awayLargestLead', 'awaySecondChancePoints', 'awayTeamTurnovers', 'awayPointsOfTurnovers'])
         self.df_player = pd.DataFrame(columns=['gameId', 'name', 'number', 'team', 'starter', 'seconds', 'points', 'fieldGoalsMade', 'fieldGoalsAttempted', 'threePointersMade', 'threePointersAttempted', 'freeThrowsMade', 'freeThrowsAttempted', 'offRebounds', 'defRebounds', 'rebounds', 'assists', 'personalFouls', 'steals', 'blocks', 'turnovers', 'plusMinus'])
@@ -28,56 +26,21 @@ class data():
         file_list = self.files()
         for filename in file_list:
             if filename.endswith(".txt") and not filename == "history.txt":
-                f = open("matches/"+filename, "r")
-                lines = f.read().splitlines()
-                m = match()
-                m.create_match(lines[0],
-                                lines[1],
-                                lines[2],
-                                lines[3],
-                                lines[4],
-                                lines[5],
-                                False)
-                homeplayers = lines[6]
-                awayplayers = lines[7]
-                m.add_teams(homeplayers.split(";"), awayplayers.split(";"))
-                
-                m.start_match()
-                added_events = 0
-                n_events = len(lines)-8
-                for n in range(8, 8+n_events):
-                    eventstring = deepcopy(lines[n])
-                    e = event()
-                    b = e.extract_eventstring(eventstring)
-                    if eventstring[:4] == "edit":
-                        m.add_event(e)
-                        added_events += 1
-                        quarter = eventstring[4]
-                    elif eventstring[0] == "H":
-                        homestarters = eventstring[1:].split(",")
-                        del e
-                    elif eventstring[0] == "A":
-                        awaystarters = eventstring[1:].split(",")
-                        m.add_starters(quarter, homestarters, awaystarters)              
-                        del e
-                    elif b:
-                        m.add_event(e)
-                        added_events += 1
-                    else:
-                        del e
-                
-                if prnt: print(f"selected match {m.matchID} with {n_events} written lines and {added_events} added events")
+                with open("matches/"+filename, "r") as f:
+                    lines = f.read().splitlines()
+                m = Match.from_history(lines)
+                if prnt: print(f"selected match {m.matchID} with {len(lines)-8} written lines and {len(m.events)} added events")
                 self.matches.append(m)
         
         if prnt: print(f"\nadded a total of {len(self.matches)} matches\n")
                 
     def boxscores(self, match):
-        boxHome = boxscore()
+        boxHome = BoxScore()
         boxHome.create_boxscore(match.home)
         boxHome.add_gamelogs(match.events, match.all_quarters())
         boxHome.make_boxscore(match.events, match.all_quarters())
         
-        boxAway = boxscore()
+        boxAway = BoxScore()
         boxAway.create_boxscore(match.away)
         boxAway.add_gamelogs(match.events, match.all_quarters())
         boxAway.make_boxscore(match.events, match.all_quarters())

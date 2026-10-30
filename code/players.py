@@ -1,5 +1,5 @@
 # from player import player
-class players():
+class Players():
     def __init__(self) -> None:
         self.names = None
         self.players = None

@@ -4,7 +4,7 @@ from datetime import datetime
 
 pd.options.mode.chained_assignment = None
 
-class stats:
+class Stats:
     def __init__(self) -> None:
         self.team = None
         self.matchDataFrame = None

@@ -1,5 +1,5 @@
-from players import players
-class team():
+from players import Players
+class Team():
     def __init__(self, name:str, team:str) -> None:
         self.name = name
         self.team = team
@@ -7,7 +7,7 @@ class team():
         self.starters = []
         
     def add_team(self, team:list) -> None:
-        self.players = players()
+        self.players = Players()
         self.players.create_team(self.team)
         for player in team:
             number, name = player.split(",")

@@ -1,13 +1,13 @@
-from match import match
-from boxscore import boxscore
-from terminoligy import quarter_terms, actions_terms, team_terms, quarter_terms_lower, actions_terms_lower, team_terms_lower
+from match import Match
+from boxscore import BoxScore
+from terminology import quarter_terms, actions_terms, team_terms, quarter_terms_lower, actions_terms_lower, team_terms_lower
 from formulas import EFGpct, TSpct, ASTtoTO
 from fpdf import FPDF
 from fpdf.fonts import FontFace
 from datetime import datetime, date
 
-class gamereport():
-    def __init__(self, match:match) -> None:
+class GameReport():
+    def __init__(self, match:Match) -> None:
         self.txt = None
         self.match = match
         self.DIR = f"gamebooks/txt/{self.match.matchID}_gamebook.txt"
@@ -87,7 +87,7 @@ class gamereport():
             self.file.writelines("\n")
 
     def txt_boxscore(self, quarters:list) -> None:
-        boxh = boxscore()
+        boxh = BoxScore()
         boxh.create_boxscore(self.match.home)
         boxh.add_gamelogs(self.match.events, quarters)
         boxh.make_boxscore(self.match.events, quarters)
@@ -103,7 +103,7 @@ class gamereport():
         self.file.writelines("\t".expandtabs(3) + "\t".expandtabs(24) + f"{boxh.sec//60:02d}:{boxh.sec%60:02d}\t{boxh.fg}\t{boxh.fga}\t{boxh.tp}\t{boxh.tpa}\t{boxh.ft}\t{boxh.fta}\t{boxh.oreb}\t{boxh.dreb}\t{boxh.reb}\t{boxh.ast}\t{boxh.pf}\t{boxh.stl}\t{boxh.blk}\t{boxh.to}\t{boxh.pm}\t{boxh.pts}".expandtabs(4) + '\n')
         self.file.writelines("\t".expandtabs(3) + "\t".expandtabs(24) + f"\t\t {(boxh.fgpct):.1f}%\t {(boxh.tppct):.1f}%\t {(boxh.ftpct):.1f}%\t TM REB: {boxh.tmreb}".expandtabs(4) + '\n')
         
-        boxa = boxscore()
+        boxa = BoxScore()
         boxa.create_boxscore(self.match.away)
         boxa.add_gamelogs(self.match.events, quarters)
         boxa.make_boxscore(self.match.events, quarters)
@@ -368,7 +368,7 @@ class gamereport():
             row.cell("", colspan=7)
                       
     def pdf_create_boxscores(self, quarters:list) -> None:
-        self.boxh = boxscore()
+        self.boxh = BoxScore()
         self.boxh.create_boxscore(self.match.home)
         self.boxh.add_gamelogs(self.match.events, quarters)
         self.boxh.make_boxscore(self.match.events, quarters)
@@ -376,7 +376,7 @@ class gamereport():
         self.pdf.set_font("Helvetica", style="b", size = self.smalltextsize)
         self.pdf.write(text='\n')
         
-        self.boxa = boxscore()
+        self.boxa = BoxScore()
         self.boxa.create_boxscore(self.match.away)
         self.boxa.add_gamelogs(self.match.events, quarters)
         self.boxa.make_boxscore(self.match.events, quarters)

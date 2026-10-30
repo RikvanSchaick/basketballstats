@@ -1,9 +1,9 @@
-from event import event
-from match import match
-from stats_export import statsreport
-from gamereport import gamereport
+from event import Event
+from match import Match
+from stats_export import StatsReport
+from gamereport import GameReport
 # from rawstats import rawstats
-from data_export import data
+from data_export import Data
 from gameclock import ClockLogError, GameClockTracker, DEFAULT_ANCHOR_CLOCK, parse_anchor_value
 import argparse
 import asyncio
@@ -333,8 +333,8 @@ def main():
             holder["tracker"].stop()
 
 
-def cmd_create() -> match:
-    m = match()
+def cmd_create() -> Match:
+    m = Match()
     m.create_match(input("game ID: "), 
                    input("home team: "), 
                    input("away team: "), 
@@ -353,7 +353,7 @@ def cmd_create() -> match:
     return m
 
 
-def cmd_select() -> match | None:
+def cmd_select() -> Match | None:
     matches = []
     for file in os.listdir("matches"):
         if file.endswith(".txt") and not file == "history.txt":
@@ -371,13 +371,13 @@ def cmd_select() -> match | None:
 
     shutil.copyfile(f"matches/{match_id}.txt", HISTORY)
     lines = read_history()
-    m = match.from_history(lines, prnt=True)
+    m = Match.from_history(lines, prnt=True)
     print(f"selected match {match_id} with {len(lines)-8} written lines and {len(m.events)} added events")
     return m
 
 
 def cmd_stats() -> None:
-    d = data()
+    d = Data()
     if not d.n_exports():
         d.read(prnt=False)
         d.add_data()
@@ -389,12 +389,12 @@ def cmd_stats() -> None:
         command = input()
 
         if command == "team":
-            statsreport().export_team_stats()
+            StatsReport().export_team_stats()
         elif command == "player":
-            statsreport().export_player_stats()
+            StatsReport().export_player_stats()
 
 
-def cmd_edit(m: match, command: str, options, holder: dict) -> match:
+def cmd_edit(m: Match, command: str, options, holder: dict) -> Match:
     if m.events == None:
         m.start_match()
 
@@ -411,9 +411,7 @@ def cmd_edit(m: match, command: str, options, holder: dict) -> match:
         append_history(command)
 
     m.edit = True
-    e = event()
-    e.extract_eventstring(command)
-    m.add_event(e)
+    m.add_event(Event.parse(command))
 
     if m.count_events(quarter) < 2:
         added = False
@@ -438,8 +436,8 @@ def cmd_edit(m: match, command: str, options, holder: dict) -> match:
     eventstring = command
     while not eventstring == quarter + "end":
         eventstring = event_input(quarter, tracker)
-        e = event()
-        if e.extract_eventstring(eventstring):
+        e = Event.parse(eventstring)
+        if e is not None:
             result = m.add_event(e)
             if not result == True:
                 print(result)
@@ -453,12 +451,12 @@ def cmd_edit(m: match, command: str, options, holder: dict) -> match:
     m.edit = False
 
     # Rebuild from the file so hand-made fixes in history.txt are checked too.
-    m = match.from_history(read_history())
+    m = Match.from_history(read_history())
     if m.check_boxscore(m.all_quarters())==True: print("exited succesfully")
     return m
 
 
-def cmd_summary(m: match) -> None:
+def cmd_summary(m: Match) -> None:
     if m.events == None or len(m.events) == 0:
         print("no events")
     else:
@@ -467,7 +465,7 @@ def cmd_summary(m: match) -> None:
             m.print_summary(quarters)
 
 
-def cmd_log(m: match) -> None:
+def cmd_log(m: Match) -> None:
     quarters = input("which quarter(s)? ").split(",")
     if m.events == None or len(m.events) == 0:
         print("no events")
@@ -475,7 +473,7 @@ def cmd_log(m: match) -> None:
         m.print_events(quarters)
 
 
-def cmd_box(m: match) -> None:
+def cmd_box(m: Match) -> None:
     if m.events == None or len(m.events) == 0:
         print("no events")
     else:
@@ -483,7 +481,7 @@ def cmd_box(m: match) -> None:
         if m.check_boxscore(quarters)==True: m.print_boxscore(quarters)
 
 
-def cmd_save(m: match) -> None:
+def cmd_save(m: Match) -> None:
     if os.path.isfile(f"matches/{m.matchID}.txt"):
         print(f"match is already saved under {m.matchID}.txt")
         if input("overwrite existing file? (y/n) ") == "y":
@@ -492,9 +490,9 @@ def cmd_save(m: match) -> None:
         shutil.copyfile(HISTORY, f"matches/{m.matchID}.txt") 
 
 
-def cmd_export(m: match) -> None:
+def cmd_export(m: Match) -> None:
     if input(f"want to make a game report of match {m.matchID}? (y/n) ") == "y":
-        gamebook = gamereport(m)
+        gamebook = GameReport(m)
         quarters = m.all_quarters()
         gamebook.make_txt(quarters)
         gamebook.make_pdf(quarters)

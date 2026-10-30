@@ -1,9 +1,8 @@
-from gamelog import gamelog
-from team import team
-from terminoligy import team_terms
-from copy import deepcopy
+from gamelog import GameLog
+from team import Team
+from terminology import team_terms
 
-class boxscore():
+class BoxScore():
     def __init__(self) -> None:
         self.team = None
         self.starters = None
@@ -34,7 +33,7 @@ class boxscore():
         self.tppct = 0
         self.ftpct = 0
 
-    def create_boxscore(self, team:team) -> None:
+    def create_boxscore(self, team:Team) -> None:
         self.team = team
         self.starters = []
         self.bench = []
@@ -46,9 +45,9 @@ class boxscore():
         self.gamelogs = dict()
         
         for player in self.starters:
-            self.gamelogs[str(player)] = gamelog(player, self.team, True)
+            self.gamelogs[str(player)] = GameLog(player, self.team, True)
         for player in self.bench:
-            self.gamelogs[str(player)] = gamelog(player, self.team, False)
+            self.gamelogs[str(player)] = GameLog(player, self.team, False)
             
     def add_gamelogs(self, events:list, quarters:list) -> None:
         previous_team = None
@@ -56,7 +55,7 @@ class boxscore():
         for event in events:
             if event.quarter in quarters:
                 if event.actionID in {"2","3","1","t"}:
-                        previous_team = deepcopy(event.team)
+                        previous_team = event.team
 
                 if event.team == self.team.team:
                     if event.actionID in {"j", "to"}:
@@ -137,7 +136,7 @@ class boxscore():
         print("\t".expandtabs(3) + "\t".expandtabs(32) + f"{self.sec//60:02d}:{self.sec%60:02d}\t{self.fg}\t{self.fga}\t{self.tp}\t{self.tpa}\t{self.ft}\t{self.fta}\t{self.oreb}\t{self.dreb}\t{self.reb}\t{self.ast}\t{self.pf}\t{self.stl}\t{self.blk}\t{self.to}\t{self.pm}\t{self.pts}".expandtabs(5))
         print("\t".expandtabs(3) + "\t".expandtabs(32) + f"\t\t {(self.fgpct):.1f}%\t {(self.tppct):.1f}%\t {(self.ftpct):.1f}%\t TM REB: {self.tmreb}".expandtabs(5))
         
-    def check_boxscore(self, team:team, events:list, quarters:list) -> None:
+    def check_boxscore(self, team:Team, events:list, quarters:list) -> None:
         try:
             self.create_boxscore(team)
             self.add_gamelogs(events, quarters)

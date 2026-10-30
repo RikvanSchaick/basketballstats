@@ -1,7 +1,7 @@
 import cv2 
 import numpy as np
 
-class scoreboard():
+class Scoreboard():
     def __init__(self) -> None:
         self.capture = None
 
@@ -104,7 +104,7 @@ class scoreboard():
         return upleft, bottomright
         
 def main() -> None:
-    c = scoreboard()
+    c = Scoreboard()
     b, cap = c.open_video("test2")
     # b, cap = c.open_video("IMG_0879")
     _, _, fps, _ = c.get_dimension()

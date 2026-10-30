@@ -13,7 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "code"))
 
-from event import event  # noqa: E402
+from event import Event  # noqa: E402
 from gameclock import (  # noqa: E402
     ClockLogError,
     GameClockSample,
@@ -220,7 +220,7 @@ class QuarterAnchorTests(unittest.TestCase):
 
 
 class EventTimeConversionTests(unittest.TestCase):
-    """MM:SS -> the four digits event.get_time() stores."""
+    """MM:SS -> the four digits Event.time stores."""
 
     def test_typical_value(self):
         self.assertEqual(clock_to_event_time("09:41"), "0941")
@@ -253,9 +253,8 @@ class EventStringPrefixTests(unittest.TestCase):
     def assert_prefix_accepted(self, quarter, clock, expected_prefix):
         prefix = f"{quarter}{clock_to_event_time(clock)}"
         self.assertEqual(prefix, expected_prefix)
-        e = event()
-        self.assertTrue(e.get_quarter(prefix + "2H5"))
-        self.assertTrue(e.get_time(prefix + "2H5"))
+        e = Event.parse(prefix + "2H5")
+        self.assertIsNotNone(e)
         self.assertEqual(e.quarter, str(quarter))
         self.assertEqual(e.time, expected_prefix[1:])
 
@@ -269,13 +268,13 @@ class EventStringPrefixTests(unittest.TestCase):
                 self.assert_prefix_accepted(quarter, "09:41", f"{quarter}0941")
 
     def test_full_event_string_round_trips(self):
-        e = event()
-        self.assertTrue(e.extract_eventstring("10941" + "2H5"))
+        e = Event.parse("10941" + "2H5")
+        self.assertIsNotNone(e)
         self.assertEqual((e.quarter, e.time), ("1", "0941"))
 
     def test_ten_minute_prefix_accepted_by_event(self):
-        e = event()
-        self.assertTrue(e.get_time("11000" + "2H5"))
+        e = Event.parse("11000" + "2H5")
+        self.assertIsNotNone(e)
         self.assertEqual(e.time, "1000")
 
     def test_every_csv_clock_value_is_a_valid_event_time(self):
@@ -294,8 +293,7 @@ class EventStringPrefixTests(unittest.TestCase):
                     self.assertFalse(GameClockSample(1.0, clock=clock).usable)
                     continue
                 converted += 1
-                e = event()
-                self.assertTrue(e.get_time(f"1{digits}2H5"))
+                self.assertIsNotNone(Event.parse(f"1{digits}2H5"))
         self.assertGreater(converted, 100)
 
 

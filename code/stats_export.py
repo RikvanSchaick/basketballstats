@@ -1,9 +1,9 @@
-from stats import stats
+from stats import Stats
 from fpdf import FPDF
 from datetime import datetime
 import pandas as pd
 
-class statsreport():
+class StatsReport():
     def __init__(self) -> None:
         self.titlesize = 11
         self.bigtextsize = 10
@@ -154,7 +154,7 @@ class statsreport():
         lastseason = maxdate.year if maxdate.month >= 8 else maxdate.year-1
         return firstseason, lastseason
 
-    def team_stats_page(self, stats:stats) -> None:
+    def team_stats_page(self, stats:Stats) -> None:
         teamstats = stats.team_stats()
         self.pdf.set_font("Helvetica", style="b", size = 7)
         self.pdf.cell(w = 0, h = 4, txt = f"Team and Opponent Statistics", ln = 1, align = 'L')     
@@ -298,7 +298,7 @@ class statsreport():
                     row.cell(datum)        
 
     def export_team_stats(self) -> None:
-        total = stats() 
+        total = Stats() 
         total.load()
         self.team = total.select_team()
         mask = (total.matchDataFrame['homeTeam'] == self.team) | (total.matchDataFrame['awayTeam'] == self.team)        
@@ -312,7 +312,7 @@ class statsreport():
         for year in range(firstseason, lastseason + 1):
             season = f"SEASON {year}-{year + 1}"
             self.new_page(self.team, season)
-            seasonal = stats() 
+            seasonal = Stats() 
             seasonal.load()
             seasonal.select_team(self.team)
             seasonal.select_period(begin=datetime(year, 8, 1), end=datetime(year + 1, 7, 31))
@@ -321,7 +321,7 @@ class statsreport():
         self.pdf_glossary()
         self.pdf_export(name=f"{self.team}_stats")
 
-    def player_career_page(self, stats:stats) -> None:    
+    def player_career_page(self, stats:Stats) -> None:    
         highs = stats.careerhighs()
         self.pdf.set_font("Helvetica", style="b", size = 9)
         self.pdf.cell(w = 0, h = 4, txt = f"Career Highs", ln = 1, align = 'L')     
@@ -490,7 +490,7 @@ class statsreport():
                     row.cell(item[i][0])
                     row.cell(str(item[i][1]))
                     
-    def player_season_page(self, stats:stats) -> None:
+    def player_season_page(self, stats:Stats) -> None:
         averages = stats.player_career_averages(teamsplit=True)
         self.pdf.set_font("Helvetica", style="b", size = 9)
         self.pdf.cell(w = 0, h = 4, txt = f"Seasonal Statistics", ln = 1, align = 'L')
@@ -625,7 +625,7 @@ class statsreport():
             self.pdf.cell(w = 0, h = 4, txt = f"* Games not annotated, are not shown in the game log", ln = 1, align = 'R')
                 
     def export_player_stats(self) -> None:
-        total = stats() 
+        total = Stats() 
         total.load()
         self.player, self.team = total.select_player()
         game_ids = total.playerDataFrame[total.playerDataFrame['name'] == self.player]['gameId'].unique().tolist()
@@ -638,7 +638,7 @@ class statsreport():
 
         self.player_career_page(stats=total)
         for year in range(firstseason, lastseason+1):
-            seasonal = stats() 
+            seasonal = Stats() 
             seasonal.load()
             seasonal.select_player(self.player)
             seasonal.select_period(begin=datetime(year, 8, 1), end=datetime(year + 1, 7, 31))            

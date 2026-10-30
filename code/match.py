@@ -1,10 +1,9 @@
-from event import event
-from boxscore import boxscore
-from team import team
-from copy import deepcopy
-from terminoligy import quarter_terms, team_terms, actions_terms
+from event import Event
+from boxscore import BoxScore
+from team import Team
+from terminology import quarter_terms, team_terms, actions_terms
 
-class match():
+class Match():
     def __init__(self) -> None:
         self.edit = False
         self.matchID = None
@@ -19,8 +18,8 @@ class match():
         
     def create_match(self, ID:str, home:str, away:str, date:str, time:str, location:str, prnt:bool) -> None:
         self.matchID = ID
-        self.home = team(home, "H")
-        self.away = team(away, "A")
+        self.home = Team(home, "H")
+        self.away = Team(away, "A")
         self.date = date
         self.time = time
         self.location = location
@@ -29,7 +28,7 @@ class match():
         if prnt: print(f"created match {self.matchID}\n{self.away.name} at {self.home.name}\n{self.date}, {self.time}, {self.location}")
 
     @classmethod
-    def from_history(cls, lines:list, prnt:bool = False) -> "match":
+    def from_history(cls, lines:list, prnt:bool = False) -> "Match":
         """Rebuild a match from history lines: 6 info lines, 2 roster lines, then events."""
         m = cls()
         m.create_match(*lines[:6], prnt)
@@ -37,17 +36,14 @@ class match():
         m.start_match()
         quarter = None
         homestarters = None
-        for eventstring in lines[8:]:
-            e = event()
-            valid = e.extract_eventstring(eventstring)
-            if eventstring[:4] == "edit":
-                m.add_event(e)
-                quarter = eventstring[4]
-            elif eventstring[0] == "H":
-                homestarters = eventstring[1:].split(",")
-            elif eventstring[0] == "A":
-                m.add_starters(quarter, homestarters, eventstring[1:].split(","))
-            elif valid:
+        for line in lines[8:]:
+            if line[:1] == "H":
+                homestarters = line[1:].split(",")
+            elif line[:1] == "A":
+                m.add_starters(quarter, homestarters, line[1:].split(","))
+            elif (e := Event.parse(line)) is not None:
+                if e.actionID == "start":
+                    quarter = e.quarter
                 m.add_event(e)
         return m
 
@@ -61,18 +57,18 @@ class match():
         self.score = [0,0]
         self.events = []
         
-    def add_starters(self, quarter:int, homestarters:list, awaystarters:list) -> bool:
+    def add_starters(self, quarter:str, homestarters:list, awaystarters:list) -> bool:
         if not (len(homestarters) == 5 and len(awaystarters) == 5): return False
         if quarter in {"1","2","3","4","5","6","7","8"}:
             self.home.add_starters(quarter, homestarters)
             self.away.add_starters(quarter, awaystarters)
             time = "1000" if quarter in {"1","2","3","4"} else "500"
-            self.add_oncourt(time=time, quarter=quarter, score=deepcopy(self.score), home=homestarters, away=awaystarters)
+            self.add_oncourt(time=time, quarter=quarter, score=list(self.score), home=homestarters, away=awaystarters)
             return True
         else:
             return False
 
-    def add_oncourt(self, quarter:int, time:str, score:list, home:list, away:list) -> None:
+    def add_oncourt(self, quarter:str, time:str, score:list, home:list, away:list) -> None:
         self.oncourt["quarter"].append(quarter)
         self.oncourt["time"].append(time)
         self.oncourt["score"].append(score)
@@ -80,33 +76,33 @@ class match():
         self.oncourt["_away"].append(away)
 
     def print_oncourt(self) -> None:
-        _home = deepcopy(self.oncourt["_home"][-1])
-        _away = deepcopy(self.oncourt["_away"][-1])
+        _home = self.oncourt["_home"][-1]
+        _away = self.oncourt["_away"][-1]
         print("home: " + ", ".join(str(player) for player in sorted(_home, key=int)))
         print("away: " + ", ".join(str(player) for player in sorted(_away, key=int)))
 
-    def update_oncourt(self, event:event) -> bool:
+    def update_oncourt(self, event:Event) -> bool:
         if event.actionID == "to" and self.edit:
             self.print_oncourt()
         if event.actionID == "out":
             b = self.substition_check(event)
             if not b == True: return b
-            _home = deepcopy(self.oncourt["_home"][-1])
-            _away = deepcopy(self.oncourt["_away"][-1])
+            _home = list(self.oncourt["_home"][-1])
+            _away = list(self.oncourt["_away"][-1])
             if event.team == "H":
                 _home.remove(event.playerID)
                 _home.append(event.playerID2)
             elif event.team == "A":
                 _away.remove(event.playerID)
                 _away.append(event.playerID2)
-            self.add_oncourt(quarter=event.quarter, time=event.time, score=deepcopy(self.score), home=_home, away=_away)
+            self.add_oncourt(quarter=event.quarter, time=event.time, score=list(self.score), home=_home, away=_away)
         elif event.actionID == "end":
-            _home = deepcopy(self.oncourt["_home"][-1])
-            _away = deepcopy(self.oncourt["_away"][-1])
-            self.add_oncourt(quarter=event.quarter, time=event.time, score=deepcopy(self.score), home=_home, away=_away)
+            _home = list(self.oncourt["_home"][-1])
+            _away = list(self.oncourt["_away"][-1])
+            self.add_oncourt(quarter=event.quarter, time=event.time, score=list(self.score), home=_home, away=_away)
         return True
         
-    def substition_check(self, event:event) -> bool | str:
+    def substition_check(self, event:Event) -> bool | str:
         if not event.actionID == "out": return True
         if event.team == "H":
             if not event.playerID in self.oncourt["_home"][-1]: return f"{event.playerID} not on court"
@@ -118,20 +114,20 @@ class match():
             if event.playerID2 not in self.away.players.names.keys(): return f"{event.playerID2} not on team"
         return True
         
-    def update_score(self, event:event) -> None:
+    def update_score(self, event:Event) -> None:
         if event.actionID in {"2m","3m","1m"}:
             points = int(event.actionID[0])
             if event.team == "H":
                 self.score[0] += points
             elif event.team == "A":
                 self.score[1] += points
-        event.score = deepcopy(self.score)
+        event.score = list(self.score)
         event.lead = self.score[0] - self.score[1]
         
     def print_score(self) -> str:
         return f"{self.score[0]}-{self.score[1]}"
     
-    def add_event(self, event:event) -> bool:
+    def add_event(self, event:Event) -> bool:
         self.update_score(event)
         self.events.append(event)
         return self.update_oncourt(event)
@@ -139,19 +135,16 @@ class match():
     def get_eventstring(self, i:int) -> str:
         return self.events[i].eventstring()
         
-    def last_quarter(self) -> int:
-        last_quarter = 0
-        for event in self.events:
-            if int(event.quarter) > last_quarter: last_quarter = deepcopy(int(event.quarter))
-        return last_quarter
+    def last_quarter(self) -> str | None:
+        return max((event.quarter for event in self.events), key=int, default=None)
         
     def all_quarters(self) -> list:
         all_quarters = []
         for event in self.events:
-            if not event.quarter in all_quarters: all_quarters.append(deepcopy(event.quarter))
+            if not event.quarter in all_quarters: all_quarters.append(event.quarter)
         return all_quarters
     
-    def count_events(self, quarter:int) -> int:
+    def count_events(self, quarter:str) -> int:
         count = 0
         for event in self.events:
             if event.quarter == quarter:
@@ -195,9 +188,9 @@ class match():
         for event in self.events:
             if event.quarter in quarters:
                 if event.actionID in {"2","3","1"}:
-                    previous_team = deepcopy(event.team)
+                    previous_team = event.team
                 if event.actionID == "r" and event.team == previous_team:
-                    oreb = [True, deepcopy(event.team)]
+                    oreb = [True, event.team]
                 elif oreb[0] and event.team == oreb[1] and event.actionID in {"f0","f1","f2","f3","ft","fu","fd"}:
                     oreb = [False, None]
                 elif oreb[0] and not event.team == oreb[1] and event.actionID in {"r","s","j","t","2","3","1","2m","3m","1m"}:
@@ -221,7 +214,7 @@ class match():
             if event.quarter in quarters:
                 if event.actionID == "t":
                     last_shot = False
-                    to = [True, deepcopy(event.team)]
+                    to = [True, event.team]
                 elif last_shot and not event.actionID in {"1m","f1"}:
                     last_shot = False
                     to = [False, None]
@@ -239,8 +232,8 @@ class match():
         for event in self.events:
             if event.quarter in quarters:
                 if event.actionID in {"2m","3m","1m"}:
-                    if event.lead > llH: llH = deepcopy(event.lead)
-                    if event.lead < llA: llA = deepcopy(event.lead)
+                    if event.lead > llH: llH = event.lead
+                    if event.lead < llA: llA = event.lead
         return llH,-llA
     
     def lead_chances(self, quarters:list) -> int:
@@ -330,17 +323,17 @@ class match():
                         print(f"[{event.time[:2]}:{event.time[2:]}]\t\t\t\t\t\t\t\t{event.print_event(actions_terms)}")
         
     def print_boxscore(self, quarters:list) -> None:
-        boxscore_home = boxscore()
+        boxscore_home = BoxScore()
         boxscore_home.create_boxscore(self.home)
         boxscore_home.print_boxscore(self.events, quarters)
         
-        boxscore_away = boxscore()
+        boxscore_away = BoxScore()
         boxscore_away.create_boxscore(self.away)
         boxscore_away.print_boxscore(self.events, quarters)
         
     def check_boxscore(self, quarters:list) -> bool | None:
-        boxscore_home = boxscore()
-        boxscore_away = boxscore()
+        boxscore_home = BoxScore()
+        boxscore_away = BoxScore()
         home_check = boxscore_home.check_boxscore(self.home, self.events, quarters)
         if home_check==True: 
             away_check = boxscore_away.check_boxscore(self.away, self.events, quarters)

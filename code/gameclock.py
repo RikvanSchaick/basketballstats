@@ -2,7 +2,7 @@
 
 Wraps the reusable tracker in ``quicktime_timestamp/tracker.py``: a background
 thread keeps the latest QuickTime sample, and :meth:`GameClockTracker.sample`
-converts it into the four-digit MMSS value ``event.get_time()`` expects.
+converts it into the four-digit MMSS value ``Event.parse()`` expects.
 
 Nothing here prints continuously; the caller decides what to show and when.
 """
@@ -66,7 +66,7 @@ __all__ = [
     "PERIOD_CONTEXTS",
 ]
 
-# event.get_time() accepts 00:00-09:59 plus exactly 10:00, so a mapped clock
+# Event.parse() accepts 00:00-09:59 plus exactly 10:00, so a mapped clock
 # outside that range must not be auto-filled into an event string.
 MAX_EVENT_TIME = "1000"
 
@@ -90,7 +90,7 @@ def clock_to_event_time(clock):
     if int(seconds) > 59:
         return None
     digits = f"{int(minutes):02d}{seconds}"
-    # Mirrors event.get_time(): anything above 10:00 is not a valid game clock.
+    # Mirrors Event.parse(): anything above 10:00 is not a valid game clock.
     if len(digits) != 4 or digits > MAX_EVENT_TIME:
         return None
     return digits

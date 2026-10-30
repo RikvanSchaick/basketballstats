@@ -1,4 +1,4 @@
-class gamelog():
+class GameLog():
     def __init__(self, player, team, starter) -> None:
         self.player = player
         self.team = team
