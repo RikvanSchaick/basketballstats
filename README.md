@@ -144,7 +144,7 @@ player `12`, assist (`a`) by `A4`.
 | `2m` `3m` `1m`   | Made 2-pointer / 3-pointer / free throw    | player, optional `a` + teammate          | `108392mA12aA4`, `109153mH7`, `107451mH5` |
 | `2` `3`          | Missed 2-pointer / 3-pointer               | player, optional `b` + opponent (block)  | `104412H8bA17`, `103303A9` |
 | `1`              | Missed free throw                          | player                                   | `102101H5`        |
-| `t`              | Turnover                                   | team, or player with optional `s`/`b` + opponent | `10425tH`, `10827tH13sA11` |
+| `t`              | Turnover                                   | team, or player with optional `s` + opponent (steal) | `10425tH`, `10827tH13sA11` |
 | `r`              | Rebound                                    | team or player                           | `10624rA`, `10813rA12` |
 | `ft`             | Technical foul                             | team or player                           | `10700ftH`, `10700ftH4` |
 | `j`              | Possession after the jump ball             | team only                                | `11000jA`         |
@@ -152,14 +152,16 @@ player `12`, assist (`a`) by `A4`.
 | `f0`–`f3`        | Personal foul + number of free throws (0–3) | player                                  | `10650f2H4`       |
 | `fu`             | Unsportsmanlike foul                       | player                                   | `10600fuA8`       |
 | `fd`             | Disqualifying foul                         | player                                   | `10600fdA8`       |
-| `a` `s` `b`      | Assist / steal / block on its own          | player                                   | `10550aH4`, `10550sA3`, `10550bH9` |
 | `out…in…`        | Substitution within the same team          | player `out` + player `in`               | `10624outH7inH11` |
 | `edit<N>` `<N>end` | Start / end of quarter `N`               | —                                        | `edit1`, `1end`   |
 
 These lines are **rejected**:
 
 - extra characters after the event: `11000jA5`, `108392mA12x`;
+- an assist, steal or block on its own (it must follow the made shot, turnover or
+  missed shot on the same line): `10550aH4`, `10550sA3`, `10550bH9`;
 - an assist from the opponent: `108392mA12aH4`;
+- a block after a turnover (a block only follows a missed shot): `10827tH13bA11`;
 - a block or steal by a teammate: `104412H8bH17`, `10425tH13sH11`;
 - a substitution between two teams: `10624outH7inA11`;
 - a team code without a team: `10500to`;

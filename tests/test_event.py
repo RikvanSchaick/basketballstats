@@ -25,7 +25,6 @@ VALID = {
   "10425tH": ("1", "0425", "t", None, "H", None, None),
   "10956tA12": ("1", "0956", "t", None, "A", "12", None),
   "10827tH13sA11": ("1", "0827", "t", "s", "H", "13", "11"),
-  "10827tH13bA11": ("1", "0827", "t", "b", "H", "13", "11"),
   "109363H5": ("1", "0936", "3", None, "H", "5", None),
   "104412H8bA17": ("1", "0441", "2", "b", "H", "8", "17"),
   "108392mA12aA4": ("1", "0839", "2m", "a", "A", "12", "4"),
@@ -61,6 +60,10 @@ INVALID = [
   "10941outH5inA6",  # substitution across teams
   "109412H5aH6",
   "109412mH5bA6",  # second action not allowed for this action
+  "10941aH5",
+  "10941sH5",
+  "10941bH5",  # assist/steal/block only as part of a made shot/turnover/missed shot
+  "10827tH13bA11",  # a block only follows a missed shot, not a turnover
   "H5,6,7,9,13",  # starters line, not an event
 ]
 

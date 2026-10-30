@@ -88,7 +88,6 @@ EVENT CODES - type one event per line, without spaces:
   foul + free throws 0-3 {q}0439f2H4   (f0 = no free throws)
   unsportsm. / disq.     {q}0439fuA8   {q}0439fdA8
   technical foul         {q}0439ftH4   on the team/bench: {q}0439ftH
-  assist / steal / block {q}0439aH4    {q}0439sH4    {q}0439bH4
   substitution           {q}0439outH7inH11   (H7 off, H11 on)
   jump ball              {q}{start}jA   (team that gets the ball)
   timeout                {q}0439toH

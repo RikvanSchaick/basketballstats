@@ -23,14 +23,15 @@ _GRAMMAR = [
   # 10827tH13sA11: H13 turns it over, stolen by A11; 10425tH: team turnover
   (
     "t",
-    rf"(?P<team>[HA])(?:(?P<player>[0-9]{{1,2}})(?:{_second_player('s|b')})?)?",
+    rf"(?P<team>[HA])(?:(?P<player>[0-9]{{1,2}})(?:{_second_player('s')})?)?",
     False,
   ),
   # 10813rA12 / 10624rA: player or team rebound (technical fouls likewise)
   ("r|ft", _TEAM_OR_PLAYER, None),
   # 11000jA: possession after the jump ball; 10500toH: timeout
   ("j|to", _TEAM, None),
-  ("1|a|s|b|f0|f1|f2|f3|fu|fd", _PLAYER, None),
+  # Assist, steal and block only exist as the second half of the lines above.
+  ("1|f0|f1|f2|f3|fu|fd", _PLAYER, None),
 ]
 
 _PATTERNS = [
