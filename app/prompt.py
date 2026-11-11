@@ -243,14 +243,30 @@ def event_input(quarter, tracker=None) -> str:
   def _(event):
     nonlocal counta
     nonlocal countb
+    nonlocal default_text
     countb += 1
     countb = countb % 3
-    update_defaultb()
-    apply_recall(event, at_base=countb == 0)
-    if countb == 2:
-      counta = 1
+    clock = base_default()
+    if autofill is None or len(clock) < PREFIX_LEN:
+      update_defaultb()
+      apply_recall(event, at_base=countb == 0)
+      counta = 1 if countb == 2 else 0
+      return
+
+    # With a clock the time is already there: 1 adds the last line's stats,
+    # 2 clears all but the period, 0 brings the live clock time back.
+    if countb == 1:
+      default_text = clock + lines[-1].strip()[PREFIX_LEN:]
+    elif countb == 2:
+      default_text = f"{quarter}"
     else:
-      counta = 0
+      default_text = clock
+    apply_recall(event, at_base=countb != 2)
+    if countb == 1:
+      # Keep only the time part following the video, not the copied stats.
+      live["prefix"] = clock
+      live["bare"] = False
+    counta = 1 if countb == 1 else 0
 
   session = PromptSession(key_bindings=bindings)
   buffer = session.default_buffer

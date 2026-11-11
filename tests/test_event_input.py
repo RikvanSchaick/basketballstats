@@ -266,19 +266,26 @@ class HistoryNavigationTests(unittest.TestCase):
     )
     self.assertEqual(result, HISTORY_LINES[-1])
 
-  def test_tab_prefix_recall_is_not_overwritten(self):
+  def test_tab_adds_last_stats_to_clock_time(self):
+    result, _ = run_prompt(
+      lambda: _StaticTracker("0941"), [(b"\t", 0.4), (b"", 1.0), ENTER]
+    )
+    self.assertEqual(result, "10941" + HISTORY_LINES[-1][5:])
+
+  def test_tab_stats_keep_following_the_clock(self):
     result, _ = run_prompt(
       lambda: _FakeTracker(["0941", "0940", "0939"]),
       [(b"\t", 0.4), (b"", 1.8), ENTER],
     )
-    self.assertEqual(result, HISTORY_LINES[-1][:5])
+    self.assertEqual(result[5:], HISTORY_LINES[-1][5:])
+    self.assertEqual(result[0], "1")
 
-  def test_tab_full_recall_is_not_overwritten(self):
+  def test_second_tab_clears_the_line(self):
     result, _ = run_prompt(
       lambda: _FakeTracker(["0941", "0940", "0939"]),
       [(b"\t\t", 0.5), (b"", 1.6), ENTER],
     )
-    self.assertEqual(result, HISTORY_LINES[-1])
+    self.assertEqual(result, "1")
 
   def test_tab_back_to_new_event_resumes_the_clock(self):
     # Three tabs cycle back to the new-event state, which follows again.

@@ -101,4 +101,6 @@ OTHER
 KEYS
   Up / Down   browse earlier lines
   Tab         copy the time of the last line, press again for the whole line
+              (with a clock log: add the last line's stats, then only the period, then
+              back to the clock time)
 """
