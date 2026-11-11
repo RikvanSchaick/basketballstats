@@ -10,13 +10,21 @@ from app.clock.gameclock import (
   parse_anchor_value,
 )
 from app.history import append_history, read_history, write_history
-from app.prompt import event_input, read_menu_choice, setup_tracker, sync_quarter
+from app.prompt import (
+  ENTER_KEY,
+  event_input,
+  read_menu_choice,
+  setup_tracker,
+  sync_quarter,
+)
 from app import manual, style
 import argparse
 import os
 import re
 from app import paths
 import shutil
+import subprocess
+import sys
 
 VALID_QUARTERS = {"1", "2", "3", "4", "5", "6", "7", "8"}
 
@@ -232,6 +240,7 @@ def cmd_open() -> Match | None:
 
   shutil.copyfile(paths.match_file(match_id), paths.HISTORY)
   lines = read_history()
+  warn_invalid_lines(lines, f"{match_id}.txt")
   m = Match.from_history(lines, prnt=True)
   print(
     f"selected match {match_id} with {len(lines) - 8} written lines and {len(m.events)} added events"
@@ -351,7 +360,20 @@ def cmd_boxscore(m: Match) -> None:
       m.print_boxscore(quarters)
 
 
+def warn_invalid_lines(lines: list, name: str) -> None:
+  bad = Match.invalid_lines(lines)
+  if bad:
+    print(
+      style.message(
+        "INVALID LINES",
+        f"{name} has lines that are not valid events and are skipped:",
+        *(f"  line {number}: {line}" for number, line in bad),
+      )
+    )
+
+
 def cmd_save(m: Match) -> None:
+  warn_invalid_lines(read_history(), "history.txt")
   if os.path.isfile(paths.match_file(m.matchID)):
     print(f"match is already saved under {m.matchID}.txt")
     if input("overwrite existing file? (y/n) ") == "y":
@@ -366,6 +388,26 @@ def cmd_report(m: Match) -> None:
     quarters = m.all_quarters()
     gamebook.make_txt(quarters)
     gamebook.make_pdf(quarters)
+    pdf = paths.GAMEBOOKS_PDF / f"{m.matchID}_gamebook.pdf"
+    print(
+      "\n"
+      + style.body("gamebook saved as ")
+      + style.link(pdf.name, pdf)
+      + style.body(":")
+    )
+    if sys.platform != "darwin":
+      return
+    items = [
+      ("o", "preview", "open in Preview"),
+      ("f", "finder", "show in Finder"),
+      (ENTER_KEY, "skip", "do nothing"),
+    ]
+    print(style.menu(None, items))
+    choice = read_menu_choice({key: name for key, name, _ in items})
+    if choice == "preview":
+      subprocess.run(["open", "-a", "Preview", str(pdf)], check=False)
+    elif choice == "finder":
+      subprocess.run(["open", "-R", str(pdf)], check=False)
 
 
 MATCH_COMMANDS = {

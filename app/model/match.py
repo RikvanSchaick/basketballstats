@@ -46,6 +46,15 @@ class Match:
         f"created match {self.matchID}\n{self.away.name} at {self.home.name}\n{self.date}, {self.time}, {self.location}"
       )
 
+  @staticmethod
+  def invalid_lines(lines: list) -> list[tuple[int, str]]:
+    """(line number, line) for every event line that is not a valid event."""
+    return [
+      (number, line)
+      for number, line in enumerate(lines[8:], start=9)
+      if line.strip() and line[:1] not in {"H", "A"} and Event.parse(line) is None
+    ]
+
   @classmethod
   def from_history(cls, lines: list, prnt: bool = False) -> "Match":
     """Rebuild a match from history lines: 6 info lines, 2 roster lines, then events."""

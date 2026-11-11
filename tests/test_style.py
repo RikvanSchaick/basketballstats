@@ -12,7 +12,7 @@ TITLE = f"\033[1;{style.color_code(style.TITLE_COLOR)}m"
 BODY = f"\033[3;{style.color_code(style.BODY_COLOR)}m"
 COMMAND = f"\033[{style.color_code(style.COMMAND_COLOR)}m"
 # Menu keys such as [c] and [1-8]: bold, in their own color.
-KEY = f"\033[1;{style.color_code('#8B639B')}m"
+KEY = f"\033[1;{style.color_code(style.KEY_COLOR)}m"
 
 
 class _Terminal(io.StringIO):

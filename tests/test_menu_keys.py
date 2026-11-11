@@ -83,6 +83,10 @@ class ReadMenuChoiceTests(unittest.TestCase):
   def test_enter_and_arrow_keys_are_skipped(self):
     self.assertEqual(self.press("\n", "\x1b[A", " ", "o")[0], "open")
 
+  def test_enter_picks_the_enter_option_when_the_menu_has_one(self):
+    self.choices = {"o": "preview", prompt.ENTER_KEY: "skip"}
+    self.assertEqual(self.press("\r")[0], "skip")
+
   def test_without_a_terminal_a_line_is_read(self):
     for line, expected in [
       ("o", "open"),

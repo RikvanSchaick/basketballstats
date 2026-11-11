@@ -14,6 +14,8 @@ from app.history import read_history
 PREFIX_LEN = 5
 LIVE_CLOCK_INTERVAL = 0.2
 CLOCK_TITLE = "GAME CLOCK"
+# Menu key for the Return key, shown as [↩].
+ENTER_KEY = "↩"
 
 
 def clock_message(*lines: str) -> None:
@@ -45,10 +47,15 @@ def _read_raw() -> str:
     termios.tcsetattr(fd, termios.TCSADRAIN, saved)
 
 
-def read_key() -> str:
-  """The next letter or digit pressed; Enter, arrows and the like are skipped."""
+def read_key(enter: bool = False) -> str:
+  """The next letter or digit pressed; arrows and the like are skipped.
+
+  Enter is skipped too, unless `enter` is set: then it returns ENTER_KEY.
+  """
   while True:
     key = _read_raw()[:1]
+    if enter and key in {"\r", "\n"}:
+      return ENTER_KEY
     if key.isprintable() and key.strip():
       return key.lower()
 
@@ -61,9 +68,11 @@ def read_menu_choice(choices: dict[str, str]) -> str:
   """
   if not sys.stdin.isatty():
     line = input().strip()
+    if not line and ENTER_KEY in choices:
+      line = ENTER_KEY
     return choices.get(line.lower(), line)
   print(style.body("press a key: "), end="", flush=True)
-  key = read_key()
+  key = read_key(enter=ENTER_KEY in choices)
   choice = choices.get(key, key)
   print(style.command(choice) if key in choices else key)
   return choice

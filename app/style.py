@@ -74,6 +74,14 @@ def menu_key(key: str) -> str:
   return _paint(f"[{key}]", "1", color_code(KEY_COLOR))
 
 
+def link(label: str, path) -> str:
+  """A clickable terminal hyperlink (OSC 8) to a local file or folder."""
+  if not enabled():
+    return label
+  uri = path.resolve().as_uri()
+  return f"\033]8;;{uri}\033\\{_paint(label, color_code(KEY_COLOR))}\033]8;;\033\\"
+
+
 def message(heading: str, *lines: str) -> str:
   """A title on its own line, then each line below it in italics."""
   return "\n".join([title(heading)] + [body(line) for line in lines])
@@ -126,11 +134,11 @@ def manual(text: str, codes: str | None = None) -> str:
   )
 
 
-def menu(heading: str, items: list[tuple[str, str, str]]) -> str:
+def menu(heading: str | None, items: list[tuple[str, str, str]]) -> str:
   """A menu: a title, then '- [key] command:   description' per item."""
   labels = [f"- [{key}] {name}:" for key, name, _ in items]
   width = max(len(label) for label in labels) + 2
-  lines = ["", title(heading)]
+  lines = ["", title(heading)] if heading else []
   for label, (key, name, description) in zip(labels, items):
     padding = " " * (width - len(label))
     lines.append(f"- {menu_key(key)} {command(name)}:{padding}{body(description)}")
